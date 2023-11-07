@@ -270,12 +270,69 @@ class ProductsCrud:
             sess.close()
             return False
 
+    def update_product_price(product_name: str, product_price) -> object:
+        sess = Session()
+        prod = sess.query(Products).where(Products.product_name == product_name).first()
+        if prod is not None:
+            prod.product_price = product_price
+            sess.commit()
+            sess.close()
+            return True
+        else:
+            return False
+
+
 class Services(Base):
     __tablename__ = "services"
     id = Column(Integer, primary_key=True)
     name = Column(String(length=16))
     service_price = Column(Float)
     usage = relationship('ServiceOrders')
+
+
+class ServicesCrud:
+    def add(name: str, service_price: float):
+        sess = Session()
+        ser = sess.query(Services).where(Services.name == name).first()
+        if ser is not None:
+            sess.close()
+        else:
+            ser = Services(name=name, service_price=service_price)
+            sess.add(ser)
+            sess.commit()
+            sess.close()
+
+    def get_service_price(name: str) -> object:
+        sess = Session()
+        ser = sess.query(Services).where(Services.name == name).first()
+        if ser is not None:
+            price = ser.service_price
+            sess.close()
+            return price
+        else:
+            return None
+
+    def delete_service(name: str) -> object:
+        sess = Session()
+        ser = sess.query(Services).where(Services.name == name).first()
+        if ser is None:
+            sess.close()
+            return False
+        else:
+            sess.delete(ser)
+            sess.commit()
+            sess.close()
+            return True
+
+    def update_service_price(name: str, service_price: float):
+        sess = Session()
+        ser = sess.query(Services).where(Services.name == name).first()
+        if ser is not None:
+            ser.service_price = service_price
+            sess.commit()
+            sess.close()
+        else:
+            sess.close()
 
 
 class ServiceOrders(Base):
@@ -305,6 +362,31 @@ class Distributors(Base):
     name = Column(String(length=16))
     deliver_service = Column(String(length=16))
     relationship('Supplies')
+
+
+class DistributorsCrud:
+    def add(name: str, deliver_service: str):
+        sess = Session()
+        dist = sess.query(Distributors).where(Distributors.name == name).first()
+        if dist is not None:
+            sess.close()
+        else:
+            dist = Distributors(name=name, deliver_service=deliver_service)
+            sess.add(dist)
+            sess.commit()
+            sess.close()
+
+    def delete(name: str) -> object:
+        sess = Session()
+        dist = sess.query(Distributors).where(Distributors.name == name).first()
+        if dist is not None:
+            sess.delete(dist)
+            sess.commit()
+            sess.close()
+            return "Deleted"
+        else:
+            sess.close()
+            return "None"
 
 
 class Supplies(Base):
