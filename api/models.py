@@ -224,6 +224,20 @@ class OrdersCrud:
         sess.commit()
         sess.close()
 
+    def add_manager(id: int, manager_id: int):
+        sess = Session()
+        order = sess.query(Orders).where(Orders.id == id).first()
+        order.manager_id = manager_id
+        sess.commit()
+        sess.close()
+
+
+    def get_last_manager_order(manager_id):
+        sess = Session()
+        order = sess.query(Orders).where(Orders.manager_id == manager_id).filter(
+            max(ServiceOrders.id)).first()
+        return order.id
+
 
 class Transactions(Base):
     __tablename__ = "transactions"
