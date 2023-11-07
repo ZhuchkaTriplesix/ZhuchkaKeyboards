@@ -171,8 +171,9 @@ class ComponentCrud:
             component = Components(component_name=component_name, component_type=component_type)
             sess.add(component)
             sess.commit()
+            component = {"Name": component.component_name, "Type": component.component_type}
             sess.close()
-            return True
+            return component
 
     def delete_component(component_name: str) -> object:
         sess = Session()

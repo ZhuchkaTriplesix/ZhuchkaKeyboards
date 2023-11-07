@@ -1,7 +1,17 @@
 from flask import Flask
-from models import CustomerCrud, EmployeesCrud, ProductsCrud
+from models import CustomerCrud, EmployeesCrud, ProductsCrud, ComponentCrud, BanksCrud, DistributorsCrud, \
+    ComponentUsageCrud, OrdersCrud, LogsCrud, TasksCrud, TransactionsCrud, ServicesCrud, SuppliesCrud, ServiceOrdersCrud
 
 app = Flask(__name__)
+
+@app.route("/comp_add", methods=['GET'])
+def comp_add():
+    component = ComponentCrud.add_component("Varmilo Sakura", "KeyCups")
+    if component is not False:
+        return component
+    else:
+        return "Bad data"
+
 
 
 @app.route('/test')
