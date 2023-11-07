@@ -216,6 +216,15 @@ class Orders(Base):
     usage = relationship('Tasks')
 
 
+class OrdersCrud:
+    def add(customer_id: int, transaction_id: int, product_id: int):
+        sess = Session()
+        order = Orders(customer_id=customer_id, transaction_id=transaction_id, product_id=product_id)
+        sess.add(order)
+        sess.commit()
+        sess.close()
+
+
 class Transactions(Base):
     __tablename__ = "transactions"
     id = Column(Integer, primary_key=True)
@@ -225,6 +234,15 @@ class Transactions(Base):
     card_type = Column(Integer)
     usage = relationship('Orders')
     usage1 = relationship('ServiceOrders')
+
+
+class TransactionsCrud:
+    def add(payment: int, status: bool, bank_id: int, card_type: int):
+        sess = Session()
+        transaction = Transactions(payment=payment, status=status, bank_id=bank_id, card_type=card_type)
+        sess.add(transaction)
+        sess.commit()
+        sess.close()
 
 
 class Products(Base):
@@ -343,6 +361,32 @@ class ServiceOrders(Base):
     customer_id = Column(Integer, ForeignKey('customers.id'))
     manager_id = Column(Integer, ForeignKey('employees.id'))
     usage = relationship('Tasks')
+
+
+class ServiceOrdersCrud:
+    def add(service_id: int, transaction_id: int, customer_id: int):
+        sess = Session()
+        order = ServiceOrders(service_id=service_id, transaction_id=transaction_id, customer_id=customer_id,
+                              manager_id=None)
+        sess.add(order)
+        sess.commit()
+        sess.close()
+
+    def update_manager(id: int, manager_id: int):
+        sess = Session()
+        order = sess.query(ServiceOrders).where(ServiceOrders.id == id).first()
+        if order is not None:
+            order.manager_id = manager_id
+            sess.commit()
+            sess.close()
+        else:
+            sess.close()
+
+    def get_last_manager_order(manager_id):
+        sess = Session()
+        order = sess.query(ServiceOrders).where(ServiceOrders.manager_id == manager_id).filter(
+            max(ServiceOrders.id)).first()
+        return order.id
 
 
 class Tasks(Base):
