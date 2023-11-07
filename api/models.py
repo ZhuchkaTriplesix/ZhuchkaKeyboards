@@ -102,7 +102,8 @@ class Employees(Base):
 class EmployeesCrud:
     def add_emp(group: str, first_name: str, second_name: str, salary: float):
         sess = Session()
-        employee = sess.query(Employees).where(and_(Employees.first_name == first_name, Employees.second_name == second_name)).first()
+        employee = sess.query(Employees).where(
+            and_(Employees.first_name == first_name, Employees.second_name == second_name)).first()
         if employee is not None:
             pass
         else:
@@ -234,6 +235,41 @@ class Products(Base):
     usage = relationship('Orders')
 
 
+class ProductsCrud:
+    def add(product_name: str, product_price: float):
+        sess = Session()
+        prod = sess.query(Products).where(Products.product_name == product_name).first()
+        if prod is not None:
+            pass
+        else:
+            prod = Products(product_name=product_name, product_price=product_price)
+            sess.add(prod)
+            sess.commit()
+            sess.close()
+
+    def get_product(product_name: str) -> object:
+        sess = Session()
+        prod = sess.query(Products).where(Products.product_name == product_name).first()
+        if prod is not None:
+            prod = (prod.id, prod.product_name, prod.product_price)
+            sess.close()
+            return prod
+        else:
+            sess.close()
+            return None
+
+    def delete_product(product_name: str) -> object:
+        sess = Session()
+        prod = sess.query(Products).where(Products.product_name == product_name).first()
+        if prod is not None:
+            sess.delete(prod)
+            sess.commit()
+            sess.close()
+            return True
+        else:
+            sess.close()
+            return False
+
 class Services(Base):
     __tablename__ = "services"
     id = Column(Integer, primary_key=True)
@@ -287,4 +323,3 @@ class Banks(Base):
 
 
 Base.metadata.create_all(engine)
-
