@@ -356,6 +356,67 @@ class Tasks(Base):
     usage = relationship('ComponentUsage')
 
 
+class TasksCrud:
+    def add_task(order_id, service_order_id):
+        sess = Session()
+        if order_id is None:
+            task = sess.query(Tasks).where(Tasks.service_order_id == service_order_id).first()
+            if task is None:
+                task = Tasks(order_id=None, service_order_id=service_order_id, status=1, type=2)
+                sess.add(task)
+                sess.commit()
+                sess.close()
+            else:
+                sess.close()
+        else:
+            task = sess.query(Tasks).where(Tasks.order_id == order_id).first()
+            if task is None:
+                task = Tasks(order_id=order_id, service_order_id=None, status=1, type=1)
+                sess.add(task)
+                sess.commit()
+                sess.close()
+            else:
+                sess.close()
+
+    def change_status(order_id: int, service_order_id: int, status: int):
+        sess = Session()
+        if order_id is None:
+            task = sess.query(Tasks).where(Tasks.service_order_id == service_order_id).first()
+            if task is not None:
+                task.status = status
+                sess.commit()
+                sess.close()
+            else:
+                sess.close()
+        else:
+            task = sess.query(Tasks).where(Tasks.order_id == order_id).first()
+            if task is not None:
+                task.status = status
+                sess.commit()
+                sess.close()
+            else:
+                sess.close()
+
+    def add_worker(order_id: int, service_order_id: int, worker_id: int):
+        sess = Session()
+        if order_id is None:
+            task = sess.query(Tasks).where(Tasks.service_order_id == service_order_id).first()
+            if task is not None:
+                task.worker_id = worker_id
+                sess.commit()
+                sess.close()
+            else:
+                sess.close()
+        else:
+            task = sess.query(Tasks).where(Tasks.order_id == order_id).first()
+            if task is not None:
+                task.worker_id = worker_id
+                sess.commit()
+                sess.close()
+            else:
+                sess.close()
+
+
 class Distributors(Base):
     __tablename__ = 'distributors'
     id = Column(Integer, primary_key=True)
@@ -397,11 +458,33 @@ class Supplies(Base):
     distributor = Column(Integer, ForeignKey('distributors.id'))
 
 
+class SuppliesCrud:
+    def add(component_id: int, count: float, distributor: int):
+        sess = Session()
+        supply = Supplies(component_id=component_id, count=count, distributor=distributor)
+        sess.add(supply)
+        sess.commit()
+        sess.close()
+
+
 class Banks(Base):
     __tablename__ = 'banks'
     id = Column(Integer, primary_key=True)
     name = Column(String)
     usage = relationship('Transactions')
+
+
+class BanksCrud:
+    def add(name):
+        sess = Session()
+        bank = sess.query(Banks).where(Banks.name == name).first()
+        if bank is None:
+            bank = Banks(name=name)
+            sess.add(bank)
+            sess.commit()
+            sess.close()
+        else:
+            sess.close()
 
 
 Base.metadata.create_all(engine)
