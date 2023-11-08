@@ -105,13 +105,31 @@ class EmployeesCrud:
         employee = sess.query(Employees).where(
             and_(Employees.first_name == first_name, Employees.second_name == second_name)).first()
         if employee is not None:
-            pass
+            sess.close()
+            return False
         else:
             emp = Employees(first_name=first_name, second_name=second_name, group=group,
                             salary=salary)
             sess.add(emp)
             sess.commit()
-        sess.close()
+            sess.close()
+            return True
+
+    def get_emp(first_name: str, second_name: str):
+        sess = Session()
+        try:
+            emp = sess.query(Employees).where(and_(Employees.first_name == first_name, Employees.second_name == second_name)).first()
+            id = emp.id
+            name = emp.first_name
+            surname = emp.second_name
+            salary = emp.salary
+            employee = {"id": id, "name": name, "surname": surname, "salary": salary}
+            return employee
+        except Exception as e:
+            print(e)
+            return False
+        finally:
+            sess.close()
 
     def update_emp_group(id: int, group: str):
         sess = Session()
@@ -175,14 +193,29 @@ class ComponentCrud:
             sess.close()
             return component
 
-    def delete_component(component_name: str) -> object:
+    def delete_component(id: int) -> object:
         sess = Session()
         try:
-            comp = sess.query(Components).where(Components.component_name == component_name).first()
+            comp = sess.query(Components).where(Components.id == id).first()
             sess.delete(comp)
             sess.commit()
+            return True
         except Exception as e:
             print(e)
+            return False
+        finally:
+            sess.close()
+
+    def get_component(component_name: str, component_type: str):
+        sess = Session()
+        try:
+            comp = sess.query(Components).where(
+                and_(Components.component_name == component_name, Components.component_type == component_type)).first()
+            component = {"Id": comp.id, "Name": comp.component_name, "Type": comp.component_type}
+            return component
+        except Exception as e:
+            print(e)
+            return False
         finally:
             sess.close()
 
@@ -231,7 +264,6 @@ class OrdersCrud:
         order.manager_id = manager_id
         sess.commit()
         sess.close()
-
 
     def get_last_manager_order(manager_id):
         sess = Session()
@@ -284,16 +316,16 @@ class ProductsCrud:
         sess = Session()
         prod = sess.query(Products).where(Products.product_name == product_name).first()
         if prod is not None:
-            prod = (prod.id, prod.product_name, prod.product_price)
+            product = {"id": prod.id, "name:": prod.product_name, "price": prod.product_price}
             sess.close()
-            return prod
+            return product
         else:
             sess.close()
-            return None
+            return False
 
-    def delete_product(product_name: str) -> object:
+    def delete_product(id: int) -> object:
         sess = Session()
-        prod = sess.query(Products).where(Products.product_name == product_name).first()
+        prod = sess.query(Products).where(Products.id == id).first()
         if prod is not None:
             sess.delete(prod)
             sess.commit()
