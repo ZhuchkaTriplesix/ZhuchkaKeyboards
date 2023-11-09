@@ -133,4 +133,28 @@ def get_bank():
     return jsonify(bank)
 
 
+@app.route("/dist/add", methods=["POST"])
+def add_dist():
+    name = request.args.get("name")
+    deliver_service = request.args.get("service")
+    dist = DistributorsCrud.add(name, deliver_service)
+    if dist is True:
+        answer = {"answer": "Added", "status": 200}
+        return jsonify(answer)
+    else:
+        answer = {"answer": "Already in database", "status": 200}
+        return jsonify(answer)
+
+
+@app.route("/dist/get", methods=["GET"])
+def get_dist():
+    name = request.args.get("name")
+    dist = DistributorsCrud.get(name)
+    if dist is not False:
+        return jsonify(dist)
+    else:
+        answer = {"Status": "400", "Error": "User Data exception"}
+        return jsonify(answer)
+
+
 app.run(debug=True)

@@ -518,16 +518,18 @@ class Distributors(Base):
 
 
 class DistributorsCrud:
-    def add(name: str, deliver_service: str):
+    def add(name: str, deliver_service: str) -> object:
         sess = Session()
         dist = sess.query(Distributors).where(Distributors.name == name).first()
         if dist is not None:
             sess.close()
+            return False
         else:
             dist = Distributors(name=name, deliver_service=deliver_service)
             sess.add(dist)
             sess.commit()
             sess.close()
+            return True
 
     def delete(name: str) -> object:
         sess = Session()
@@ -540,6 +542,15 @@ class DistributorsCrud:
         else:
             sess.close()
             return "None"
+
+    def get(name: str) -> object:
+        sess = Session()
+        dist = sess.query(Distributors).where(Distributors.name == name).first()
+        if dist is not None:
+            distributor = {"id": dist.id, "name": dist.name, "deliver_service": dist.deliver_service}
+            return distributor
+        else:
+            return False
 
 
 class Supplies(Base):
