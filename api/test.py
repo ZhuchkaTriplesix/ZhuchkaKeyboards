@@ -75,16 +75,24 @@ def delete_emp():
         id = emp["id"]
         EmployeesCrud.delete_emp(id)
         answer = {"status": "200", "answer": "OK"}
-        return answer
+        return jsonify(answer)
     else:
         answer = {"Status": "400", "Error": "User Data exception"}
-        return answer
+        return jsonify(answer)
 
 
-@app.route('/add_product')
+@app.route('/prod/add', methods=["POST"])
 def add_prod():
-    prod = ProductsCrud.add("privet", 200)
-    return "ok"
+    name = request.args.get("name")
+    price = request.args.get("price")
+    try:
+        ProductsCrud.add(name, price)
+        answer = {"status": "200", "answer": "OK"}
+        return jsonify(answer)
+    except Exception as e:
+        print(e)
+        answer = {"Status": "400", "Error": "User Data exception"}
+        return jsonify(answer)
 
 
 @app.route("/prod/get", methods=['GET', 'POST'])
@@ -108,6 +116,21 @@ def delete_product():
     else:
         answer = {"Status": "400", "Error": "User Data exception"}
         return jsonify(answer)
+
+
+@app.route("/bank/add", methods=["POST"])
+def add_bank():
+    name = request.args.get("name")
+    bank = BanksCrud.add(name)
+    answer = {"answer": "ok", "status": 200}
+    return jsonify(answer)
+
+
+@app.route("/bank/get", methods=["GET"])
+def get_bank():
+    name = request.args.get("name")
+    bank = BanksCrud.get_bank(name)
+    return jsonify(bank)
 
 
 app.run(debug=True)
