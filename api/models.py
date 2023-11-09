@@ -118,7 +118,8 @@ class EmployeesCrud:
     def get_emp(first_name: str, second_name: str):
         sess = Session()
         try:
-            emp = sess.query(Employees).where(and_(Employees.first_name == first_name, Employees.second_name == second_name)).first()
+            emp = sess.query(Employees).where(
+                and_(Employees.first_name == first_name, Employees.second_name == second_name)).first()
             id = emp.id
             name = emp.first_name
             surname = emp.second_name
@@ -566,7 +567,7 @@ class Banks(Base):
 
 
 class BanksCrud:
-    def add(name):
+    def add(name: str):
         sess = Session()
         bank = sess.query(Banks).where(Banks.name == name).first()
         if bank is None:
@@ -576,6 +577,17 @@ class BanksCrud:
             sess.close()
         else:
             sess.close()
+
+    def get_bank(name: str) -> object:
+        sess = Session()
+        bank = sess.query(Banks).where(Banks.name == name).first()
+        if bank is not None:
+            answer = {"id": bank.id, "name": bank.name}
+            sess.close()
+            return answer
+        else:
+            BanksCrud.add(name)
+            return BanksCrud.get_bank(name)
 
 
 Base.metadata.create_all(engine)
