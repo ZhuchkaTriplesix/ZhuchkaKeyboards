@@ -1,5 +1,6 @@
 from flask import Flask
 from flask import request
+from flask import jsonify
 from models import CustomerCrud, EmployeesCrud, ProductsCrud, ComponentCrud, BanksCrud, DistributorsCrud, \
     ComponentUsageCrud, OrdersCrud, LogsCrud, TasksCrud, TransactionsCrud, ServicesCrud, SuppliesCrud, ServiceOrdersCrud
 import json
@@ -13,10 +14,10 @@ def comp_add():
     type = request.args.get('type')
     component = ComponentCrud.add_component(name, type)
     if component is not False:
-        return component
+        return jsonify(component)
     else:
         answer = {"Status": "400, ", "Error": "Component is already in database"}
-        return answer["Status"] + answer['Error']
+        return jsonify(answer)
 
 
 @app.route("/comp/get", methods={'GET'})
@@ -25,10 +26,10 @@ def get_comp():
     type = request.args.get('type')
     component = ComponentCrud.get_component(name, type)
     if component is not False:
-        return component
+        return jsonify(component)
     else:
         answer = {"Status": "400", "Error": "User Data exception"}
-        return answer
+        return jsonify(answer)
 
 
 @app.route("/comp/delete", methods={'DELETE'})
@@ -55,14 +56,14 @@ def emp_add():
         emp = EmployeesCrud.add_emp(group, name, surname, salary)
         if emp is True:
             answer = {"status": "200", "answer": "OK"}
-            return answer
+            return jsonify(answer)
         else:
             answer = {"status": "200", "answer": "Employee is already in database"}
-            return answer
+            return jsonify(answer)
     except Exception as e:
         print(e)
         answer = {"Status": "400", "Error": "User Data exception"}
-        return answer
+        return jsonify(answer)
 
 
 @app.route("/emp/delete", methods=["GET", "DELETE"])
@@ -86,24 +87,27 @@ def add_prod():
     return "ok"
 
 
-@app.route("/prod/get/<product_name>", methods=['GET', 'POST'])
-def get_prod(product_name):
-    product_name = request.args.get('product_name')
+@app.route("/prod/get", methods=['GET', 'POST'])
+def get_prod():
+    product_name = request.args.get('name')
     prod = ProductsCrud.get_product(product_name)
     if prod is not False:
-        return prod
+        return jsonify(prod)
     else:
         answer = {"Status": "400", "Error": "User Data exception"}
-        return answer
+        return jsonify(answer)
 
 
-@app.route('/delete_product')
+@app.route('/prod/delete', methods=['DELETE'])
 def delete_product():
-    prod = ProductsCrud.delete_product("kb")
+    name = request.args.get("name")
+    prod = ProductsCrud.delete_product(name)
     if prod is True:
-        return 'Deleted'
+        answer = {"answer": "ok", "status": 200}
+        return jsonify(answer)
     else:
-        return 'None'
+        answer = {"Status": "400", "Error": "User Data exception"}
+        return jsonify(answer)
 
 
 app.run(debug=True)
