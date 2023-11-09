@@ -323,10 +323,10 @@ class ProductsCrud:
             sess.close()
             return False
 
-    def delete_product(id: int) -> object:
+    def delete_product(product_name: str) -> object:
         sess = Session()
-        prod = sess.query(Products).where(Products.id == id).first()
-        if prod is not None:
+        prod = ProductsCrud.get_product(product_name)
+        if prod is not False:
             sess.delete(prod)
             sess.commit()
             sess.close()
