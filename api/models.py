@@ -2,6 +2,7 @@ from sqlalchemy import Column, String, Integer, DateTime, BigInteger, Float, For
 from sqlalchemy import create_engine, and_, or_
 from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.orm import sessionmaker, declarative_base, scoped_session, relationship
+from sqlalchemy.sql import func
 import datetime
 from config import database
 from enum import Enum
@@ -628,7 +629,20 @@ class SuppliesCrud:
         sess.commit()
         sess.close()
 
+    @staticmethod
+    def get_count(component_id: int) -> object:
+        sess = Session()
+        try:
+            count = sess.query(func.sum(Supplies.count)).filter(Supplies.component_id == component_id).all()
+            return count[0][0]
+        except Exception as e:
+            print(e)
+            return None
+        finally:
+            sess.close()
 
+
+print(SuppliesCrud.get_count(5))
 class Banks(Base):
     __tablename__ = 'banks'
     id = Column(Integer, primary_key=True)
