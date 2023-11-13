@@ -46,6 +46,47 @@ def delete_comp():
         return answer
 
 
+@app.route('/supply/add', methods=["POST"])
+def add_supply():
+    name = request.args.get('name')
+    type = request.args.get('type')
+    dist = request.args.get('dist')
+    count = request.args.get('count')
+    comp = ComponentCrud.get_component(name, type)
+    if comp is not False:
+        comp_id = comp["Id"]
+        distributor = DistributorsCrud.get(dist)
+        if distributor is not False:
+            dist_id = distributor['id']
+            SuppliesCrud.add(comp_id, float(count), dist_id)
+            answer = {'Status': '200', 'answer': 'Supply added'}
+            return answer
+        else:
+            x = DistributorsCrud.add(dist, "DHL")
+            distributor = DistributorsCrud.get(dist)
+            dist_id = distributor['id']
+            supply = SuppliesCrud.add(comp_id, float(count), dist_id)
+            answer = {'Status': '200', 'answer': 'Supply added'}
+            return answer
+    else:
+        comp = ComponentCrud.add_component(name, type)
+        component = ComponentCrud.get_component(name, type)
+        comp_id = component['Id']
+        distributor = DistributorsCrud.get(dist)
+        if distributor is not False:
+            dist_id = distributor['id']
+            supply = SuppliesCrud.add(comp_id, float(count), dist_id)
+            answer = {'Status': '200', 'answer': 'Supply added'}
+            return answer
+        else:
+            x = DistributorsCrud.add(dist, "DHL")
+            distributor = DistributorsCrud.get(dist)
+            dist_id = distributor['id']
+            supply = SuppliesCrud.add(comp_id, float(count), dist_id)
+            answer = {'Status': '200', 'answer': 'Supply added'}
+            return answer
+
+
 @app.route('/emp/add', methods=["POST"])
 def emp_add():
     group = request.args.get("group")
@@ -118,6 +159,18 @@ def delete_product():
         return jsonify(answer)
 
 
+@app.route('/prod/update', methods=["PUT"])
+def update_price():
+    name = request.args.get('name')
+    price = request.args.get('price')
+    prod = ProductsCrud.update_product_price(name, price)
+    if prod is not False:
+        return jsonify(prod)
+    else:
+        answer = {"Status": "400", "Error": "User Data exception"}
+        return jsonify(answer)
+
+
 @app.route("/bank/add", methods=["POST"])
 def add_bank():
     name = request.args.get("name")
@@ -150,6 +203,18 @@ def add_dist():
 def get_dist():
     name = request.args.get("name")
     dist = DistributorsCrud.get(name)
+    if dist is not False:
+        return jsonify(dist)
+    else:
+        answer = {"Status": "400", "Error": "User Data exception"}
+        return jsonify(answer)
+
+
+@app.route("/dist/update", methods=["PUT"])
+def update_dist():
+    name = request.args.get("name")
+    service = request.args.get("service")
+    dist = DistributorsCrud.update_service(name, service)
     if dist is not False:
         return jsonify(dist)
     else:

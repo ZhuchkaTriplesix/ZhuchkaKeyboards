@@ -35,8 +35,9 @@ class Customers(Base):
     usage1 = relationship('ServiceOrders')
 
 
-# noinspection PyShadowingBuiltins,PyMethodParameters
+# noinspection PyShadowingBuiltins,PyMethodParameters,PyTypeChecker
 class CustomerCrud:
+    @staticmethod
     def get_customer(vendor_id: int) -> object:
         sess = Session()
         customer = sess.query(Customers).where(Customers.vendor_id == vendor_id).first()
@@ -47,6 +48,7 @@ class CustomerCrud:
             sess.close()
             return None
 
+    @staticmethod
     def add_customer(vendor_id: int, vendor_type: int, first_name: str, second_name: str, username) -> object:
         sess = Session()
         customer = sess.query(Customers).where(Customers.vendor_id == vendor_id).first()
@@ -60,6 +62,7 @@ class CustomerCrud:
         else:
             return False
 
+    @staticmethod
     def update_customer_email(vendor_id: int, email: str) -> object:
         sess = Session()
         try:
@@ -72,6 +75,7 @@ class CustomerCrud:
         except ProgrammingError:
             return False
 
+    @staticmethod
     def delete_customer(id: int) -> object:
         sess = Session()
         try:
@@ -99,7 +103,9 @@ class Employees(Base):
     usage2 = relationship('ServiceOrders')
 
 
+# noinspection PyTypeChecker
 class EmployeesCrud:
+    @staticmethod
     def add_emp(group: str, first_name: str, second_name: str, salary: float):
         sess = Session()
         employee = sess.query(Employees).where(
@@ -115,6 +121,7 @@ class EmployeesCrud:
             sess.close()
             return True
 
+    @staticmethod
     def get_emp(first_name: str, second_name: str):
         sess = Session()
         try:
@@ -132,6 +139,7 @@ class EmployeesCrud:
         finally:
             sess.close()
 
+    @staticmethod
     def update_emp_group(id: int, group: str):
         sess = Session()
         emp = sess.query(Employees).where(Employees.id == id).first()
@@ -139,6 +147,7 @@ class EmployeesCrud:
         sess.commit()
         sess.close()
 
+    @staticmethod
     def update_contract_end(id, contract_end):
         sess = Session()
         emp = sess.query(Employees).where(Employees.id == id).first()
@@ -146,6 +155,7 @@ class EmployeesCrud:
         sess.commit()
         sess.close()
 
+    @staticmethod
     def delete_emp(id: int):
         sess = Session()
         emp = sess.query(Employees).where(Employees.id == id).first()
@@ -163,6 +173,7 @@ class Logs(Base):
 
 
 class LogsCrud:
+    @staticmethod
     def add_log(employee_id: int, operation: str):
         sess = Session()
         log = Logs(employee_id=employee_id, operation=operation)
@@ -180,7 +191,9 @@ class Components(Base):
     usage1 = relationship('Supplies')
 
 
+# noinspection PyTypeChecker
 class ComponentCrud:
+    @staticmethod
     def add_component(component_name: str, component_type: str) -> object:
         sess = Session()
         comp = sess.query(Components).where(Components.component_name == component_name).first()
@@ -194,6 +207,7 @@ class ComponentCrud:
             sess.close()
             return component
 
+    @staticmethod
     def delete_component(id: int) -> object:
         sess = Session()
         try:
@@ -207,6 +221,7 @@ class ComponentCrud:
         finally:
             sess.close()
 
+    @staticmethod
     def get_component(component_name: str, component_type: str):
         sess = Session()
         try:
@@ -231,6 +246,7 @@ class ComponentUsage(Base):
 
 
 class ComponentUsageCrud:
+    @staticmethod
     def add(component_id: int, usage_name: str, usage_count: float, task_id: int):
         sess = Session()
         comp = ComponentUsage(component_id=component_id, usage_name=usage_name, usage_count=usage_count,
@@ -251,7 +267,9 @@ class Orders(Base):
     usage = relationship('Tasks')
 
 
+# noinspection PyTypeChecker
 class OrdersCrud:
+    @staticmethod
     def add(customer_id: int, transaction_id: int, product_id: int):
         sess = Session()
         order = Orders(customer_id=customer_id, transaction_id=transaction_id, product_id=product_id)
@@ -259,6 +277,7 @@ class OrdersCrud:
         sess.commit()
         sess.close()
 
+    @staticmethod
     def add_manager(id: int, manager_id: int):
         sess = Session()
         order = sess.query(Orders).where(Orders.id == id).first()
@@ -266,6 +285,7 @@ class OrdersCrud:
         sess.commit()
         sess.close()
 
+    @staticmethod
     def get_last_manager_order(manager_id):
         sess = Session()
         order = sess.query(Orders).where(Orders.manager_id == manager_id).filter(
@@ -285,6 +305,7 @@ class Transactions(Base):
 
 
 class TransactionsCrud:
+    @staticmethod
     def add(payment: int, status: bool, bank_id: int, card_type: int):
         sess = Session()
         transaction = Transactions(payment=payment, status=status, bank_id=bank_id, card_type=card_type)
@@ -301,7 +322,9 @@ class Products(Base):
     usage = relationship('Orders')
 
 
+# noinspection PyTypeChecker
 class ProductsCrud:
+    @staticmethod
     def add(product_name: str, product_price: float):
         sess = Session()
         prod = sess.query(Products).where(Products.product_name == product_name).first()
@@ -313,6 +336,7 @@ class ProductsCrud:
             sess.commit()
             sess.close()
 
+    @staticmethod
     def get_product(product_name: str) -> object:
         sess = Session()
         prod = sess.query(Products).where(Products.product_name == product_name).first()
@@ -324,6 +348,7 @@ class ProductsCrud:
             sess.close()
             return False
 
+    @staticmethod
     def delete_product(product_name: str) -> object:
         sess = Session()
         prod = ProductsCrud.get_product(product_name)
@@ -336,14 +361,16 @@ class ProductsCrud:
             sess.close()
             return False
 
+    @staticmethod
     def update_product_price(product_name: str, product_price) -> object:
         sess = Session()
         prod = sess.query(Products).where(Products.product_name == product_name).first()
         if prod is not None:
             prod.product_price = product_price
             sess.commit()
+            product = {"name": product_name, "price": product_price}
             sess.close()
-            return True
+            return product
         else:
             return False
 
@@ -356,7 +383,9 @@ class Services(Base):
     usage = relationship('ServiceOrders')
 
 
+# noinspection PyTypeChecker
 class ServicesCrud:
+    @staticmethod
     def add(name: str, service_price: float):
         sess = Session()
         ser = sess.query(Services).where(Services.name == name).first()
@@ -368,6 +397,7 @@ class ServicesCrud:
             sess.commit()
             sess.close()
 
+    @staticmethod
     def get_service_price(name: str) -> object:
         sess = Session()
         ser = sess.query(Services).where(Services.name == name).first()
@@ -378,6 +408,7 @@ class ServicesCrud:
         else:
             return None
 
+    @staticmethod
     def delete_service(name: str) -> object:
         sess = Session()
         ser = sess.query(Services).where(Services.name == name).first()
@@ -390,6 +421,7 @@ class ServicesCrud:
             sess.close()
             return True
 
+    @staticmethod
     def update_service_price(name: str, service_price: float):
         sess = Session()
         ser = sess.query(Services).where(Services.name == name).first()
@@ -411,7 +443,9 @@ class ServiceOrders(Base):
     usage = relationship('Tasks')
 
 
+# noinspection PyTypeChecker
 class ServiceOrdersCrud:
+    @staticmethod
     def add(service_id: int, transaction_id: int, customer_id: int):
         sess = Session()
         order = ServiceOrders(service_id=service_id, transaction_id=transaction_id, customer_id=customer_id,
@@ -420,6 +454,7 @@ class ServiceOrdersCrud:
         sess.commit()
         sess.close()
 
+    @staticmethod
     def update_manager(id: int, manager_id: int):
         sess = Session()
         order = sess.query(ServiceOrders).where(ServiceOrders.id == id).first()
@@ -430,6 +465,7 @@ class ServiceOrdersCrud:
         else:
             sess.close()
 
+    @staticmethod
     def get_last_manager_order(manager_id):
         sess = Session()
         order = sess.query(ServiceOrders).where(ServiceOrders.manager_id == manager_id).filter(
@@ -448,7 +484,9 @@ class Tasks(Base):
     usage = relationship('ComponentUsage')
 
 
+# noinspection PyTypeChecker
 class TasksCrud:
+    @staticmethod
     def add_task(order_id, service_order_id):
         sess = Session()
         if order_id is None:
@@ -470,6 +508,7 @@ class TasksCrud:
             else:
                 sess.close()
 
+    @staticmethod
     def change_status(order_id: int, service_order_id: int, status: int):
         sess = Session()
         if order_id is None:
@@ -489,6 +528,7 @@ class TasksCrud:
             else:
                 sess.close()
 
+    @staticmethod
     def add_worker(order_id: int, service_order_id: int, worker_id: int):
         sess = Session()
         if order_id is None:
@@ -517,7 +557,9 @@ class Distributors(Base):
     relationship('Supplies')
 
 
+# noinspection PyTypeChecker
 class DistributorsCrud:
+    @staticmethod
     def add(name: str, deliver_service: str) -> object:
         sess = Session()
         dist = sess.query(Distributors).where(Distributors.name == name).first()
@@ -531,6 +573,7 @@ class DistributorsCrud:
             sess.close()
             return True
 
+    @staticmethod
     def delete(name: str) -> object:
         sess = Session()
         dist = sess.query(Distributors).where(Distributors.name == name).first()
@@ -543,6 +586,7 @@ class DistributorsCrud:
             sess.close()
             return "None"
 
+    @staticmethod
     def get(name: str) -> object:
         sess = Session()
         dist = sess.query(Distributors).where(Distributors.name == name).first()
@@ -550,6 +594,20 @@ class DistributorsCrud:
             distributor = {"id": dist.id, "name": dist.name, "deliver_service": dist.deliver_service}
             return distributor
         else:
+            return False
+
+    @staticmethod
+    def update_service(name: str, deliver_service: str) -> object:
+        sess = Session()
+        dist = sess.query(Distributors).where(Distributors.name == name).first()
+        if dist is not None:
+            dist.deliver_service = deliver_service
+            sess.commit()
+            distributor = {"name": dist.name, "deliver_service": deliver_service}
+            sess.close()
+            return distributor
+        else:
+            sess.close()
             return False
 
 
@@ -562,6 +620,7 @@ class Supplies(Base):
 
 
 class SuppliesCrud:
+    @staticmethod
     def add(component_id: int, count: float, distributor: int):
         sess = Session()
         supply = Supplies(component_id=component_id, count=count, distributor=distributor)
@@ -577,7 +636,9 @@ class Banks(Base):
     usage = relationship('Transactions')
 
 
+# noinspection PyTypeChecker
 class BanksCrud:
+    @staticmethod
     def add(name: str):
         sess = Session()
         bank = sess.query(Banks).where(Banks.name == name).first()
@@ -589,6 +650,7 @@ class BanksCrud:
         else:
             sess.close()
 
+    @staticmethod
     def get_bank(name: str) -> object:
         sess = Session()
         bank = sess.query(Banks).where(Banks.name == name).first()
