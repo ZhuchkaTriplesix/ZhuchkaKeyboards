@@ -585,6 +585,16 @@ class TasksCrud:
             else:
                 sess.close()
 
+    @staticmethod
+    def get_task_order(order_id):
+        sess = Session()
+        task = sess.query(Tasks).where(Tasks.order_id == order_id).first()
+        if task is not None:
+            answer = {"id": task.id, "order": task.order_id, "status": task.status, "type": task.type}
+            return answer
+        else:
+            return False
+
 
 class Distributors(Base):
     __tablename__ = 'distributors'
