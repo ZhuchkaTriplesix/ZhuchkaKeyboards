@@ -273,4 +273,23 @@ def add_service():
         return answer
 
 
+@app.route("/services/orders/add", methods=["POST"])
+def add_order():
+    service = request.args.get('service')
+    trans = request.args.get('trans')
+    customer = request.args.get('customer')
+    ser = ServicesCrud.get_service(service)
+    if ser is not False:
+        try:
+            ServiceOrdersCrud.add(ser["id"], trans, customer)
+            answer = {"status": "200", "answer": "Successful add"}
+            return answer
+        except TypeError:
+            answer = {"status": "400", "answer": "Error"}
+            return answer
+    else:
+        answer = {"status": "400", "answer": "No service"}
+        return answer
+
+
 app.run(debug=True)
