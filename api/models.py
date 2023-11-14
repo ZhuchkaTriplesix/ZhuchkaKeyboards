@@ -420,6 +420,18 @@ class ServicesCrud:
             return True
 
     @staticmethod
+    def get_service(name: str) -> object:
+        sess = Session()
+        ser = sess.query(Services).where(Services.name == name).first()
+        if ser is not None:
+            answer = {"id": ser.id, "name": ser.name, "price": ser.service_price}
+            sess.close()
+            return answer
+        else:
+            sess.close()
+            return False
+
+    @staticmethod
     def get_service_price(name: str) -> object:
         sess = Session()
         ser = sess.query(Services).where(Services.name == name).first()
@@ -428,6 +440,7 @@ class ServicesCrud:
             sess.close()
             return price
         else:
+            sess.close()
             return None
 
     @staticmethod
@@ -466,15 +479,24 @@ class ServiceOrders(Base):
 
 
 # noinspection PyTypeChecker
+
+
 class ServiceOrdersCrud:
     @staticmethod
     def add(service_id: int, transaction_id: int, customer_id: int):
         sess = Session()
-        order = ServiceOrders(service_id=service_id, transaction_id=transaction_id, customer_id=customer_id,
-                              manager_id=None)
-        sess.add(order)
-        sess.commit()
-        sess.close()
+        try:
+            order = ServiceOrders(service_id=service_id, transaction_id=transaction_id, customer_id=customer_id,
+                                  manager_id=None)
+            sess.add(order)
+            sess.commit()
+            answer = {"status": "200", "answer": "Successful add"}
+            return answer
+        except Exception as e:
+            answer = {"status": "400", "answer": e}
+            return answer
+        finally:
+            sess.close()
 
     @staticmethod
     def update_manager(id: int, manager_id: int):
