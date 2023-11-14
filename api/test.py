@@ -274,7 +274,7 @@ def add_service():
 
 
 @app.route("/services/orders/add", methods=["POST"])
-def add_order():
+def add_service_order():
     service = request.args.get('service')
     trans = request.args.get('trans')
     customer = request.args.get('customer')
@@ -289,6 +289,25 @@ def add_order():
             return answer
     else:
         answer = {"status": "400", "answer": "No service"}
+        return answer
+
+
+@app.route("/products/orders/add", methods=["POST"])
+def add_order():
+    customer = request.args.get('customer')
+    transaction = request.args.get("trans")
+    product = request.args.get("prod")
+    prod = ProductsCrud.get_product(product)
+    if prod is not False:
+        try:
+            OrdersCrud.add(customer, transaction, prod["id"])
+            answer = {"status": "200", "answer": "Successful add"}
+            return answer
+        except TypeError:
+            answer = {"status": "400", "answer": "Error"}
+            return answer
+    else:
+        answer = {"status": "400", "answer": "No product"}
         return answer
 
 
