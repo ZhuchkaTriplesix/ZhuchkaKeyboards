@@ -228,7 +228,7 @@ class ComponentCrud:
         try:
             comp = sess.query(Components).where(
                 and_(Components.component_name == component_name, Components.component_type == component_type)).first()
-            component = {"Id": comp.id, "Name": comp.component_name, "Type": comp.component_type}
+            component = {"id": comp.id, "name": comp.component_name, "type": comp.component_type}
             return component
         except Exception as e:
             print(e)
@@ -642,7 +642,6 @@ class SuppliesCrud:
             sess.close()
 
 
-print(SuppliesCrud.get_count(5))
 class Banks(Base):
     __tablename__ = 'banks'
     id = Column(Integer, primary_key=True)
