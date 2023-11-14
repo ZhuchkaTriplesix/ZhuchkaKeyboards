@@ -21,6 +21,12 @@ class Platform(Enum):
     VK = 2
 
 
+class Group(Enum):
+    ENGINEER = 1
+    MANAGER = 2
+    HIGH_MANAGER = 3
+
+
 class Customers(Base):
     __tablename__ = "customers"
     id = Column(Integer, primary_key=True)
@@ -246,6 +252,7 @@ class ComponentUsage(Base):
     task_id = Column(Integer, ForeignKey('tasks.id'))
 
 
+# noinspection PyTypeChecker
 class ComponentUsageCrud:
     @staticmethod
     def add(component_id: int, usage_name: str, usage_count: float, task_id: int):
@@ -255,6 +262,19 @@ class ComponentUsageCrud:
         sess.add(comp)
         sess.commit()
         sess.close()
+
+    @staticmethod
+    def get_count(component_id: int) -> object:
+        sess = Session()
+        try:
+            count = sess.query(func.sum(ComponentUsage.usage_count)).filter(
+                ComponentUsage.component_id == component_id).all()
+            return count[0][0]
+        except Exception as e:
+            print(e)
+            return None
+        finally:
+            sess.close()
 
 
 class Orders(Base):
@@ -286,13 +306,6 @@ class OrdersCrud:
         sess.commit()
         sess.close()
 
-    @staticmethod
-    def get_last_manager_order(manager_id):
-        sess = Session()
-        order = sess.query(Orders).where(Orders.manager_id == manager_id).filter(
-            max(ServiceOrders.id)).first()
-        return order.id
-
 
 class Transactions(Base):
     __tablename__ = "transactions"
@@ -309,10 +322,16 @@ class TransactionsCrud:
     @staticmethod
     def add(payment: int, status: bool, bank_id: int, card_type: int):
         sess = Session()
-        transaction = Transactions(payment=payment, status=status, bank_id=bank_id, card_type=card_type)
-        sess.add(transaction)
-        sess.commit()
-        sess.close()
+        try:
+            transaction = Transactions(payment=payment, status=status, bank_id=bank_id, card_type=card_type)
+            sess.add(transaction)
+            sess.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return False
+        finally:
+            sess.close()
 
 
 class Products(Base):
@@ -387,16 +406,18 @@ class Services(Base):
 # noinspection PyTypeChecker
 class ServicesCrud:
     @staticmethod
-    def add(name: str, service_price: float):
+    def add(name: str, service_price: float) -> object:
         sess = Session()
         ser = sess.query(Services).where(Services.name == name).first()
         if ser is not None:
             sess.close()
+            return False
         else:
             ser = Services(name=name, service_price=service_price)
             sess.add(ser)
             sess.commit()
             sess.close()
+            return True
 
     @staticmethod
     def get_service_price(name: str) -> object:
@@ -465,13 +486,6 @@ class ServiceOrdersCrud:
             sess.close()
         else:
             sess.close()
-
-    @staticmethod
-    def get_last_manager_order(manager_id):
-        sess = Session()
-        order = sess.query(ServiceOrders).where(ServiceOrders.manager_id == manager_id).filter(
-            max(ServiceOrders.id)).first()
-        return order.id
 
 
 class Tasks(Base):
@@ -620,6 +634,7 @@ class Supplies(Base):
     distributor = Column(Integer, ForeignKey('distributors.id'))
 
 
+# noinspection PyTypeChecker
 class SuppliesCrud:
     @staticmethod
     def add(component_id: int, count: float, distributor: int):

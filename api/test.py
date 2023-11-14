@@ -147,7 +147,7 @@ def add_prod():
     name = request.args.get("name")
     price = request.args.get("price")
     try:
-        ProductsCrud.add(name, price)
+        ProductsCrud.add(name, float(price))
         answer = {"status": "200", "answer": "OK"}
         return jsonify(answer)
     except Exception as e:
@@ -240,6 +240,37 @@ def update_dist():
     else:
         answer = {"status": "400", "answer": "User Data exception"}
         return jsonify(answer)
+
+
+@app.route("/transactions/add", methods=["POST"])
+def add_transaction():
+    payment = request.args.get('payment')
+    status = request.args.get('status')
+    bank_id = request.args.get('bank')
+    type = request.args.get('type')
+    try:
+        TransactionsCrud.add(int(payment), bool(status), int(bank_id), int(type))
+        answer = {"status": "200", "answer": "Successful addition"}
+        return answer
+    except TypeError as e:
+        answer = {"status": "400", "answer": e}
+        return answer
+    except ValueError as e:
+        answer = {"status": "400", "answer": e}
+        return answer
+
+
+@app.route("/services/add", methods=["POST"])
+def add_service():
+    name = request.args.get('name')
+    price = request.args.get('price')
+    service = ServicesCrud.add(name, price)
+    if service is True:
+        answer = {"status": "200", "answer": "Successful addition"}
+        return answer
+    else:
+        answer = {"status": "200", "answer": "Already in database"}
+        return answer
 
 
 app.run(debug=True)
