@@ -67,7 +67,7 @@ def add_supply():
             answer = {'status': '200', 'answer': 'Supply added'}
             return answer
         else:
-            x = DistributorsCrud.add(dist, "DHL")
+            DistributorsCrud.add(dist, "DHL")
             distributor = DistributorsCrud.get(dist)
             dist_id = distributor['id']
             supply = SuppliesCrud.add(comp_id, float(count), dist_id)
@@ -251,13 +251,13 @@ def add_transaction():
     try:
         TransactionsCrud.add(int(payment), bool(status), int(bank_id), int(type))
         answer = {"status": "200", "answer": "Successful addition"}
-        return answer
+        return jsonify(answer)
     except TypeError as e:
         answer = {"status": "400", "answer": e}
-        return answer
+        return jsonify(answer)
     except ValueError as e:
         answer = {"status": "400", "answer": e}
-        return answer
+        return jsonify(answer)
 
 
 @app.route("/services/add", methods=["POST"])
@@ -267,10 +267,10 @@ def add_service():
     service = ServicesCrud.add(name, price)
     if service is True:
         answer = {"status": "200", "answer": "Successful addition"}
-        return answer
+        return jsonify(answer)
     else:
         answer = {"status": "200", "answer": "Already in database"}
-        return answer
+        return jsonify(answer)
 
 
 @app.route("/services/orders/add", methods=["POST"])
@@ -281,15 +281,15 @@ def add_service_order():
     ser = ServicesCrud.get_service(service)
     if ser is not False:
         try:
-            ServiceOrdersCrud.add(ser["id"], trans, customer)
+            ServiceOrdersCrud.add(ser["id"], int(trans), int(customer))
             answer = {"status": "200", "answer": "Successful add"}
-            return answer
+            return jsonify(answer)
         except TypeError:
             answer = {"status": "400", "answer": "Error"}
-            return answer
+            return jsonify(answer)
     else:
         answer = {"status": "400", "answer": "No service"}
-        return answer
+        return jsonify(answer)
 
 
 @app.route("/products/orders/add", methods=["POST"])
@@ -300,15 +300,15 @@ def add_order():
     prod = ProductsCrud.get_product(product)
     if prod is not False:
         try:
-            OrdersCrud.add(customer, transaction, prod["id"])
+            OrdersCrud.add(int(customer), int(transaction), prod["id"])
             answer = {"status": "200", "answer": "Successful add"}
-            return answer
+            return jsonify(answer)
         except TypeError:
             answer = {"status": "400", "answer": "Error"}
-            return answer
+            return jsonify(answer)
     else:
         answer = {"status": "400", "answer": "No product"}
-        return answer
+        return jsonify(answer)
 
 
 app.run(debug=True)
