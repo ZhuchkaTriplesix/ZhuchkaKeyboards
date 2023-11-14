@@ -3,7 +3,6 @@ from flask import request
 from flask import jsonify
 from models import CustomerCrud, EmployeesCrud, ProductsCrud, ComponentCrud, BanksCrud, DistributorsCrud, \
     ComponentUsageCrud, OrdersCrud, LogsCrud, TasksCrud, TransactionsCrud, ServicesCrud, SuppliesCrud, ServiceOrdersCrud
-import json
 
 app = Flask(__name__)
 
@@ -36,15 +35,20 @@ def get_comp():
 def delete_comp():
     name = request.args.get("name")
     type = request.args.get("type")
-    comp = ComponentCrud.get_component(name, type)
-    comp_id = comp["id"]
-    component = ComponentCrud.delete_component(comp_id)
-    if component is not False:
-        answer = {"status": "200", "answer": "Successful deletion"}
-        return answer
-    else:
+    try:
+        comp = ComponentCrud.get_component(name, type)
+        comp_id = comp["id"]
+        component = ComponentCrud.delete_component(comp_id)
+        if component is not False:
+            answer = {"status": "200", "answer": "Successful deletion"}
+            return jsonify(answer)
+        else:
+            answer = {"status": "400", "answer": "User Data exception"}
+            return jsonify(answer)
+    except Exception as e:
+        print(e)
         answer = {"status": "400", "answer": "User Data exception"}
-        return answer
+        return jsonify(answer)
 
 
 @app.route('/supply/add', methods=["POST"])
@@ -86,6 +90,21 @@ def add_supply():
             supply = SuppliesCrud.add(comp_id, float(count), dist_id)
             answer = {'status': '200', 'answer': 'Supply added'}
             return answer
+
+
+@app.route('/supply/count', methods=["GET"])
+def get_count():
+    name = request.args.get('name')
+    type = request.args.get('type')
+    try:
+        comp = ComponentCrud.get_component(name, type)
+        count = SuppliesCrud.get_count(comp['id'])
+        answer = {"name": comp['name'], 'type': comp['type'], "count": count}
+        return answer
+    except Exception as e:
+        print(e)
+        answer = {'status': '400', 'answer': 'User Data exception'}
+        return answer
 
 
 @app.route('/emp/add', methods=["POST"])
