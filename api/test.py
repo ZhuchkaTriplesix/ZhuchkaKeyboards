@@ -16,7 +16,7 @@ def comp_add():
     if component is not False:
         return jsonify(component)
     else:
-        answer = {"Status": "400, ", "Error": "Component is already in database"}
+        answer = {"status": "400, ", "answer": "Component is already in database"}
         return jsonify(answer)
 
 
@@ -28,7 +28,7 @@ def get_comp():
     if component is not False:
         return jsonify(component)
     else:
-        answer = {"Status": "400", "Error": "User Data exception"}
+        answer = {"status": "400", "answer": "User Data exception"}
         return jsonify(answer)
 
 
@@ -37,12 +37,13 @@ def delete_comp():
     name = request.args.get("name")
     type = request.args.get("type")
     comp = ComponentCrud.get_component(name, type)
-    comp_id = comp["Id"]
+    comp_id = comp["id"]
     component = ComponentCrud.delete_component(comp_id)
     if component is not False:
-        return "Successful deletion"
+        answer = {"status": "200", "answer": "Successful deletion"}
+        return answer
     else:
-        answer = {"Status": "400", "Error": "User Data exception"}
+        answer = {"status": "400", "answer": "User Data exception"}
         return answer
 
 
@@ -54,36 +55,36 @@ def add_supply():
     count = request.args.get('count')
     comp = ComponentCrud.get_component(name, type)
     if comp is not False:
-        comp_id = comp["Id"]
+        comp_id = comp["id"]
         distributor = DistributorsCrud.get(dist)
         if distributor is not False:
             dist_id = distributor['id']
             SuppliesCrud.add(comp_id, float(count), dist_id)
-            answer = {'Status': '200', 'answer': 'Supply added'}
+            answer = {'status': '200', 'answer': 'Supply added'}
             return answer
         else:
             x = DistributorsCrud.add(dist, "DHL")
             distributor = DistributorsCrud.get(dist)
             dist_id = distributor['id']
             supply = SuppliesCrud.add(comp_id, float(count), dist_id)
-            answer = {'Status': '200', 'answer': 'Supply added'}
+            answer = {'status': '200', 'answer': 'Supply added'}
             return answer
     else:
         comp = ComponentCrud.add_component(name, type)
         component = ComponentCrud.get_component(name, type)
-        comp_id = component['Id']
+        comp_id = component['id']
         distributor = DistributorsCrud.get(dist)
         if distributor is not False:
             dist_id = distributor['id']
             supply = SuppliesCrud.add(comp_id, float(count), dist_id)
-            answer = {'Status': '200', 'answer': 'Supply added'}
+            answer = {'status': '200', 'answer': 'Supply added'}
             return answer
         else:
             x = DistributorsCrud.add(dist, "DHL")
             distributor = DistributorsCrud.get(dist)
             dist_id = distributor['id']
             supply = SuppliesCrud.add(comp_id, float(count), dist_id)
-            answer = {'Status': '200', 'answer': 'Supply added'}
+            answer = {'status': '200', 'answer': 'Supply added'}
             return answer
 
 
@@ -103,7 +104,7 @@ def emp_add():
             return jsonify(answer)
     except Exception as e:
         print(e)
-        answer = {"Status": "400", "Error": "User Data exception"}
+        answer = {"status": "400", "answer": "User Data exception"}
         return jsonify(answer)
 
 
@@ -118,7 +119,7 @@ def delete_emp():
         answer = {"status": "200", "answer": "OK"}
         return jsonify(answer)
     else:
-        answer = {"Status": "400", "Error": "User Data exception"}
+        answer = {"status": "400", "answer": "User Data exception"}
         return jsonify(answer)
 
 
@@ -132,7 +133,7 @@ def add_prod():
         return jsonify(answer)
     except Exception as e:
         print(e)
-        answer = {"Status": "400", "Error": "User Data exception"}
+        answer = {"status": "400", "answer": "User Data exception"}
         return jsonify(answer)
 
 
@@ -143,7 +144,7 @@ def get_prod():
     if prod is not False:
         return jsonify(prod)
     else:
-        answer = {"Status": "400", "Error": "User Data exception"}
+        answer = {"status": "400", "answer": "User Data exception"}
         return jsonify(answer)
 
 
@@ -152,10 +153,10 @@ def delete_product():
     name = request.args.get("name")
     prod = ProductsCrud.delete_product(name)
     if prod is True:
-        answer = {"answer": "ok", "status": 200}
+        answer = {"status": "200", "answer": "Successful deletion"}
         return jsonify(answer)
     else:
-        answer = {"Status": "400", "Error": "User Data exception"}
+        answer = {"status": "400", "answer": "User Data exception"}
         return jsonify(answer)
 
 
@@ -167,7 +168,7 @@ def update_price():
     if prod is not False:
         return jsonify(prod)
     else:
-        answer = {"Status": "400", "Error": "User Data exception"}
+        answer = {"status": "400", "answer": "User Data exception"}
         return jsonify(answer)
 
 
@@ -175,7 +176,7 @@ def update_price():
 def add_bank():
     name = request.args.get("name")
     bank = BanksCrud.add(name)
-    answer = {"answer": "ok", "status": 200}
+    answer = {"status": "200", "answer": "Successful bank add"}
     return jsonify(answer)
 
 
@@ -192,10 +193,10 @@ def add_dist():
     deliver_service = request.args.get("service")
     dist = DistributorsCrud.add(name, deliver_service)
     if dist is True:
-        answer = {"answer": "Added", "status": 200}
+        answer = {"status": "Added", "answer": "Added"}
         return jsonify(answer)
     else:
-        answer = {"answer": "Already in database", "status": 200}
+        answer = {"status": "200", "answer": "Already in database"}
         return jsonify(answer)
 
 
@@ -206,7 +207,7 @@ def get_dist():
     if dist is not False:
         return jsonify(dist)
     else:
-        answer = {"Status": "400", "Error": "User Data exception"}
+        answer = {"status": "400", "answer": "User Data exception"}
         return jsonify(answer)
 
 
@@ -218,7 +219,7 @@ def update_dist():
     if dist is not False:
         return jsonify(dist)
     else:
-        answer = {"Status": "400", "Error": "User Data exception"}
+        answer = {"status": "400", "answer": "User Data exception"}
         return jsonify(answer)
 
 
