@@ -538,6 +538,20 @@ class TasksCrud:
             sess.close()
 
     @staticmethod
+    def add_ser_task(order: int, worker: int) -> object:
+        sess = Session()
+        try:
+            task = Tasks(order_id=None, service_order_id=order, worker_id=worker, status=1, type=2)
+            sess.add(task)
+            sess.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return False
+        finally:
+            sess.close()
+
+    @staticmethod
     def change_status(order_id: int, service_order_id: int, status: int):
         sess = Session()
         if order_id is None:
