@@ -524,30 +524,18 @@ class Tasks(Base):
 # noinspection PyTypeChecker
 class TasksCrud:
     @staticmethod
-    def add_task(order_id: int, service_order_id: int) -> object:
+    def add_task(order_id: int, worker_id: int) -> object:
         sess = Session()
-        if order_id is None:
-            task = sess.query(Tasks).where(Tasks.service_order_id == service_order_id).first()
-            if task is None:
-                task = Tasks(order_id=None, service_order_id=service_order_id, status=1, type=2)
-                sess.add(task)
-                sess.commit()
-                sess.close()
-                return True
-            else:
-                return False
-                sess.close()
-        else:
-            task = sess.query(Tasks).where(Tasks.order_id == order_id).first()
-            if task is None:
-                task = Tasks(order_id=order_id, service_order_id=None, status=1, type=1)
-                sess.add(task)
-                sess.commit()
-                sess.close()
-                return True
-            else:
-                sess.close()
-                return False
+        try:
+            task = Tasks(order_id=order_id, service_order_id=None, worker_id=worker_id, status=1, type=1)
+            sess.add(task)
+            sess.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return False
+        finally:
+            sess.close()
 
     @staticmethod
     def change_status(order_id: int, service_order_id: int, status: int):
