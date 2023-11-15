@@ -524,7 +524,7 @@ class Tasks(Base):
 # noinspection PyTypeChecker
 class TasksCrud:
     @staticmethod
-    def add_task(order_id, service_order_id):
+    def add_task(order_id: int, service_order_id: int) -> object:
         sess = Session()
         if order_id is None:
             task = sess.query(Tasks).where(Tasks.service_order_id == service_order_id).first()
@@ -533,7 +533,9 @@ class TasksCrud:
                 sess.add(task)
                 sess.commit()
                 sess.close()
+                return True
             else:
+                return False
                 sess.close()
         else:
             task = sess.query(Tasks).where(Tasks.order_id == order_id).first()
@@ -542,8 +544,10 @@ class TasksCrud:
                 sess.add(task)
                 sess.commit()
                 sess.close()
+                return True
             else:
                 sess.close()
+                return False
 
     @staticmethod
     def change_status(order_id: int, service_order_id: int, status: int):
