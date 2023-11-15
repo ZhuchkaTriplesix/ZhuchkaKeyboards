@@ -311,4 +311,21 @@ def add_order():
         return jsonify(answer)
 
 
+@app.route("/products/tasks/add", methods=["POST"])
+def add_task():
+    order = request.args.get("order")
+    worker_id = request.args.get("worker")
+    try:
+        task = TasksCrud.add_worker(int(order), None, int(worker_id))
+        if task is True:
+            answer = {"status": "200", "answer": "Successful add"}
+            return jsonify(answer)
+        else:
+            answer = {"status": "400", "answer": "Error"}
+            return jsonify(answer)
+    except ValueError:
+        answer = {"status": "400", "answer": "Error"}
+        return jsonify(answer)
+
+
 app.run(debug=True)
