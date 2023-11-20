@@ -16,3 +16,13 @@ async def start(message: Message):
 @router.message(F.text == "⌨️PRODUCTS⌨️")
 async def products(message: Message):
     await message.answer("Выберите категорию:", reply_markup=bot.keyboards.products_kb)
+
+
+@router.message(F.text == "🛠SERVICES🛠")
+async def services(message: Message):
+    await message.answer("Выберите категорию", reply_markup=bot.keyboards.service_kb)
+
+
+@router.callback_query(F.data == "65% Keyboards")
+async def keyboards_65(callback: CallbackQuery):
+    await callback.message.edit_reply_markup(callback.message.message_id, reply_markup=bot.keyboards.kb65_kb)

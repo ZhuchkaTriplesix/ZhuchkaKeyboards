@@ -11,3 +11,11 @@ products = [
     [InlineKeyboardButton(text="TKL Keyboards", callback_data="TKL Keyboards")]
 ]
 products_kb = InlineKeyboardMarkup(inline_keyboard=products)
+services = [
+    [InlineKeyboardButton(text="Lubing switches", callback_data="Lubing switches")]
+]
+service_kb = InlineKeyboardMarkup(inline_keyboard=services)
+kb65 = [
+    [InlineKeyboardButton(text="ZK board", callback_data="ZK board")]
+]
+kb65_kb = InlineKeyboardMarkup(inline_keyboard=kb65)
