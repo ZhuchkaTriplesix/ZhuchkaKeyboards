@@ -729,4 +729,17 @@ class BanksCrud:
             return BanksCrud.get_bank(name)
 
 
+    @staticmethod
+    def delete_bank(name: str) -> object:
+        sess = Session()
+        bank = sess.query(Banks).where(Banks.name == name).first()
+        if bank is not None:
+            sess.delete(bank)
+            sess.commit()
+            sess.close()
+            return  True
+        else:
+            return False
+
+
 Base.metadata.create_all(engine)
