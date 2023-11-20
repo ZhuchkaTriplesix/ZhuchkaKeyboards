@@ -345,4 +345,19 @@ def add_ser_task():
         return jsonify(answer)
 
 
+@app.route("/component/usage/add", methods=["POST"])
+def add_comp_usage():
+    comp = request.args.get("comp")
+    name = request.args.get("name")
+    count = request.args.get("count")
+    task = request.args.get("task")
+    try:
+        ComponentUsageCrud.add(int(comp), name, int(count), int(task))
+        answer = {"status": "200", "answer": "Successful add"}
+        return jsonify(answer)
+    except ValueError:
+        answer = {"status": "400", "answer": "Error"}
+        return jsonify(answer)
+
+
 app.run(debug=True)
