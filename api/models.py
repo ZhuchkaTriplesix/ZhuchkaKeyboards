@@ -306,6 +306,17 @@ class OrdersCrud:
         sess.commit()
         sess.close()
 
+    @staticmethod
+    def get_order(customer_id: int, product_id: int) -> object:
+        sess = Session()
+        order = sess.query(Orders).where(and_(Orders.customer_id == customer_id, product_id == product_id)).first()
+        if order is not None:
+            answer = {"id": order.id, "customer_id": order.customer_id, "manager_id": order.manager_id,
+                      "transaction_id": order.transaction_id, "product_id": order.product_id}
+            return answer
+        else:
+            return False
+
 
 class Transactions(Base):
     __tablename__ = "transactions"
@@ -327,6 +338,20 @@ class TransactionsCrud:
             sess.add(transaction)
             sess.commit()
             return True
+        except Exception as e:
+            print(e)
+            return False
+        finally:
+            sess.close()
+
+    @staticmethod
+    def get_last_transaction():
+        sess = Session()
+        try:
+            trans = sess.query(Transactions).order_by(Transactions.id.desc()).first()
+            answer = {"id": trans.id, "payment": trans.payment, "status": trans.status, "bank": trans.bank_id,
+                      "card": trans.card_type}
+            return answer
         except Exception as e:
             print(e)
             return False
@@ -728,7 +753,6 @@ class BanksCrud:
             BanksCrud.add(name)
             return BanksCrud.get_bank(name)
 
-
     @staticmethod
     def delete_bank(name: str) -> object:
         sess = Session()
@@ -737,7 +761,7 @@ class BanksCrud:
             sess.delete(bank)
             sess.commit()
             sess.close()
-            return  True
+            return True
         else:
             return False
 
