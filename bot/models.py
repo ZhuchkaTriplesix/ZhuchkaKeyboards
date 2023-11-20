@@ -15,7 +15,7 @@ conn = engine.connect()
 
 
 class Users(Base):
-    __tablename__ = "users"
+    __tablename__ = "kbusers"
     id = Column(BigInteger, primary_key=True)
     username = Column(String(length=32))
     group = Column(Integer)
@@ -47,5 +47,32 @@ class UsersCrud:
         else:
             return False
 
+    @staticmethod
+    def update_group(telegram_id: int, group: int) -> object:
+        sess = Session()
+        user = sess.query(Users).where(Users.id == telegram_id).first()
+        if user is not None:
+            user.group = group
+            sess.commit()
+            answer = {"id": user.id, "username": user.username, "group": user.group}
+            sess.close()
+            return answer
+        else:
+            sess.close()
+            return False
 
-    
+    @staticmethod
+    def delete_user(telegram_id: int) -> object:
+        sess = Session()
+        user = sess.query(Users).where(Users.id == telegram_id).first()
+        if user is not None:
+            sess.delete(user)
+            sess.commit()
+            sess.close()
+            return True
+        else:
+            sess.close()
+            return False
+
+
+Base.metadata.create_all(engine)
