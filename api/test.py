@@ -253,10 +253,12 @@ def add_transaction():
         answer = {"status": "200", "answer": "Successful addition"}
         return jsonify(answer)
     except TypeError as e:
-        answer = {"status": "400", "answer": e}
+        print(e)
+        answer = {"status": "400", "answer": "Bad Request"}
         return jsonify(answer)
     except ValueError as e:
-        answer = {"status": "400", "answer": e}
+        print(e)
+        answer = {"status": "400", "answer": "Bad Request"}
         return jsonify(answer)
 
 
@@ -321,7 +323,7 @@ def add_task():
             answer = {"status": "200", "answer": "Successful add"}
             return jsonify(answer)
         else:
-            answer = {"status": "400", "answer": "123"}
+            answer = {"status": "400", "answer": "Bad Request"}
             return jsonify(answer)
     except ValueError:
         answer = {"status": "400", "answer": "Error"}

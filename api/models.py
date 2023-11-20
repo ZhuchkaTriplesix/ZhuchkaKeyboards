@@ -518,7 +518,8 @@ class ServiceOrdersCrud:
             answer = {"status": "200", "answer": "Successful add"}
             return answer
         except Exception as e:
-            answer = {"status": "400", "answer": e}
+            print(e)
+            answer = {"status": "400", "answer": "error"}
             return answer
         finally:
             sess.close()
