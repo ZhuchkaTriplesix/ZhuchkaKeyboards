@@ -9,7 +9,7 @@ router = Router()
 
 @router.message(F.text == "/start")
 async def start(message: Message):
-    user = database.functions.UsersCrud.add_user(message.from_user.id, message.from_user.username)
+    user = database.functions.TelegramUsersCrud.add_user(message.from_user.id, message.from_user.username)
     await message.answer("privet", reply_markup=bot.keyboards.start_kb)
 
 
@@ -26,3 +26,8 @@ async def services(message: Message):
 @router.callback_query(F.data == "65% Keyboards")
 async def keyboards_65(callback: CallbackQuery):
     await callback.message.edit_reply_markup(callback.inline_message_id, bot.keyboards.kb65_kb)
+
+
+@router.callback_query(F.data == "Back_prod")
+async def back(callback: CallbackQuery):
+    await callback.message.edit_reply_markup(callback.inline_message_id, bot.keyboards.products_kb)

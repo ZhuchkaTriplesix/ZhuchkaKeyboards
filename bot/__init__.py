@@ -1,2 +1,2 @@
-from bot import config
-from bot import models
+from bot.handlers import client
+from bot import keyboards
