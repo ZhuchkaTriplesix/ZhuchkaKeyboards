@@ -1,13 +1,10 @@
-from sqlalchemy import Column, String, Integer, DateTime, BigInteger, Float, ForeignKey, Boolean
-from sqlalchemy import create_engine, and_, or_
-from sqlalchemy.exc import ProgrammingError
-from sqlalchemy.orm import sessionmaker, declarative_base, scoped_session, relationship
-from sqlalchemy.sql import func
 import datetime
-from config import database
-from enum import Enum
-
-Base = declarative_base()
+from sqlalchemy import create_engine, and_, func
+from sqlalchemy.exc import ProgrammingError
+from sqlalchemy.orm import scoped_session, sessionmaker
+from database.config import database
+from database.models import Banks, ComponentUsage, Components, Customers, Distributors, Employees, TelegramUsers, Logs, Orders, \
+    Products, Services, ServiceOrders, Supplies, Tasks, Transactions
 
 engine = create_engine(database, echo=False)
 
@@ -16,33 +13,61 @@ session = scoped_session(Session)
 conn = engine.connect()
 
 
-class Platform(Enum):
-    TELEGRAM = 1
-    VK = 2
+# noinspection PyTypeChecker
+class TelegramUsersCrud:
+    @staticmethod
+    def add_user(telegram_id: int, username: str) -> object:
+        sess = Session()
+        user = sess.query(TelegramUsers).where(TelegramUsers.id == telegram_id).first()
+        if user is not None:
+            sess.close()
+            return False
+        else:
+            user = TelegramUsers(id=telegram_id, username=username)
+            sess.add(user)
+            sess.commit()
+            sess.close()
+            return True
+
+    @staticmethod
+    def get_user(telegram_id: int) -> object:
+        sess = Session()
+        user = sess.query(TelegramUsers).where(TelegramUsers.id == telegram_id).first()
+        if user is not None:
+            answer = {"id": user.id, "username": user.username, "group": user.group}
+            return answer
+        else:
+            return False
+
+    @staticmethod
+    def update_group(telegram_id: int, group: int) -> object:
+        sess = Session()
+        user = sess.query(TelegramUsers).where(TelegramUsers.id == telegram_id).first()
+        if user is not None:
+            user.group = group
+            sess.commit()
+            answer = {"id": user.id, "username": user.username, "group": user.group}
+            sess.close()
+            return answer
+        else:
+            sess.close()
+            return False
+
+    @staticmethod
+    def delete_user(telegram_id: int) -> object:
+        sess = Session()
+        user = sess.query(TelegramUsers).where(TelegramUsers.id == telegram_id).first()
+        if user is not None:
+            sess.delete(user)
+            sess.commit()
+            sess.close()
+            return True
+        else:
+            sess.close()
+            return False
 
 
-class Group(Enum):
-    ENGINEER = 1
-    MANAGER = 2
-    HIGH_MANAGER = 3
-
-
-class Customers(Base):
-    __tablename__ = "customers"
-    id = Column(Integer, primary_key=True)
-    vendor_id = Column(BigInteger)
-    vendor_type = Column(Integer)
-    first_name = Column(String(length=16))
-    second_name = Column(String(length=16))
-    username = Column(String(length=32))
-    email = Column(String, default=None)
-    created_date = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_date = Column(DateTime, default=None)
-    usage = relationship('Orders')
-    usage1 = relationship('ServiceOrders')
-
-
-# noinspection PyShadowingBuiltins,PyMethodParameters,PyTypeChecker
+# noinspection PyTypeChecker
 class CustomerCrud:
     @staticmethod
     def get_customer(vendor_id: int) -> object:
@@ -93,21 +118,6 @@ class CustomerCrud:
             return True
         except ProgrammingError:
             return False
-
-
-class Employees(Base):
-    __tablename__ = "employees"
-    id = Column(Integer, primary_key=True)
-    first_name = Column(String(length=16))
-    second_name = Column(String(length=16))
-    group = Column(String(length=8))
-    salary = Column(Float)
-    contract_start = Column(DateTime, default=datetime.datetime.utcnow)
-    contract_end = Column(DateTime)
-    logs = relationship('Logs')
-    usages = relationship('Orders')
-    usage1 = relationship('Tasks')
-    usage2 = relationship('ServiceOrders')
 
 
 # noinspection PyTypeChecker
@@ -171,14 +181,6 @@ class EmployeesCrud:
         sess.close()
 
 
-class Logs(Base):
-    __tablename__ = "logs"
-    id = Column(Integer, primary_key=True)
-    employee_id = Column(Integer, ForeignKey('employees.id'))
-    operation_name = Column(String(length=16))
-    date = Column(DateTime, default=datetime.datetime.utcnow)
-
-
 class LogsCrud:
     @staticmethod
     def add_log(employee_id: int, operation: str):
@@ -187,15 +189,6 @@ class LogsCrud:
         sess.add(log)
         sess.commit()
         sess.close()
-
-
-class Components(Base):
-    __tablename__ = "components"
-    id = Column(Integer, primary_key=True)
-    component_name = Column(String(length=16))
-    component_type = Column(String(length=12))
-    usage = relationship('ComponentUsage')
-    usage1 = relationship('Supplies')
 
 
 # noinspection PyTypeChecker
@@ -243,15 +236,6 @@ class ComponentCrud:
             sess.close()
 
 
-class ComponentUsage(Base):
-    __tablename__ = "component_usage"
-    id = Column(Integer, primary_key=True)
-    component_id = Column(Integer, ForeignKey('components.id'))
-    usage_name = Column(String(length=16))
-    usage_count = Column(Float)
-    task_id = Column(Integer, ForeignKey('tasks.id'))
-
-
 # noinspection PyTypeChecker
 class ComponentUsageCrud:
     @staticmethod
@@ -275,17 +259,6 @@ class ComponentUsageCrud:
             return None
         finally:
             sess.close()
-
-
-class Orders(Base):
-    __tablename__ = "orders"
-    id = Column(Integer, primary_key=True)
-    customer_id = Column(Integer, ForeignKey('customers.id'))
-    manager_id = Column(Integer, ForeignKey('employees.id'))
-    transaction_id = Column(Integer, ForeignKey('transactions.id'))
-    product_id = Column(Integer, ForeignKey('products.id'))
-    created_date = Column(DateTime, default=datetime.datetime.utcnow)
-    usage = relationship('Tasks')
 
 
 # noinspection PyTypeChecker
@@ -318,17 +291,6 @@ class OrdersCrud:
             return False
 
 
-class Transactions(Base):
-    __tablename__ = "transactions"
-    id = Column(Integer, primary_key=True)
-    payment = Column(Integer)
-    status = Column(Boolean)
-    bank_id = Column(Integer, ForeignKey('banks.id'))
-    card_type = Column(Integer)
-    usage = relationship('Orders')
-    usage1 = relationship('ServiceOrders')
-
-
 class TransactionsCrud:
     @staticmethod
     def add(payment: int, status: bool, bank_id: int, card_type: int):
@@ -359,24 +321,16 @@ class TransactionsCrud:
             sess.close()
 
 
-class Products(Base):
-    __tablename__ = "products"
-    id = Column(Integer, primary_key=True)
-    product_name = Column(String(length=16))
-    product_price = Column(Float)
-    usage = relationship('Orders')
-
-
 # noinspection PyTypeChecker
 class ProductsCrud:
     @staticmethod
-    def add(product_name: str, product_price: float):
+    def add(product_name: str, category: str, product_price: float):
         sess = Session()
-        prod = sess.query(Products).where(Products.product_name == product_name).first()
+        prod = sess.query(Products).where(Products.name == product_name).first()
         if prod is not None:
             pass
         else:
-            prod = Products(product_name=product_name, product_price=product_price)
+            prod = Products(name=product_name, category=category, product_price=product_price)
             sess.add(prod)
             sess.commit()
             sess.close()
@@ -384,9 +338,9 @@ class ProductsCrud:
     @staticmethod
     def get_product(product_name: str) -> object:
         sess = Session()
-        prod = sess.query(Products).where(Products.product_name == product_name).first()
+        prod = sess.query(Products).where(Products.name == product_name).first()
         if prod is not None:
-            product = {"id": prod.id, "name:": prod.product_name, "price": prod.product_price}
+            product = {"id": prod.id, "name:": prod.name, "price": prod.product_price}
             sess.close()
             return product
         else:
@@ -409,7 +363,7 @@ class ProductsCrud:
     @staticmethod
     def update_product_price(product_name: str, product_price) -> object:
         sess = Session()
-        prod = sess.query(Products).where(Products.product_name == product_name).first()
+        prod = sess.query(Products).where(Products.name == product_name).first()
         if prod is not None:
             prod.product_price = product_price
             sess.commit()
@@ -418,14 +372,6 @@ class ProductsCrud:
             return product
         else:
             return False
-
-
-class Services(Base):
-    __tablename__ = "services"
-    id = Column(Integer, primary_key=True)
-    name = Column(String(length=16))
-    service_price = Column(Float)
-    usage = relationship('ServiceOrders')
 
 
 # noinspection PyTypeChecker
@@ -493,19 +439,7 @@ class ServicesCrud:
             sess.close()
 
 
-class ServiceOrders(Base):
-    __tablename__ = "service_orders"
-    id = Column(Integer, primary_key=True)
-    service_id = Column(Integer, ForeignKey('services.id'))
-    transaction_id = Column(Integer, ForeignKey('transactions.id'))
-    customer_id = Column(Integer, ForeignKey('customers.id'))
-    manager_id = Column(Integer, ForeignKey('employees.id'))
-    usage = relationship('Tasks')
-
-
 # noinspection PyTypeChecker
-
-
 class ServiceOrdersCrud:
     @staticmethod
     def add(service_id: int, transaction_id: int, customer_id: int):
@@ -534,17 +468,6 @@ class ServiceOrdersCrud:
             sess.close()
         else:
             sess.close()
-
-
-class Tasks(Base):
-    __tablename__ = 'tasks'
-    id = Column(Integer, primary_key=True)
-    order_id = Column(Integer, ForeignKey('orders.id'))
-    service_order_id = Column(Integer, ForeignKey('service_orders.id'))
-    worker_id = Column(Integer, ForeignKey('employees.id'))
-    status = Column(Integer)
-    type = Column(Integer)
-    usage = relationship('ComponentUsage')
 
 
 # noinspection PyTypeChecker
@@ -628,14 +551,6 @@ class TasksCrud:
             return False
 
 
-class Distributors(Base):
-    __tablename__ = 'distributors'
-    id = Column(Integer, primary_key=True)
-    name = Column(String(length=16))
-    deliver_service = Column(String(length=16))
-    relationship('Supplies')
-
-
 # noinspection PyTypeChecker
 class DistributorsCrud:
     @staticmethod
@@ -690,14 +605,6 @@ class DistributorsCrud:
             return False
 
 
-class Supplies(Base):
-    __tablename__ = 'supplies'
-    id = Column(Integer, primary_key=True)
-    component_id = Column(Integer, ForeignKey('components.id'))
-    count = Column(Float)
-    distributor = Column(Integer, ForeignKey('distributors.id'))
-
-
 # noinspection PyTypeChecker
 class SuppliesCrud:
     @staticmethod
@@ -719,13 +626,6 @@ class SuppliesCrud:
             return None
         finally:
             sess.close()
-
-
-class Banks(Base):
-    __tablename__ = 'banks'
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    usage = relationship('Transactions')
 
 
 # noinspection PyTypeChecker
@@ -765,6 +665,3 @@ class BanksCrud:
             return True
         else:
             return False
-
-
-Base.metadata.create_all(engine)
