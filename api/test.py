@@ -146,8 +146,9 @@ def delete_emp():
 def add_prod():
     name = request.args.get("name")
     price = request.args.get("price")
+    category = request.args.get("category")
     try:
-        ProductsCrud.add(name, float(price))
+        ProductsCrud.add(name, category, float(price))
         answer = {"status": "200", "answer": "OK"}
         return jsonify(answer)
     except Exception as e:
