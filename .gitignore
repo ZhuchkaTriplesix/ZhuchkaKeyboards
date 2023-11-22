@@ -2,7 +2,11 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+/bot/toket.txt
+bot/toket.txt
+.DS_Store
+bot/.DS_Store
+bot/token.txt
 # C extensions
 *.so
 .idea

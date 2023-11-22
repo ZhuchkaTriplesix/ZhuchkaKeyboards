@@ -1,8 +1,8 @@
 from flask import Flask
 from flask import request
 from flask import jsonify
-from models import CustomerCrud, EmployeesCrud, ProductsCrud, ComponentCrud, BanksCrud, DistributorsCrud, \
-    ComponentUsageCrud, OrdersCrud, LogsCrud, TasksCrud, TransactionsCrud, ServicesCrud, SuppliesCrud, ServiceOrdersCrud
+from database.functions import EmployeesCrud, ProductsCrud, ComponentCrud, BanksCrud, DistributorsCrud, \
+    ComponentUsageCrud, OrdersCrud, TasksCrud, TransactionsCrud, ServicesCrud, SuppliesCrud, ServiceOrdersCrud
 
 app = Flask(__name__)
 
