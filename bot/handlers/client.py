@@ -1,7 +1,7 @@
 from aiogram import F
 from aiogram.types import Message, CallbackQuery
 from aiogram import Router
-import bot.models
+import database.functions
 import bot.keyboards
 
 router = Router()
@@ -9,7 +9,7 @@ router = Router()
 
 @router.message(F.text == "/start")
 async def start(message: Message):
-    user = bot.models.UsersCrud.add_user(message.from_user.id, message.from_user.username)
+    user = database.functions.UsersCrud.add_user(message.from_user.id, message.from_user.username)
     await message.answer("privet", reply_markup=bot.keyboards.start_kb)
 
 
@@ -25,4 +25,4 @@ async def services(message: Message):
 
 @router.callback_query(F.data == "65% Keyboards")
 async def keyboards_65(callback: CallbackQuery):
-    await callback.message.edit_reply_markup(callback.message.message_id, reply_markup=bot.keyboards.kb65_kb)
+    await callback.message.edit_reply_markup(callback.inline_message_id, bot.keyboards.kb65_kb)
