@@ -2,9 +2,9 @@ from aiogram.types import (ReplyKeyboardMarkup, KeyboardButton,
                            InlineKeyboardMarkup, InlineKeyboardButton)
 
 start = [
-    [[KeyboardButton(text="⌨️PRODUCTS⌨️"),
-     KeyboardButton(text="🛠SERVICES🛠")]],
-    [[KeyboardButton(text="🔔SUPPORT🔔")]]
+    [KeyboardButton(text="⌨️PRODUCTS⌨️"),
+     KeyboardButton(text="🛠SERVICES🛠")],
+    [KeyboardButton(text="🔔SUPPORT🔔")]
 ]
 start_kb = ReplyKeyboardMarkup(keyboard=start, resize_keyboard=True)
 products = [
