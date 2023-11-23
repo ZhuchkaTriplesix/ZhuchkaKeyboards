@@ -6,14 +6,15 @@ from database.functions import EmployeesCrud, ProductsCrud, ComponentCrud, Banks
 
 app = Flask(__name__)
 
+SUCCESSFUL_ADD = {"status": "200", "answer": "Successful addition"}
+SUCCESSFUL_DELETE = {"status": "200", "answer": "Successful deletion"}
 
 @app.route("/comp/add", methods=['POST'])
 def comp_add():
-    name = request.args.get('name')
-    type = request.args.get('type')
-    component = ComponentCrud.add_component(name, type)
+    data = request.get_json()
+    component = ComponentCrud.add_component(data["name"], data["type"])
     if component is not False:
-        return jsonify(component)
+        return jsonify(SUCCESSFUL_ADD)
     else:
         answer = {"status": "400, ", "answer": "Component is already in database"}
         return jsonify(answer)
@@ -21,9 +22,8 @@ def comp_add():
 
 @app.route("/comp/get", methods={'GET'})
 def get_comp():
-    name = request.args.get('name')
-    type = request.args.get('type')
-    component = ComponentCrud.get_component(name, type)
+    data = request.get_json()
+    component = ComponentCrud.get_component(data["name"], data["type"])
     if component is not False:
         return jsonify(component)
     else:
@@ -33,15 +33,13 @@ def get_comp():
 
 @app.route("/comp/delete", methods={'DELETE'})
 def delete_comp():
-    name = request.args.get("name")
-    type = request.args.get("type")
+    data = request.get_json()
     try:
-        comp = ComponentCrud.get_component(name, type)
+        comp = ComponentCrud.get_component(data["name"], data["type"])
         comp_id = comp["id"]
         component = ComponentCrud.delete_component(comp_id)
         if component is not False:
-            answer = {"status": "200", "answer": "Successful deletion"}
-            return jsonify(answer)
+            return jsonify(SUCCESSFUL_DELETE)
         else:
             answer = {"status": "400", "answer": "User Data exception"}
             return jsonify(answer)
@@ -53,43 +51,36 @@ def delete_comp():
 
 @app.route('/supply/add', methods=["POST"])
 def add_supply():
-    name = request.args.get('name')
-    type = request.args.get('type')
-    dist = request.args.get('dist')
-    count = request.args.get('count')
-    comp = ComponentCrud.get_component(name, type)
+    data = request.get_json()
+    comp = ComponentCrud.get_component(data["name"], data["type"])
     if comp is not False:
         comp_id = comp["id"]
-        distributor = DistributorsCrud.get(dist)
+        distributor = DistributorsCrud.get(data["dist"])
         if distributor is not False:
             dist_id = distributor['id']
-            SuppliesCrud.add(comp_id, float(count), dist_id)
-            answer = {'status': '200', 'answer': 'Supply added'}
-            return answer
+            SuppliesCrud.add(comp_id, data["count"], dist_id)
+            return jsonify(SUCCESSFUL_ADD)
         else:
-            DistributorsCrud.add(dist, "DHL")
-            distributor = DistributorsCrud.get(dist)
+            DistributorsCrud.add(data["dist"], "DHL")
+            distributor = DistributorsCrud.get(data["dist"])
             dist_id = distributor['id']
-            supply = SuppliesCrud.add(comp_id, float(count), dist_id)
-            answer = {'status': '200', 'answer': 'Supply added'}
-            return answer
+            supply = SuppliesCrud.add(comp_id, data["count"], dist_id)
+            return jsonify(SUCCESSFUL_ADD)
     else:
-        comp = ComponentCrud.add_component(name, type)
-        component = ComponentCrud.get_component(name, type)
+        comp = ComponentCrud.add_component(data["name"], data["type"])
+        component = ComponentCrud.get_component(data["name"], data["type"])
         comp_id = component['id']
-        distributor = DistributorsCrud.get(dist)
+        distributor = DistributorsCrud.get(data["dist"])
         if distributor is not False:
             dist_id = distributor['id']
-            supply = SuppliesCrud.add(comp_id, float(count), dist_id)
-            answer = {'status': '200', 'answer': 'Supply added'}
-            return answer
+            supply = SuppliesCrud.add(comp_id, data["count"], dist_id)
+            return jsonify(SUCCESSFUL_ADD)
         else:
-            x = DistributorsCrud.add(dist, "DHL")
-            distributor = DistributorsCrud.get(dist)
+            x = DistributorsCrud.add(data["dist"], "DHL")
+            distributor = DistributorsCrud.get(data["dist"])
             dist_id = distributor['id']
-            supply = SuppliesCrud.add(comp_id, float(count), dist_id)
-            answer = {'status': '200', 'answer': 'Supply added'}
-            return answer
+            supply = SuppliesCrud.add(comp_id, data["count"], dist_id)
+            return jsonify(SUCCESSFUL_ADD)
 
 
 @app.route('/supply/count', methods=["GET"])
@@ -109,15 +100,11 @@ def get_count():
 
 @app.route('/emp/add', methods=["POST"])
 def emp_add():
-    group = request.args.get("group")
-    name = request.args.get("name")
-    surname = request.args.get("surname")
-    salary = request.args.get("salary")
+    data = request.get_json()
     try:
-        emp = EmployeesCrud.add_emp(group, name, surname, salary)
+        emp = EmployeesCrud.add_emp(data["group"], data["name"], data["surname"], data["salary"])
         if emp is True:
-            answer = {"status": "200", "answer": "OK"}
-            return jsonify(answer)
+            return jsonify(SUCCESSFUL_ADD)
         else:
             answer = {"status": "200", "answer": "Employee is already in database"}
             return jsonify(answer)
@@ -129,14 +116,12 @@ def emp_add():
 
 @app.route("/emp/delete", methods=["GET", "DELETE"])
 def delete_emp():
-    name = request.args.get("name")
-    surname = request.args.get("surname")
-    emp = EmployeesCrud.get_emp(name, surname)
+    data = request.get_json()
+    emp = EmployeesCrud.get_emp(data["name"], data["surname"])
     if emp is not False:
         id = emp["id"]
         EmployeesCrud.delete_emp(id)
-        answer = {"status": "200", "answer": "OK"}
-        return jsonify(answer)
+        return jsonify(SUCCESSFUL_DELETE)
     else:
         answer = {"status": "400", "answer": "User Data exception"}
         return jsonify(answer)
@@ -144,12 +129,10 @@ def delete_emp():
 
 @app.route('/prod/add', methods=["POST"])
 def add_prod():
-    name = request.args.get("name")
-    price = request.args.get("price")
+    data = request.get_json()
     try:
-        ProductsCrud.add(name, float(price))
-        answer = {"status": "200", "answer": "OK"}
-        return jsonify(answer)
+        ProductsCrud.add(data["name"], data["category"], data["price"])
+        return jsonify(SUCCESSFUL_ADD)
     except Exception as e:
         print(e)
         answer = {"status": "400", "answer": "User Data exception"}
@@ -172,8 +155,7 @@ def delete_product():
     name = request.args.get("name")
     prod = ProductsCrud.delete_product(name)
     if prod is True:
-        answer = {"status": "200", "answer": "Successful deletion"}
-        return jsonify(answer)
+        return jsonify(SUCCESSFUL_DELETE)
     else:
         answer = {"status": "400", "answer": "User Data exception"}
         return jsonify(answer)
@@ -181,9 +163,8 @@ def delete_product():
 
 @app.route('/prod/update', methods=["PUT"])
 def update_price():
-    name = request.args.get('name')
-    price = request.args.get('price')
-    prod = ProductsCrud.update_product_price(name, price)
+    data = request.get_json()
+    prod = ProductsCrud.update_product_price(data["name"], data["price"])
     if prod is not False:
         return jsonify(prod)
     else:
@@ -208,12 +189,10 @@ def get_bank():
 
 @app.route("/dist/add", methods=["POST"])
 def add_dist():
-    name = request.args.get("name")
-    deliver_service = request.args.get("service")
-    dist = DistributorsCrud.add(name, deliver_service)
+    data = request.get_json()
+    dist = DistributorsCrud.add(data['name'], data['deliver_service'])
     if dist is True:
-        answer = {"status": "Added", "answer": "Added"}
-        return jsonify(answer)
+        return jsonify(SUCCESSFUL_ADD)
     else:
         answer = {"status": "200", "answer": "Already in database"}
         return jsonify(answer)
@@ -232,9 +211,8 @@ def get_dist():
 
 @app.route("/dist/update", methods=["PUT"])
 def update_dist():
-    name = request.args.get("name")
-    service = request.args.get("service")
-    dist = DistributorsCrud.update_service(name, service)
+    data = request.get_json()
+    dist = DistributorsCrud.update_service(data['name'], data['service'])
     if dist is not False:
         return jsonify(dist)
     else:
@@ -244,14 +222,14 @@ def update_dist():
 
 @app.route("/transactions/add", methods=["POST"])
 def add_transaction():
-    payment = request.args.get('payment')
-    status = request.args.get('status')
-    bank_id = request.args.get('bank')
-    type = request.args.get('type')
+    data = request.get_json()
+    payment = data['payment']
+    status = data['status']
+    bank_id = data['bank']
+    type = data['type']
     try:
         TransactionsCrud.add(int(payment), bool(status), int(bank_id), int(type))
-        answer = {"status": "200", "answer": "Successful addition"}
-        return jsonify(answer)
+        return jsonify(SUCCESSFUL_ADD)
     except TypeError as e:
         print(e)
         answer = {"status": "400", "answer": "Bad Request"}
@@ -264,12 +242,10 @@ def add_transaction():
 
 @app.route("/services/add", methods=["POST"])
 def add_service():
-    name = request.args.get('name')
-    price = request.args.get('price')
-    service = ServicesCrud.add(name, price)
+    data = request.get_json()
+    service = ServicesCrud.add(data['name'], data['price'])
     if service is True:
-        answer = {"status": "200", "answer": "Successful addition"}
-        return jsonify(answer)
+        return jsonify(SUCCESSFUL_ADD)
     else:
         answer = {"status": "200", "answer": "Already in database"}
         return jsonify(answer)
@@ -277,15 +253,12 @@ def add_service():
 
 @app.route("/services/orders/add", methods=["POST"])
 def add_service_order():
-    service = request.args.get('service')
-    trans = request.args.get('trans')
-    customer = request.args.get('customer')
-    ser = ServicesCrud.get_service(service)
+    data = request.get_json()
+    ser = ServicesCrud.get_service(data['service'])
     if ser is not False:
         try:
-            ServiceOrdersCrud.add(ser["id"], int(trans), int(customer))
-            answer = {"status": "200", "answer": "Successful add"}
-            return jsonify(answer)
+            ServiceOrdersCrud.add(ser["id"], data['trans'], data['customer'])
+            return jsonify(SUCCESSFUL_ADD)
         except TypeError:
             answer = {"status": "400", "answer": "Error"}
             return jsonify(answer)
@@ -296,15 +269,12 @@ def add_service_order():
 
 @app.route("/products/orders/add", methods=["POST"])
 def add_order():
-    customer = request.args.get('customer')
-    transaction = request.args.get("trans")
-    product = request.args.get("prod")
-    prod = ProductsCrud.get_product(product)
+    data = request.get_json()
+    prod = ProductsCrud.get_product(data['product'])
     if prod is not False:
         try:
-            OrdersCrud.add(int(customer), int(transaction), prod["id"])
-            answer = {"status": "200", "answer": "Successful add"}
-            return jsonify(answer)
+            OrdersCrud.add(data['customer'], data['transaction'], prod["id"])
+            return jsonify(SUCCESSFUL_ADD)
         except TypeError:
             answer = {"status": "400", "answer": "Error"}
             return jsonify(answer)
