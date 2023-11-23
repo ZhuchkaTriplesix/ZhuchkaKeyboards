@@ -340,7 +340,7 @@ class ProductsCrud:
         sess = Session()
         prod = sess.query(Products).where(Products.name == product_name).first()
         if prod is not None:
-            product = {"id": prod.id, "name:": prod.name, "price": prod.product_price}
+            product = {"id": prod.id, "name:": prod.name, "category": prod.category, "price": prod.product_price}
             sess.close()
             return product
         else:
@@ -350,7 +350,7 @@ class ProductsCrud:
     @staticmethod
     def delete_product(product_name: str) -> object:
         sess = Session()
-        prod = ProductsCrud.get_product(product_name)
+        prod = sess.query(Products).where(Products.name == product_name).first()
         if prod is not False:
             sess.delete(prod)
             sess.commit()
