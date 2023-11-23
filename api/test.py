@@ -129,13 +129,10 @@ def delete_emp():
 
 @app.route('/prod/add', methods=["POST"])
 def add_prod():
-    name = request.args.get("name")
-    price = request.args.get("price")
-    category = request.args.get("category")
+    data = request.get_json()
     try:
-        ProductsCrud.add(name, category, float(price))
-        answer = {"status": "200", "answer": "OK"}
-        return jsonify(answer)
+        ProductsCrud.add(data["name"], data["category"], data["price"])
+        return jsonify(SUCCESSFUL_ADD)
     except Exception as e:
         print(e)
         answer = {"status": "400", "answer": "User Data exception"}
@@ -158,8 +155,7 @@ def delete_product():
     name = request.args.get("name")
     prod = ProductsCrud.delete_product(name)
     if prod is True:
-        answer = {"status": "200", "answer": "Successful deletion"}
-        return jsonify(answer)
+        return jsonify(SUCCESSFUL_DELETE)
     else:
         answer = {"status": "400", "answer": "User Data exception"}
         return jsonify(answer)
@@ -167,9 +163,8 @@ def delete_product():
 
 @app.route('/prod/update', methods=["PUT"])
 def update_price():
-    name = request.args.get('name')
-    price = request.args.get('price')
-    prod = ProductsCrud.update_product_price(name, price)
+    data = request.get_json()
+    prod = ProductsCrud.update_product_price(data["name"], data["price"])
     if prod is not False:
         return jsonify(prod)
     else:
@@ -194,12 +189,10 @@ def get_bank():
 
 @app.route("/dist/add", methods=["POST"])
 def add_dist():
-    name = request.args.get("name")
-    deliver_service = request.args.get("service")
-    dist = DistributorsCrud.add(name, deliver_service)
+    data = request.get_json()
+    dist = DistributorsCrud.add(data['name'], data['deliver_service'])
     if dist is True:
-        answer = {"status": "Added", "answer": "Added"}
-        return jsonify(answer)
+        return jsonify(SUCCESSFUL_ADD)
     else:
         answer = {"status": "200", "answer": "Already in database"}
         return jsonify(answer)
