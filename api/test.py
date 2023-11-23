@@ -254,9 +254,6 @@ def add_service():
 @app.route("/services/orders/add", methods=["POST"])
 def add_service_order():
     data = request.get_json()
-    service = request.args.get('service')
-    trans = request.args.get('trans')
-    customer = request.args.get('customer')
     ser = ServicesCrud.get_service(data['service'])
     if ser is not False:
         try:
@@ -272,15 +269,12 @@ def add_service_order():
 
 @app.route("/products/orders/add", methods=["POST"])
 def add_order():
-    customer = request.args.get('customer')
-    transaction = request.args.get("trans")
-    product = request.args.get("prod")
-    prod = ProductsCrud.get_product(product)
+    data = request.get_json()
+    prod = ProductsCrud.get_product(data['product'])
     if prod is not False:
         try:
-            OrdersCrud.add(int(customer), int(transaction), prod["id"])
-            answer = {"status": "200", "answer": "Successful add"}
-            return jsonify(answer)
+            OrdersCrud.add(data['customer'], data['transaction'], prod["id"])
+            return jsonify(SUCCESSFUL_ADD)
         except TypeError:
             answer = {"status": "400", "answer": "Error"}
             return jsonify(answer)
@@ -334,19 +328,6 @@ def add_comp_usage():
         answer = {"status": "200", "answer": "Successful add"}
         return jsonify(answer)
     except ValueError:
-        answer = {"status": "400", "answer": "Error"}
-        return jsonify(answer)
-
-
-@app.route("/prod/test", methods=["POST"])
-def bank_test():
-    data = request.get_json()
-    try:
-        ProductsCrud.add(data["name"], data["category"], data["product_price"])
-        answer = {"status": "200", "answer": "Successful add"}
-        return jsonify(answer)
-    except Exception as e:
-        print(e)
         answer = {"status": "400", "answer": "Error"}
         return jsonify(answer)
 
