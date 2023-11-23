@@ -31,3 +31,8 @@ async def keyboards_65(callback: CallbackQuery):
 @router.callback_query(F.data == "Back_prod")
 async def back(callback: CallbackQuery):
     await callback.message.edit_reply_markup(callback.inline_message_id, bot.keyboards.products_kb)
+
+
+@router.callback_query(F.data == "Back_service")
+async def back_ser(callback: CallbackQuery):
+    await callback.message.edit_reply_markup(callback.inline_message_id, bot.keyboards.service_kb)
