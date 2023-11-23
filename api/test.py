@@ -211,9 +211,8 @@ def get_dist():
 
 @app.route("/dist/update", methods=["PUT"])
 def update_dist():
-    name = request.args.get("name")
-    service = request.args.get("service")
-    dist = DistributorsCrud.update_service(name, service)
+    data = request.get_json()
+    dist = DistributorsCrud.update_service(data['name'], data['service'])
     if dist is not False:
         return jsonify(dist)
     else:
@@ -223,14 +222,14 @@ def update_dist():
 
 @app.route("/transactions/add", methods=["POST"])
 def add_transaction():
-    payment = request.args.get('payment')
-    status = request.args.get('status')
-    bank_id = request.args.get('bank')
-    type = request.args.get('type')
+    data = request.get_json()
+    payment = data['payment']
+    status = data['status']
+    bank_id = data['bank']
+    type = data['type']
     try:
         TransactionsCrud.add(int(payment), bool(status), int(bank_id), int(type))
-        answer = {"status": "200", "answer": "Successful addition"}
-        return jsonify(answer)
+        return jsonify(SUCCESSFUL_ADD)
     except TypeError as e:
         print(e)
         answer = {"status": "400", "answer": "Bad Request"}
@@ -243,12 +242,10 @@ def add_transaction():
 
 @app.route("/services/add", methods=["POST"])
 def add_service():
-    name = request.args.get('name')
-    price = request.args.get('price')
-    service = ServicesCrud.add(name, price)
+    data = request.get_json()
+    service = ServicesCrud.add(data['name'], data['price'])
     if service is True:
-        answer = {"status": "200", "answer": "Successful addition"}
-        return jsonify(answer)
+        return jsonify(SUCCESSFUL_ADD)
     else:
         answer = {"status": "200", "answer": "Already in database"}
         return jsonify(answer)
@@ -256,15 +253,15 @@ def add_service():
 
 @app.route("/services/orders/add", methods=["POST"])
 def add_service_order():
+    data = request.get_json()
     service = request.args.get('service')
     trans = request.args.get('trans')
     customer = request.args.get('customer')
-    ser = ServicesCrud.get_service(service)
+    ser = ServicesCrud.get_service(data['service'])
     if ser is not False:
         try:
-            ServiceOrdersCrud.add(ser["id"], int(trans), int(customer))
-            answer = {"status": "200", "answer": "Successful add"}
-            return jsonify(answer)
+            ServiceOrdersCrud.add(ser["id"], data['trans'], data['customer'])
+            return jsonify(SUCCESSFUL_ADD)
         except TypeError:
             answer = {"status": "400", "answer": "Error"}
             return jsonify(answer)
