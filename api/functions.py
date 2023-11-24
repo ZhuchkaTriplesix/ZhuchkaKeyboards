@@ -273,12 +273,18 @@ class ComponentUsageCrud:
 # noinspection PyTypeChecker
 class OrdersCrud:
     @staticmethod
-    def add(customer_id: int, transaction_id: int, product_id: int):
+    def add(customer_id: int, transaction_id: int, product_id: int) -> object:
         sess = Session()
-        order = Orders(customer_id=customer_id, transaction_id=transaction_id, product_id=product_id)
-        sess.add(order)
-        sess.commit()
-        sess.close()
+        try:
+            order = Orders(customer_id=customer_id, transaction_id=transaction_id, product_id=product_id)
+            sess.add(order)
+            sess.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return False
+        finally:
+            sess.close()
 
     @staticmethod
     def add_manager(id: int, manager_id: int):
@@ -286,7 +292,11 @@ class OrdersCrud:
         order = sess.query(Orders).where(Orders.id == id).first()
         order.manager_id = manager_id
         sess.commit()
+        product = ProductsCrud.get_product_by_id(order.id)
+        answer = {"id": order.id, "customer_id": order.customer_id, "manager_id": order.manager_id,
+                  "transaction_id": order.transaction_id, "product": product}
         sess.close()
+        return answer
 
     @staticmethod
     def get_order(customer_id: int, product_id: int) -> object:
@@ -360,13 +370,23 @@ class ProductsCrud:
     def delete_product(product_name: str) -> object:
         sess = Session()
         prod = sess.query(Products).where(Products.name == product_name).first()
-        if prod is not False:
+        if prod is not None:
             sess.delete(prod)
             sess.commit()
             sess.close()
             return True
         else:
             sess.close()
+            return False
+
+    @staticmethod
+    def get_product_by_id(id: int) -> object:
+        sess = Session()
+        prod = sess.query(Products).where(Products.id == id).first()
+        if prod is not None:
+            answer = {"id": prod.id, "name": prod.name, "category": prod.category, "price": prod.product_price}
+            return answer
+        else:
             return False
 
     @staticmethod
