@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 
 class ComponentsDantic(BaseModel):
@@ -9,8 +10,9 @@ class ComponentsDantic(BaseModel):
 class EmloyeeDantic(BaseModel):
     name: str
     surname: str
-    group: str
-    salary: float
+    group: str | None = None
+    salary: float | None = None
+    contract_end: datetime | None = None
 
 
 class ProductDantic(BaseModel):

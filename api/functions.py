@@ -123,7 +123,7 @@ class CustomerCrud:
 # noinspection PyTypeChecker
 class EmployeesCrud:
     @staticmethod
-    def add_emp(group: str, first_name: str, second_name: str, salary: float):
+    def add_emp(group: str, first_name: str, second_name: str, salary: float, contract_end: datetime.datetime):
         sess = Session()
         employee = sess.query(Employees).where(
             and_(Employees.first_name == first_name, Employees.second_name == second_name)).first()
@@ -132,14 +132,38 @@ class EmployeesCrud:
             return False
         else:
             emp = Employees(first_name=first_name, second_name=second_name, group=group,
-                            salary=salary)
+                            salary=salary, contract_end=contract_end)
             sess.add(emp)
             sess.commit()
             sess.close()
             return True
 
     @staticmethod
-    def get_emp(first_name: str, second_name: str):
+    def update_emp(first_name: str, second_name: str, group: str, salary: float, contract_end):
+        sess = Session()
+        try:
+            emp = sess.query(Employees).where(
+                and_(Employees.first_name == first_name, Employees.second_name == second_name)).first()
+            if group is not None:
+                emp.group = group
+                sess.commit()
+            if salary is not None:
+                emp.salary = salary
+                sess.commit()
+            if contract_end is not None:
+                emp.contract_end = contract_end
+                sess.commit()
+            answer = {"id": emp.id, "name": emp.first_name, "surname": emp.second_name, "group": emp.group,
+                      "salary": emp.salary, "contract_end": emp.contract_end}
+            return answer
+        except Exception as e:
+            print(e)
+            return False
+        finally:
+            sess.close()
+
+    @staticmethod
+    def get_emp(first_name: str, second_name: str) -> object:
         sess = Session()
         try:
             emp = sess.query(Employees).where(
@@ -148,29 +172,14 @@ class EmployeesCrud:
             name = emp.first_name
             surname = emp.second_name
             salary = emp.salary
-            employee = {"id": id, "name": name, "surname": surname, "salary": salary}
+            employee = {"id": id, "name": name, "surname": surname, "group": emp.group, "salary": salary,
+                        "contract_end": emp.contract_end}
             return employee
         except Exception as e:
             print(e)
             return False
         finally:
             sess.close()
-
-    @staticmethod
-    def update_emp_group(id: int, group: str):
-        sess = Session()
-        emp = sess.query(Employees).where(Employees.id == id).first()
-        emp.group = group
-        sess.commit()
-        sess.close()
-
-    @staticmethod
-    def update_contract_end(id, contract_end):
-        sess = Session()
-        emp = sess.query(Employees).where(Employees.id == id).first()
-        emp.contract_end = contract_end
-        sess.commit()
-        sess.close()
 
     @staticmethod
     def delete_emp(id: int):
