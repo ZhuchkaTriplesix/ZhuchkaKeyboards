@@ -41,7 +41,7 @@ def component_delete(name: str):
 @app.post("/employee/add")
 def employee_add(employee: EmloyeeDantic):
     emp = EmployeesCrud.add_emp(group=employee.group, first_name=employee.name, second_name=employee.surname,
-                                salary=employee.salary)
+                                salary=employee.salary, contract_end=employee.contract_end)
     if emp is True:
         return SUCCESSFUL_ADD
     else:
@@ -55,6 +55,18 @@ def employee_get(name: str, surname: str):
         return emp
     else:
         raise HTTPException(status_code=404)
+
+
+@app.put("/employee/update/")
+def employee_update(employee: EmloyeeDantic):
+    emp = EmployeesCrud.update_emp(first_name=employee.name, second_name=employee.surname, group=employee.group, salary=employee.salary,
+                                   contract_end=employee.contract_end)
+    if emp is False:
+        return False
+    elif emp is None:
+        return HTTPException(status_code=404)
+    else:
+        return emp
 
 
 @app.delete("/employee/delete/{name}-{surname}")
@@ -92,3 +104,12 @@ def product_update(product: ProductDantic):
         return prod
     else:
         return HTTPException(status_code=404)
+
+
+@app.delete("/products/delete/{name}")
+def product_delete(name: str):
+    prod = ProductsCrud.delete_product(name)
+    if prod is not False:
+        return "Successful deletion"
+    else:
+        raise HTTPException(status_code=404)
