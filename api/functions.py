@@ -584,10 +584,10 @@ class DistributorsCrud:
             sess.delete(dist)
             sess.commit()
             sess.close()
-            return "Deleted"
+            return True
         else:
             sess.close()
-            return "None"
+            return False
 
     @staticmethod
     def get(name: str) -> object:
