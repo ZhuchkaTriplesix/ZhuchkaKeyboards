@@ -19,3 +19,12 @@ class ProductDantic(BaseModel):
     name: str
     category: str | None = None
     price: float
+
+
+class BankDantic(BaseModel):
+    name: str
+
+
+class DistributorDantic(BaseModel):
+    name: str
+    deliver_service: str
