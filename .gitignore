@@ -6,7 +6,7 @@ __pycache__/
 bot/toket.txt
 .DS_Store
 bot/.DS_Store
-bot/token.txt
+bot/config/token.txt
 # C extensions
 *.so
 .idea

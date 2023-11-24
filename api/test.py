@@ -1,13 +1,14 @@
 from flask import Flask
 from flask import request
 from flask import jsonify
-from database.functions import EmployeesCrud, ProductsCrud, ComponentCrud, BanksCrud, DistributorsCrud, \
+from api.functions import EmployeesCrud, ProductsCrud, ComponentCrud, BanksCrud, DistributorsCrud, \
     ComponentUsageCrud, OrdersCrud, TasksCrud, TransactionsCrud, ServicesCrud, SuppliesCrud, ServiceOrdersCrud
 
 app = Flask(__name__)
 
 SUCCESSFUL_ADD = {"status": "200", "answer": "Successful addition"}
 SUCCESSFUL_DELETE = {"status": "200", "answer": "Successful deletion"}
+
 
 @app.route("/comp/add", methods=['POST'])
 def comp_add():
