@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.requests import Request
-from dantic import ComponentsDantic, EmloyeeDantic, ProductDantic, BankDantic, DistributorDantic
-from functions import ComponentCrud, EmployeesCrud, ProductsCrud, BanksCrud, DistributorsCrud
+from dantic import ComponentsDantic, EmloyeeDantic, ProductDantic, BankDantic, DistributorDantic, ServiceDantic
+from functions import ComponentCrud, EmployeesCrud, ProductsCrud, BanksCrud, DistributorsCrud, ServicesCrud
 
 app = FastAPI()
 SUCCESSFUL_ADD = "Successful addition"
@@ -177,3 +177,40 @@ def distributor_delete(name: str):
         return True
     else:
         raise HTTPException(status_code=404)
+
+
+@app.post("/services/add")
+def service_add(service: ServiceDantic):
+    service = ServicesCrud.add(service.name, service.price)
+    if service is not False:
+        return SUCCESSFUL_ADD
+    else:
+        return False
+
+
+@app.get("/services/get/{name}")
+def service_get(name):
+    service = ServicesCrud.get_service(name)
+    if service is not False:
+        return service
+    else:
+        raise HTTPException(status_code=404)
+
+
+@app.put("/services/update")
+def service_update(service: ServiceDantic):
+    service = ServicesCrud.update_service_price(service.name, service.price)
+    if service is not False:
+        return service
+    else:
+        raise HTTPException(status_code=404)
+
+
+@app.delete("/services/delete/{name}")
+def service_delete(name: str):
+    service = ServicesCrud.delete_service(name)
+    if service is not False:
+        return True
+    else:
+        raise HTTPException(status_code=404)
+    
