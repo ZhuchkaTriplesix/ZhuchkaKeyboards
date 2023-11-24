@@ -28,3 +28,8 @@ class BankDantic(BaseModel):
 class DistributorDantic(BaseModel):
     name: str
     deliver_service: str
+
+
+class ServiceDantic(BaseModel):
+    name: str
+    price: float
