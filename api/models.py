@@ -1,10 +1,8 @@
 from sqlalchemy import Column, String, Integer, DateTime, BigInteger, Float, ForeignKey, Boolean
-from sqlalchemy import create_engine, and_
-from sqlalchemy.exc import ProgrammingError
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base, scoped_session, relationship
-from sqlalchemy.sql import func
 import datetime
-from database.config import database
+from config import database
 from enum import Enum
 
 Base = declarative_base()
