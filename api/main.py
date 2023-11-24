@@ -59,7 +59,8 @@ def employee_get(name: str, surname: str):
 
 @app.put("/employee/update/")
 def employee_update(employee: EmloyeeDantic):
-    emp = EmployeesCrud.update_emp(first_name=employee.name, second_name=employee.surname, group=employee.group, salary=employee.salary,
+    emp = EmployeesCrud.update_emp(first_name=employee.name, second_name=employee.surname, group=employee.group,
+                                   salary=employee.salary,
                                    contract_end=employee.contract_end)
     if emp is False:
         return False
@@ -148,5 +149,31 @@ def distributor_add(distributor: DistributorDantic):
     if distributor is not False:
         return SUCCESSFUL_ADD
     else:
-        return False
-    
+        raise HTTPException(status_code=404)
+
+
+@app.get("/distributor/get/{name}")
+def distributor_get(name: str):
+    distributor = DistributorsCrud.get(name)
+    if distributor is not False:
+        return distributor
+    else:
+        raise HTTPException(status_code=404)
+
+
+@app.put("/distributor/update")
+def distributor_update(distributor: DistributorDantic):
+    distributor = DistributorsCrud.update_service(distributor.name, distributor.deliver_service)
+    if distributor is not False:
+        return distributor
+    else:
+        raise HTTPException(status_code=404)
+
+
+@app.delete("/distributor/delete/{name}")
+def distributor_delete(name: str):
+    distributor = DistributorsCrud.delete(name)
+    if distributor is not False:
+        return True
+    else:
+        raise HTTPException(status_code=404)
