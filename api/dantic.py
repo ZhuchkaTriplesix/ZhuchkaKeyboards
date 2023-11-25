@@ -3,13 +3,13 @@ from datetime import datetime
 
 
 class ComponentsDantic(BaseModel):
-    name: str
-    type: str
+    name: str | None = None
+    type: str | None = None
 
 
 class EmloyeeDantic(BaseModel):
-    first_name: str
-    second_name: str
+    first_name: str | None = None
+    second_name: str | None = None
     group: str | None = None
     salary: float | None = None
     contract_end: datetime | None = None
@@ -26,19 +26,19 @@ class BankDantic(BaseModel):
 
 
 class DistributorDantic(BaseModel):
-    name: str
-    deliver_service: str
+    name: str | None = None
+    deliver_service: str | None = None
 
 
 class ServiceDantic(BaseModel):
-    name: str
-    price: float
+    name: str | None = None
+    price: float | None = None
 
 
 class CustomerDantic(BaseModel):
     vendor_id: int
-    vendor_type: int
-    name: str
-    surname: str
-    username: str
+    vendor_type: int | None = None
+    name: str | None = None
+    surname: str | None = None
+    username: str | None = None
     email: str | None = None
