@@ -1,5 +1,4 @@
 from fastapi import FastAPI, HTTPException
-from fastapi.requests import Request
 from dantic import ComponentsDantic, EmloyeeDantic, ProductDantic, BankDantic, DistributorDantic, ServiceDantic, \
     CustomerDantic
 from functions import ComponentCrud, EmployeesCrud, ProductsCrud, BanksCrud, DistributorsCrud, ServicesCrud, \
@@ -10,16 +9,16 @@ SUCCESSFUL_ADD = "Successful addition"
 
 
 @app.post('/components', tags=["Components"])
-def component_add(component: ComponentsDantic):
+def component_add(component: ComponentsDantic) -> ComponentsDantic:
     comp = ComponentCrud.add_component(component.name, component.type)
     if comp is not False:
         return comp
     else:
-        return False
+        raise HTTPException
 
 
 @app.get("/components/{id}", tags=["Components"])
-def component_get(id: int):
+def component_get(id: int) -> ComponentsDantic:
     comp = ComponentCrud.get_component(id)
     if comp is False:
         raise HTTPException(status_code=404)
@@ -28,7 +27,7 @@ def component_get(id: int):
 
 
 @app.put("/components/{id}", tags=["Components"])
-def component_update(id: int, component: ComponentsDantic):
+def component_update(id: int, component: ComponentsDantic) -> ComponentsDantic:
     comp = ComponentCrud.update_component(id, component.name, component.type)
     if comp is not False:
         return comp
@@ -46,17 +45,17 @@ def component_delete(id: int):
 
 
 @app.post("/employees", tags=["Employee"])
-def employee_add(employee: EmloyeeDantic):
-    emp = EmployeesCrud.add_emp(group=employee.group, first_name=employee.first_name, second_name=employee.second_name,
-                                salary=employee.salary, contract_end=employee.contract_end)
+def employee_add(employee: EmloyeeDantic) -> EmloyeeDantic:
+    emp = EmployeesCrud.add_emp(employee.first_name, employee.second_name, employee.group, employee.salary,
+                                employee.contract_end)
     if emp is True:
         return emp
     else:
-        return False
+        raise HTTPException
 
 
 @app.get("/employees/{id}", tags=["Employee"])
-def employee_get(id: int):
+def employee_get(id: int) -> EmloyeeDantic:
     emp = EmployeesCrud.get_emp(id)
     if emp is not False:
         return emp
@@ -66,15 +65,12 @@ def employee_get(id: int):
 
 @app.put("/employees/{id}", tags=["Employee"])
 def employee_update(id: int, employee: EmloyeeDantic):
-    emp = EmployeesCrud.update_emp(first_name=employee.name, second_name=employee.surname, group=employee.group,
-                                   salary=employee.salary,
-                                   contract_end=employee.contract_end)
-    if emp is False:
-        return False
-    elif emp is None:
-        return HTTPException(status_code=404)
-    else:
+    emp = EmployeesCrud.update_emp(id, employee.first_name, employee.second_name, employee.group, employee.salary,
+                                   employee.contract_end)
+    if emp is not False:
         return emp
+    else:
+        return HTTPException(status_code=404)
 
 
 @app.delete("/employees/{id}", tags=["Employee"])
@@ -87,16 +83,16 @@ def employee_delete(id: int):
 
 
 @app.post("/products", tags=["Products"])
-def product_add(product: ProductDantic):
+def product_add(product: ProductDantic) -> ProductDantic:
     prod = ProductsCrud.add(product.name, product.category, product.price)
     if prod is not False:
-        return SUCCESSFUL_ADD
+        return prod
     else:
-        return False
+        raise HTTPException
 
 
 @app.get("/products/{id}", tags=["Products"])
-def product_get(id: int):
+def product_get(id: int) -> ProductDantic:
     prod = ProductsCrud.get_product(id)
     if prod is not False:
         return prod
@@ -105,12 +101,12 @@ def product_get(id: int):
 
 
 @app.put("/products/{id}", tags=["Products"])
-def product_update(id: int, product: ProductDantic):
+def product_update(id: int, product: ProductDantic) -> ProductDantic:
     prod = ProductsCrud.update_product(id, product.name, product.category, product.price)
     if prod is not False:
         return prod
     else:
-        return HTTPException(status_code=404)
+        raise HTTPException(status_code=404)
 
 
 @app.delete("/products/{id}", tags=["Products"])
@@ -123,7 +119,7 @@ def product_delete(id: int):
 
 
 @app.post("/banks", tags=["Banks"])
-def bank_add(bank: BankDantic):
+def bank_add(bank: BankDantic) -> BankDantic:
     bank = BanksCrud.add_bank(bank.name)
     if bank is not False:
         return bank
@@ -132,7 +128,7 @@ def bank_add(bank: BankDantic):
 
 
 @app.get("/banks/{id}", tags=["Banks"])
-def bank_get(id: int):
+def bank_get(id: int) -> BankDantic:
     bank = BanksCrud.get_bank(id)
     if bank is not False:
         return bank
@@ -141,7 +137,7 @@ def bank_get(id: int):
 
 
 @app.delete("/banks/{id}", tags=["Banks"])
-def bank_delete(id:int):
+def bank_delete(id: int):
     bank = BanksCrud.delete_bank(id)
     if bank is not False:
         return "Successful delete"
@@ -150,16 +146,16 @@ def bank_delete(id:int):
 
 
 @app.post("/distributors", tags=["Distributors"])
-def distributor_add(distributor: DistributorDantic):
+def distributor_add(distributor: DistributorDantic) -> DistributorDantic:
     distributor = DistributorsCrud.add(distributor.name, distributor.deliver_service)
     if distributor is not False:
         return distributor
     else:
-        raise HTTPException(status_code=404)
+        raise HTTPException
 
 
 @app.get("/distributors/{id}", tags=["Distributors"])
-def distributor_get(id: int):
+def distributor_get(id: int) -> DistributorDantic:
     distributor = DistributorsCrud.get(id)
     if distributor is not False:
         return distributor
@@ -168,7 +164,7 @@ def distributor_get(id: int):
 
 
 @app.put("/distributors/{id}", tags=["Distributors"])
-def distributor_update(id: int, distributor: DistributorDantic):
+def distributor_update(id: int, distributor: DistributorDantic) -> DistributorDantic:
     distributor = DistributorsCrud.update(id, distributor.name, distributor.deliver_service)
     if distributor is not False:
         return distributor
