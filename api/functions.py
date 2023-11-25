@@ -377,9 +377,9 @@ class ProductsCrud:
             return False
 
     @staticmethod
-    def delete_product(product_name: str) -> object:
+    def delete_product(id: int) -> object:
         sess = Session()
-        prod = sess.query(Products).where(Products.name == product_name).first()
+        prod = sess.query(Products).where(Products.id == id).first()
         if prod is not None:
             sess.delete(prod)
             sess.commit()
@@ -431,13 +431,14 @@ class ServicesCrud:
             ser = Services(name=name, service_price=service_price)
             sess.add(ser)
             sess.commit()
+            answer = {"id": ser.id, "name": ser.name, "price": ser.service_price}
             sess.close()
-            return True
+            return answer
 
     @staticmethod
-    def get_service(name: str) -> object:
+    def get_service(id: int) -> object:
         sess = Session()
-        ser = sess.query(Services).where(Services.name == name).first()
+        ser = sess.query(Services).where(Services.id == id).first()
         if ser is not None:
             answer = {"id": ser.id, "name": ser.name, "price": ser.service_price}
             sess.close()
@@ -447,21 +448,9 @@ class ServicesCrud:
             return False
 
     @staticmethod
-    def get_service_price(name: str) -> object:
+    def delete_service(id: int) -> object:
         sess = Session()
-        ser = sess.query(Services).where(Services.name == name).first()
-        if ser is not None:
-            price = ser.service_price
-            sess.close()
-            return price
-        else:
-            sess.close()
-            return None
-
-    @staticmethod
-    def delete_service(name: str) -> object:
-        sess = Session()
-        ser = sess.query(Services).where(Services.name == name).first()
+        ser = sess.query(Services).where(Services.id == id).first()
         if ser is None:
             sess.close()
             return False
@@ -472,16 +461,21 @@ class ServicesCrud:
             return True
 
     @staticmethod
-    def update_service_price(name: str, service_price: float):
+    def update_service_price(id: int, name: str, service_price: float) -> object:
         sess = Session()
-        ser = sess.query(Services).where(Services.name == name).first()
+        ser = sess.query(Services).where(Services.id == id).first()
         if ser is not None:
-            ser.service_price = service_price
+            if name is not None:
+                ser.name = name
+            if service_price is not None:
+                ser.service_price = service_price
             sess.commit()
+            answer = {"id": ser.id, "name": ser.name, "price": ser.service_price}
             sess.close()
+            return answer
         else:
             sess.close()
-
+            return False
 
 # noinspection PyTypeChecker
 class ServiceOrdersCrud:
@@ -608,13 +602,14 @@ class DistributorsCrud:
             dist = Distributors(name=name, deliver_service=deliver_service)
             sess.add(dist)
             sess.commit()
+            answer = {"id": dist.id, "name": dist.name, "deliver_service": dist.deliver_service}
             sess.close()
-            return True
+            return answer
 
     @staticmethod
-    def delete(name: str) -> object:
+    def delete(id: int) -> object:
         sess = Session()
-        dist = sess.query(Distributors).where(Distributors.name == name).first()
+        dist = sess.query(Distributors).where(Distributors.id == id).first()
         if dist is not None:
             sess.delete(dist)
             sess.commit()
@@ -625,9 +620,9 @@ class DistributorsCrud:
             return False
 
     @staticmethod
-    def get(name: str) -> object:
+    def get(id: int) -> object:
         sess = Session()
-        dist = sess.query(Distributors).where(Distributors.name == name).first()
+        dist = sess.query(Distributors).where(Distributors.id == id).first()
         if dist is not None:
             distributor = {"id": dist.id, "name": dist.name, "deliver_service": dist.deliver_service}
             return distributor
@@ -635,13 +630,16 @@ class DistributorsCrud:
             return False
 
     @staticmethod
-    def update_service(name: str, deliver_service: str) -> object:
+    def update(id: int, name: str, deliver_service: str) -> object:
         sess = Session()
-        dist = sess.query(Distributors).where(Distributors.name == name).first()
+        dist = sess.query(Distributors).where(Distributors.id == id).first()
         if dist is not None:
-            dist.deliver_service = deliver_service
+            if name is not None:
+                dist.name = name
+            if deliver_service is not None:
+                dist.deliver_service = deliver_service
             sess.commit()
-            distributor = {"name": dist.name, "deliver_service": deliver_service}
+            distributor = {"id": dist.id, "name": dist.name, "deliver_service": dist.deliver_service}
             sess.close()
             return distributor
         else:
@@ -675,33 +673,37 @@ class SuppliesCrud:
 # noinspection PyTypeChecker
 class BanksCrud:
     @staticmethod
-    def add(name: str):
+    def add_bank(name: str) -> object:
         sess = Session()
         bank = sess.query(Banks).where(Banks.name == name).first()
         if bank is None:
-            bank = Banks(name=name)
-            sess.add(bank)
-            sess.commit()
-            sess.close()
-        else:
-            sess.close()
+            try:
+                bank = Banks(name=name)
+                sess.add(bank)
+                sess.commit()
+                answer = {"id": bank.id, "name": name}
+                return answer
+            except Exception as e:
+                print(e)
+                return False
+            finally:
+                sess.close()
 
     @staticmethod
-    def get_bank(name: str) -> object:
+    def get_bank(id: int) -> object:
         sess = Session()
-        bank = sess.query(Banks).where(Banks.name == name).first()
+        bank = sess.query(Banks).where(Banks.id == id).first()
         if bank is not None:
             answer = {"id": bank.id, "name": bank.name}
             sess.close()
             return answer
         else:
-            BanksCrud.add(name)
-            return BanksCrud.get_bank(name)
+            return False
 
     @staticmethod
-    def delete_bank(name: str) -> object:
+    def delete_bank(id: int) -> object:
         sess = Session()
-        bank = sess.query(Banks).where(Banks.name == name).first()
+        bank = sess.query(Banks).where(Banks.id == id).first()
         if bank is not None:
             sess.delete(bank)
             sess.commit()
