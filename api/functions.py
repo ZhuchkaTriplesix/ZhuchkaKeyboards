@@ -81,12 +81,13 @@ class CustomerCrud:
             return None
 
     @staticmethod
-    def add_customer(vendor_id: int, vendor_type: int, first_name: str, second_name: str, username) -> object:
+    def add_customer(vendor_id: int, vendor_type: int, first_name: str, second_name: str, username: str,
+                     email: str) -> object:
         sess = Session()
         customer = sess.query(Customers).where(Customers.vendor_id == vendor_id).first()
         if customer is None:
             customer = Customers(vendor_id=vendor_id, vendor_type=vendor_type, first_name=first_name,
-                                 second_name=second_name, username=username)
+                                 second_name=second_name, username=username, email=email)
             sess.add(customer)
             sess.commit()
             sess.close()
@@ -123,33 +124,16 @@ class CustomerCrud:
 # noinspection PyTypeChecker
 class EmployeesCrud:
     @staticmethod
-    def add_emp(group: str, first_name: str, second_name: str, salary: float):
-        sess = Session()
-        employee = sess.query(Employees).where(
-            and_(Employees.first_name == first_name, Employees.second_name == second_name)).first()
-        if employee is not None:
-            sess.close()
-            return False
-        else:
-            emp = Employees(first_name=first_name, second_name=second_name, group=group,
-                            salary=salary)
-            sess.add(emp)
-            sess.commit()
-            sess.close()
-            return True
-
-    @staticmethod
-    def get_emp(first_name: str, second_name: str):
+    def add_emp(group: str, first_name: str, second_name: str, salary: float, contract_end: datetime.datetime):
         sess = Session()
         try:
-            emp = sess.query(Employees).where(
-                and_(Employees.first_name == first_name, Employees.second_name == second_name)).first()
-            id = emp.id
-            name = emp.first_name
-            surname = emp.second_name
-            salary = emp.salary
-            employee = {"id": id, "name": name, "surname": surname, "salary": salary}
-            return employee
+            emp = Employees(first_name=first_name, second_name=second_name, group=group,
+                            salary=salary, contract_end=contract_end)
+            sess.add(emp)
+            sess.commit()
+            answer = {"id": emp.id, "first_name": first_name, "second_name": second_name, "group": group,
+                      "salary": salary, "contract_end": contract_end}
+            return answer
         except Exception as e:
             print(e)
             return False
@@ -157,20 +141,40 @@ class EmployeesCrud:
             sess.close()
 
     @staticmethod
-    def update_emp_group(id: int, group: str):
+    def update_emp(id: int, first_name: str, second_name: str, group: str, salary: float, contract_end):
         sess = Session()
-        emp = sess.query(Employees).where(Employees.id == id).first()
-        emp.group = group
-        sess.commit()
-        sess.close()
+        try:
+            emp = sess.query(Employees).where(Employees.id == id).first()
+            if group is not None:
+                emp.group = group
+            if salary is not None:
+                emp.salary = salary
+            if contract_end is not None:
+                emp.contract_end = contract_end
+            sess.commit()
+            answer = {"id": emp.id, "name": emp.first_name, "surname": emp.second_name, "group": emp.group,
+                      "salary": emp.salary, "contract_end": emp.contract_end}
+            return answer
+        except Exception as e:
+            print(e)
+            return False
+        finally:
+            sess.close()
 
     @staticmethod
-    def update_contract_end(id, contract_end):
+    def get_emp(id) -> object:
         sess = Session()
-        emp = sess.query(Employees).where(Employees.id == id).first()
-        emp.contract_end = contract_end
-        sess.commit()
-        sess.close()
+        try:
+            emp = sess.query(Employees).where(Employees.id == id).first()
+            employee = {"id": id, "first_name": emp.first_name, "second_name": emp.second_name, "group": emp.group,
+                        "salary": emp.salary,
+                        "contract_end": emp.contract_end}
+            return employee
+        except Exception as e:
+            print(e)
+            return False
+        finally:
+            sess.close()
 
     @staticmethod
     def delete_emp(id: int):
@@ -203,7 +207,7 @@ class ComponentCrud:
             component = Components(component_name=component_name, component_type=component_type)
             sess.add(component)
             sess.commit()
-            component = {"Name": component.component_name, "Type": component.component_type}
+            component = {"id": component.id, "name": component.component_name, "type": component.component_type}
             sess.close()
             return component
 
@@ -222,11 +226,10 @@ class ComponentCrud:
             sess.close()
 
     @staticmethod
-    def get_component(component_name: str, component_type: str):
+    def get_component(id: int) -> object:
         sess = Session()
         try:
-            comp = sess.query(Components).where(
-                and_(Components.component_name == component_name, Components.component_type == component_type)).first()
+            comp = sess.query(Components).where(Components.id == id).first()
             component = {"id": comp.id, "name": comp.component_name, "type": comp.component_type}
             return component
         except Exception as e:
@@ -234,6 +237,22 @@ class ComponentCrud:
             return False
         finally:
             sess.close()
+
+    @staticmethod
+    def update_component(id: int, component_name: str, component_type: str) -> object:
+        sess = Session()
+        comp = sess.query(Components).where(Components.id == id).first()
+        if comp is not None:
+            if component_name is not None:
+                comp.component_name = component_name
+            if component_type is not None:
+                comp.component_type = component_type
+            sess.commit()
+            comp = {"id": comp.id, "name": comp.component_name, "type": comp.component_type}
+            sess.close()
+            return comp
+        else:
+            return False
 
 
 # noinspection PyTypeChecker
@@ -264,12 +283,18 @@ class ComponentUsageCrud:
 # noinspection PyTypeChecker
 class OrdersCrud:
     @staticmethod
-    def add(customer_id: int, transaction_id: int, product_id: int):
+    def add(customer_id: int, transaction_id: int, product_id: int) -> object:
         sess = Session()
-        order = Orders(customer_id=customer_id, transaction_id=transaction_id, product_id=product_id)
-        sess.add(order)
-        sess.commit()
-        sess.close()
+        try:
+            order = Orders(customer_id=customer_id, transaction_id=transaction_id, product_id=product_id)
+            sess.add(order)
+            sess.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return False
+        finally:
+            sess.close()
 
     @staticmethod
     def add_manager(id: int, manager_id: int):
@@ -277,7 +302,11 @@ class OrdersCrud:
         order = sess.query(Orders).where(Orders.id == id).first()
         order.manager_id = manager_id
         sess.commit()
+        product = ProductsCrud.get_product_by_id(order.id)
+        answer = {"id": order.id, "customer_id": order.customer_id, "manager_id": order.manager_id,
+                  "transaction_id": order.transaction_id, "product": product}
         sess.close()
+        return answer
 
     @staticmethod
     def get_order(customer_id: int, product_id: int) -> object:
@@ -336,9 +365,9 @@ class ProductsCrud:
             sess.close()
 
     @staticmethod
-    def get_product(product_name: str) -> object:
+    def get_product(id: int) -> object:
         sess = Session()
-        prod = sess.query(Products).where(Products.name == product_name).first()
+        prod = sess.query(Products).where(Products.id == id).first()
         if prod is not None:
             product = {"id": prod.id, "name:": prod.name, "category": prod.category, "price": prod.product_price}
             sess.close()
@@ -348,10 +377,10 @@ class ProductsCrud:
             return False
 
     @staticmethod
-    def delete_product(product_name: str) -> object:
+    def delete_product(id: int) -> object:
         sess = Session()
-        prod = sess.query(Products).where(Products.name == product_name).first()
-        if prod is not False:
+        prod = sess.query(Products).where(Products.id == id).first()
+        if prod is not None:
             sess.delete(prod)
             sess.commit()
             sess.close()
@@ -361,13 +390,28 @@ class ProductsCrud:
             return False
 
     @staticmethod
-    def update_product_price(product_name: str, product_price) -> object:
+    def get_product_by_id(id: int) -> object:
         sess = Session()
-        prod = sess.query(Products).where(Products.name == product_name).first()
+        prod = sess.query(Products).where(Products.id == id).first()
         if prod is not None:
-            prod.product_price = product_price
+            answer = {"id": prod.id, "name": prod.name, "category": prod.category, "price": prod.product_price}
+            return answer
+        else:
+            return False
+
+    @staticmethod
+    def update_product(id: int, product_name: str, category: str, product_price: float) -> object:
+        sess = Session()
+        prod = sess.query(Products).where(Products.id == id).first()
+        if prod is not None:
+            if product_price is not None:
+                prod.product_price = product_price
+            if product_name is not None:
+                prod.name = product_name
+            if category is not None:
+                prod.category = category
             sess.commit()
-            product = {"name": product_name, "price": product_price}
+            product = {"id": prod.id, "name": prod.name, "category": prod.category, "price": prod.product_price}
             sess.close()
             return product
         else:
@@ -387,13 +431,14 @@ class ServicesCrud:
             ser = Services(name=name, service_price=service_price)
             sess.add(ser)
             sess.commit()
+            answer = {"id": ser.id, "name": ser.name, "price": ser.service_price}
             sess.close()
-            return True
+            return answer
 
     @staticmethod
-    def get_service(name: str) -> object:
+    def get_service(id: int) -> object:
         sess = Session()
-        ser = sess.query(Services).where(Services.name == name).first()
+        ser = sess.query(Services).where(Services.id == id).first()
         if ser is not None:
             answer = {"id": ser.id, "name": ser.name, "price": ser.service_price}
             sess.close()
@@ -403,21 +448,9 @@ class ServicesCrud:
             return False
 
     @staticmethod
-    def get_service_price(name: str) -> object:
+    def delete_service(id: int) -> object:
         sess = Session()
-        ser = sess.query(Services).where(Services.name == name).first()
-        if ser is not None:
-            price = ser.service_price
-            sess.close()
-            return price
-        else:
-            sess.close()
-            return None
-
-    @staticmethod
-    def delete_service(name: str) -> object:
-        sess = Session()
-        ser = sess.query(Services).where(Services.name == name).first()
+        ser = sess.query(Services).where(Services.id == id).first()
         if ser is None:
             sess.close()
             return False
@@ -428,16 +461,21 @@ class ServicesCrud:
             return True
 
     @staticmethod
-    def update_service_price(name: str, service_price: float):
+    def update_service_price(id: int, name: str, service_price: float) -> object:
         sess = Session()
-        ser = sess.query(Services).where(Services.name == name).first()
+        ser = sess.query(Services).where(Services.id == id).first()
         if ser is not None:
-            ser.service_price = service_price
+            if name is not None:
+                ser.name = name
+            if service_price is not None:
+                ser.service_price = service_price
             sess.commit()
+            answer = {"id": ser.id, "name": ser.name, "price": ser.service_price}
             sess.close()
+            return answer
         else:
             sess.close()
-
+            return False
 
 # noinspection PyTypeChecker
 class ServiceOrdersCrud:
@@ -564,26 +602,27 @@ class DistributorsCrud:
             dist = Distributors(name=name, deliver_service=deliver_service)
             sess.add(dist)
             sess.commit()
+            answer = {"id": dist.id, "name": dist.name, "deliver_service": dist.deliver_service}
             sess.close()
-            return True
+            return answer
 
     @staticmethod
-    def delete(name: str) -> object:
+    def delete(id: int) -> object:
         sess = Session()
-        dist = sess.query(Distributors).where(Distributors.name == name).first()
+        dist = sess.query(Distributors).where(Distributors.id == id).first()
         if dist is not None:
             sess.delete(dist)
             sess.commit()
             sess.close()
-            return "Deleted"
+            return True
         else:
             sess.close()
-            return "None"
+            return False
 
     @staticmethod
-    def get(name: str) -> object:
+    def get(id: int) -> object:
         sess = Session()
-        dist = sess.query(Distributors).where(Distributors.name == name).first()
+        dist = sess.query(Distributors).where(Distributors.id == id).first()
         if dist is not None:
             distributor = {"id": dist.id, "name": dist.name, "deliver_service": dist.deliver_service}
             return distributor
@@ -591,13 +630,16 @@ class DistributorsCrud:
             return False
 
     @staticmethod
-    def update_service(name: str, deliver_service: str) -> object:
+    def update(id: int, name: str, deliver_service: str) -> object:
         sess = Session()
-        dist = sess.query(Distributors).where(Distributors.name == name).first()
+        dist = sess.query(Distributors).where(Distributors.id == id).first()
         if dist is not None:
-            dist.deliver_service = deliver_service
+            if name is not None:
+                dist.name = name
+            if deliver_service is not None:
+                dist.deliver_service = deliver_service
             sess.commit()
-            distributor = {"name": dist.name, "deliver_service": deliver_service}
+            distributor = {"id": dist.id, "name": dist.name, "deliver_service": dist.deliver_service}
             sess.close()
             return distributor
         else:
@@ -631,33 +673,37 @@ class SuppliesCrud:
 # noinspection PyTypeChecker
 class BanksCrud:
     @staticmethod
-    def add(name: str):
+    def add_bank(name: str) -> object:
         sess = Session()
         bank = sess.query(Banks).where(Banks.name == name).first()
         if bank is None:
-            bank = Banks(name=name)
-            sess.add(bank)
-            sess.commit()
-            sess.close()
-        else:
-            sess.close()
+            try:
+                bank = Banks(name=name)
+                sess.add(bank)
+                sess.commit()
+                answer = {"id": bank.id, "name": name}
+                return answer
+            except Exception as e:
+                print(e)
+                return False
+            finally:
+                sess.close()
 
     @staticmethod
-    def get_bank(name: str) -> object:
+    def get_bank(id: int) -> object:
         sess = Session()
-        bank = sess.query(Banks).where(Banks.name == name).first()
+        bank = sess.query(Banks).where(Banks.id == id).first()
         if bank is not None:
             answer = {"id": bank.id, "name": bank.name}
             sess.close()
             return answer
         else:
-            BanksCrud.add(name)
-            return BanksCrud.get_bank(name)
+            return False
 
     @staticmethod
-    def delete_bank(name: str) -> object:
+    def delete_bank(id: int) -> object:
         sess = Session()
-        bank = sess.query(Banks).where(Banks.name == name).first()
+        bank = sess.query(Banks).where(Banks.id == id).first()
         if bank is not None:
             sess.delete(bank)
             sess.commit()
