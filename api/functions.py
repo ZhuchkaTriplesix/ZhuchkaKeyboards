@@ -81,12 +81,13 @@ class CustomerCrud:
             return None
 
     @staticmethod
-    def add_customer(vendor_id: int, vendor_type: int, first_name: str, second_name: str, username) -> object:
+    def add_customer(vendor_id: int, vendor_type: int, first_name: str, second_name: str, username: str,
+                     email: str) -> object:
         sess = Session()
         customer = sess.query(Customers).where(Customers.vendor_id == vendor_id).first()
         if customer is None:
             customer = Customers(vendor_id=vendor_id, vendor_type=vendor_type, first_name=first_name,
-                                 second_name=second_name, username=username)
+                                 second_name=second_name, username=username, email=email)
             sess.add(customer)
             sess.commit()
             sess.close()
@@ -125,34 +126,32 @@ class EmployeesCrud:
     @staticmethod
     def add_emp(group: str, first_name: str, second_name: str, salary: float, contract_end: datetime.datetime):
         sess = Session()
-        employee = sess.query(Employees).where(
-            and_(Employees.first_name == first_name, Employees.second_name == second_name)).first()
-        if employee is not None:
-            sess.close()
-            return False
-        else:
+        try:
             emp = Employees(first_name=first_name, second_name=second_name, group=group,
                             salary=salary, contract_end=contract_end)
             sess.add(emp)
             sess.commit()
+            answer = {"id": emp.id, "first_name": first_name, "second_name": second_name, "group": group,
+                      "salary": salary, "contract_end": contract_end}
+            return answer
+        except Exception as e:
+            print(e)
+            return False
+        finally:
             sess.close()
-            return True
 
     @staticmethod
-    def update_emp(first_name: str, second_name: str, group: str, salary: float, contract_end):
+    def update_emp(id: int, first_name: str, second_name: str, group: str, salary: float, contract_end):
         sess = Session()
         try:
-            emp = sess.query(Employees).where(
-                and_(Employees.first_name == first_name, Employees.second_name == second_name)).first()
+            emp = sess.query(Employees).where(Employees.id == id).first()
             if group is not None:
                 emp.group = group
-                sess.commit()
             if salary is not None:
                 emp.salary = salary
-                sess.commit()
             if contract_end is not None:
                 emp.contract_end = contract_end
-                sess.commit()
+            sess.commit()
             answer = {"id": emp.id, "name": emp.first_name, "surname": emp.second_name, "group": emp.group,
                       "salary": emp.salary, "contract_end": emp.contract_end}
             return answer
@@ -163,16 +162,12 @@ class EmployeesCrud:
             sess.close()
 
     @staticmethod
-    def get_emp(first_name: str, second_name: str) -> object:
+    def get_emp(id) -> object:
         sess = Session()
         try:
-            emp = sess.query(Employees).where(
-                and_(Employees.first_name == first_name, Employees.second_name == second_name)).first()
-            id = emp.id
-            name = emp.first_name
-            surname = emp.second_name
-            salary = emp.salary
-            employee = {"id": id, "name": name, "surname": surname, "group": emp.group, "salary": salary,
+            emp = sess.query(Employees).where(Employees.id == id).first()
+            employee = {"id": id, "first_name": emp.first_name, "second_name": emp.second_name, "group": emp.group,
+                        "salary": emp.salary,
                         "contract_end": emp.contract_end}
             return employee
         except Exception as e:
@@ -212,7 +207,7 @@ class ComponentCrud:
             component = Components(component_name=component_name, component_type=component_type)
             sess.add(component)
             sess.commit()
-            component = {"Name": component.component_name, "Type": component.component_type}
+            component = {"id": component.id, "name": component.component_name, "type": component.component_type}
             sess.close()
             return component
 
@@ -231,11 +226,10 @@ class ComponentCrud:
             sess.close()
 
     @staticmethod
-    def get_component(component_name: str, component_type: str):
+    def get_component(id: int) -> object:
         sess = Session()
         try:
-            comp = sess.query(Components).where(
-                and_(Components.component_name == component_name, Components.component_type == component_type)).first()
+            comp = sess.query(Components).where(Components.id == id).first()
             component = {"id": comp.id, "name": comp.component_name, "type": comp.component_type}
             return component
         except Exception as e:
@@ -243,6 +237,22 @@ class ComponentCrud:
             return False
         finally:
             sess.close()
+
+    @staticmethod
+    def update_component(id: int, component_name: str, component_type: str) -> object:
+        sess = Session()
+        comp = sess.query(Components).where(Components.id == id).first()
+        if comp is not None:
+            if component_name is not None:
+                comp.component_name = component_name
+            if component_type is not None:
+                comp.component_type = component_type
+            sess.commit()
+            comp = {"id": comp.id, "name": comp.component_name, "type": comp.component_type}
+            sess.close()
+            return comp
+        else:
+            return False
 
 
 # noinspection PyTypeChecker
@@ -355,9 +365,9 @@ class ProductsCrud:
             sess.close()
 
     @staticmethod
-    def get_product(product_name: str) -> object:
+    def get_product(id: int) -> object:
         sess = Session()
-        prod = sess.query(Products).where(Products.name == product_name).first()
+        prod = sess.query(Products).where(Products.id == id).first()
         if prod is not None:
             product = {"id": prod.id, "name:": prod.name, "category": prod.category, "price": prod.product_price}
             sess.close()
@@ -390,13 +400,18 @@ class ProductsCrud:
             return False
 
     @staticmethod
-    def update_product_price(product_name: str, product_price) -> object:
+    def update_product(id: int, product_name: str, category: str, product_price: float) -> object:
         sess = Session()
-        prod = sess.query(Products).where(Products.name == product_name).first()
+        prod = sess.query(Products).where(Products.id == id).first()
         if prod is not None:
-            prod.product_price = product_price
+            if product_price is not None:
+                prod.product_price = product_price
+            if product_name is not None:
+                prod.name = product_name
+            if category is not None:
+                prod.category = category
             sess.commit()
-            product = {"name": product_name, "price": product_price}
+            product = {"id": prod.id, "name": prod.name, "category": prod.category, "price": prod.product_price}
             sess.close()
             return product
         else:
