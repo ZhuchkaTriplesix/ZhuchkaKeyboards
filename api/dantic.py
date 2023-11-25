@@ -36,6 +36,7 @@ class DistributorDantic(BaseModel):
 
 
 class ServiceDantic(BaseModel):
+    id: int | None = None
     name: str | None = None
     price: float | None = None
 

@@ -182,12 +182,12 @@ def distributor_delete(id: int):
 
 
 @app.post("/services", tags=["Services"])
-def service_add(service: ServiceDantic):
-    service = ServicesCrud.add(service.name, service.price)
-    if service is not False:
-        return service
+def service_add(service: ServiceDantic) ->ServicesCrud:
+    ser = ServicesCrud.add(service.name, service.price)
+    if ser is not False:
+        return ser
     else:
-        return False
+        raise HTTPException
 
 
 @app.get("/services/{id}", tags=["Services"])
