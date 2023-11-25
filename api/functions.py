@@ -3,7 +3,7 @@ from sqlalchemy import create_engine, and_, func
 from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.orm import scoped_session, sessionmaker
 from config import database
-from dantic import ComponentsDantic, EmloyeeDantic, ProductDantic, BankDantic, DistributorDantic
+from dantic import ComponentsDantic, EmloyeeDantic, ProductDantic, BankDantic, DistributorDantic, ServiceDantic
 from models import Banks, ComponentUsage, Components, Customers, Distributors, Employees, TelegramUsers, Logs, Orders, \
     Products, Services, ServiceOrders, Supplies, Tasks, Transactions
 
@@ -427,7 +427,7 @@ class ProductsCrud:
 # noinspection PyTypeChecker
 class ServicesCrud:
     @staticmethod
-    def add(name: str, service_price: float) -> object:
+    def add(name: str, service_price: float) -> ServiceDantic:
         sess = Session()
         ser = sess.query(Services).where(Services.name == name).first()
         if ser is not None:
@@ -437,7 +437,7 @@ class ServicesCrud:
             ser = Services(name=name, service_price=service_price)
             sess.add(ser)
             sess.commit()
-            answer = {"id": ser.id, "name": ser.name, "price": ser.service_price}
+            answer = ServiceDantic(id=ser.id, name=ser.name, price=ser.service_price)
             sess.close()
             return answer
 
