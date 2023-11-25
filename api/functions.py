@@ -3,6 +3,7 @@ from sqlalchemy import create_engine, and_, func
 from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.orm import scoped_session, sessionmaker
 from config import database
+from dantic import ComponentsDantic, EmloyeeDantic, ProductDantic, BankDantic, DistributorDantic
 from models import Banks, ComponentUsage, Components, Customers, Distributors, Employees, TelegramUsers, Logs, Orders, \
     Products, Services, ServiceOrders, Supplies, Tasks, Transactions
 
@@ -124,16 +125,17 @@ class CustomerCrud:
 # noinspection PyTypeChecker
 class EmployeesCrud:
     @staticmethod
-    def add_emp(group: str, first_name: str, second_name: str, salary: float, contract_end: datetime.datetime):
+    def add_emp(first_name: str, second_name: str, group: str, salary: float,
+                contract_end: datetime.datetime) -> EmloyeeDantic:
         sess = Session()
         try:
             emp = Employees(first_name=first_name, second_name=second_name, group=group,
                             salary=salary, contract_end=contract_end)
             sess.add(emp)
             sess.commit()
-            answer = {"id": emp.id, "first_name": first_name, "second_name": second_name, "group": group,
-                      "salary": salary, "contract_end": contract_end}
-            return answer
+            employee = Employees(id=emp.id, first_name=emp.first_name, second_name=emp.second_name, group=emp.group,
+                                 salary=emp.salary, contract_end=emp.contract_end)
+            return employee
         except Exception as e:
             print(e)
             return False
@@ -141,10 +143,15 @@ class EmployeesCrud:
             sess.close()
 
     @staticmethod
-    def update_emp(id: int, first_name: str, second_name: str, group: str, salary: float, contract_end):
+    def update_emp(id: int, first_name: str, second_name: str, group: str, salary: float,
+                   contract_end) -> EmloyeeDantic:
         sess = Session()
         try:
             emp = sess.query(Employees).where(Employees.id == id).first()
+            if first_name is not None:
+                emp.first_name = first_name
+            if second_name is not None:
+                emp.second_name = second_name
             if group is not None:
                 emp.group = group
             if salary is not None:
@@ -152,9 +159,9 @@ class EmployeesCrud:
             if contract_end is not None:
                 emp.contract_end = contract_end
             sess.commit()
-            answer = {"id": emp.id, "name": emp.first_name, "surname": emp.second_name, "group": emp.group,
-                      "salary": emp.salary, "contract_end": emp.contract_end}
-            return answer
+            employee = Employees(id=emp.id, first_name=emp.first_name, second_name=emp.second_name, group=emp.group,
+                                 salary=emp.salary, contract_end=emp.contract_end)
+            return employee
         except Exception as e:
             print(e)
             return False
@@ -162,7 +169,7 @@ class EmployeesCrud:
             sess.close()
 
     @staticmethod
-    def get_emp(id) -> object:
+    def get_emp(id: int) -> EmloyeeDantic:
         sess = Session()
         try:
             emp = sess.query(Employees).where(Employees.id == id).first()
@@ -177,12 +184,18 @@ class EmployeesCrud:
             sess.close()
 
     @staticmethod
-    def delete_emp(id: int):
+    def delete_emp(id: int) -> object:
         sess = Session()
-        emp = sess.query(Employees).where(Employees.id == id).first()
-        sess.delete(emp)
-        sess.commit()
-        sess.close()
+        try:
+            emp = sess.query(Employees).where(Employees.id == id).first()
+            sess.delete(emp)
+            sess.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return False
+        finally:
+            sess.close()
 
 
 class LogsCrud:
@@ -198,7 +211,7 @@ class LogsCrud:
 # noinspection PyTypeChecker
 class ComponentCrud:
     @staticmethod
-    def add_component(component_name: str, component_type: str) -> object:
+    def add_component(component_name: str, component_type: str) -> ComponentsDantic:
         sess = Session()
         comp = sess.query(Components).where(Components.component_name == component_name).first()
         if comp is not None:
@@ -207,7 +220,8 @@ class ComponentCrud:
             component = Components(component_name=component_name, component_type=component_type)
             sess.add(component)
             sess.commit()
-            component = {"id": component.id, "name": component.component_name, "type": component.component_type}
+            component = ComponentsDantic(id=component.id, name=component.component_name, type=component.component_type)
+
             sess.close()
             return component
 
@@ -226,11 +240,11 @@ class ComponentCrud:
             sess.close()
 
     @staticmethod
-    def get_component(id: int) -> object:
+    def get_component(id: int) -> ComponentsDantic:
         sess = Session()
         try:
             comp = sess.query(Components).where(Components.id == id).first()
-            component = {"id": comp.id, "name": comp.component_name, "type": comp.component_type}
+            component = ComponentsDantic(id=comp.id, name=comp.component_name, type=comp.component_type)
             return component
         except Exception as e:
             print(e)
@@ -239,7 +253,7 @@ class ComponentCrud:
             sess.close()
 
     @staticmethod
-    def update_component(id: int, component_name: str, component_type: str) -> object:
+    def update_component(id: int, component_name: str, component_type: str) -> ComponentsDantic:
         sess = Session()
         comp = sess.query(Components).where(Components.id == id).first()
         if comp is not None:
@@ -248,9 +262,9 @@ class ComponentCrud:
             if component_type is not None:
                 comp.component_type = component_type
             sess.commit()
-            comp = {"id": comp.id, "name": comp.component_name, "type": comp.component_type}
+            component = ComponentsDantic(id=comp.id, name=comp.component_name, type=comp.component_type)
             sess.close()
-            return comp
+            return component
         else:
             return False
 
@@ -302,7 +316,7 @@ class OrdersCrud:
         order = sess.query(Orders).where(Orders.id == id).first()
         order.manager_id = manager_id
         sess.commit()
-        product = ProductsCrud.get_product_by_id(order.id)
+        product = ProductsCrud.get_product(order.id)
         answer = {"id": order.id, "customer_id": order.customer_id, "manager_id": order.manager_id,
                   "transaction_id": order.transaction_id, "product": product}
         sess.close()
@@ -353,23 +367,25 @@ class TransactionsCrud:
 # noinspection PyTypeChecker
 class ProductsCrud:
     @staticmethod
-    def add(product_name: str, category: str, product_price: float):
+    def add(name: str, category: str, product_price: float) -> ProductDantic:
         sess = Session()
-        prod = sess.query(Products).where(Products.name == product_name).first()
+        prod = sess.query(Products).where(Products.name == name).first()
         if prod is not None:
-            pass
+            return False
         else:
-            prod = Products(name=product_name, category=category, product_price=product_price)
+            prod = Products(name=name, category=category, product_price=product_price)
             sess.add(prod)
             sess.commit()
+            product = ProductDantic(id=prod.id, name=prod.name, category=prod.category, price=prod.product_price)
             sess.close()
+            return product
 
     @staticmethod
-    def get_product(id: int) -> object:
+    def get_product(id: int) -> ProductDantic:
         sess = Session()
         prod = sess.query(Products).where(Products.id == id).first()
         if prod is not None:
-            product = {"id": prod.id, "name:": prod.name, "category": prod.category, "price": prod.product_price}
+            product = ProductDantic(id=prod.id, name=prod.name, category=prod.category, price=prod.product_price)
             sess.close()
             return product
         else:
@@ -390,17 +406,7 @@ class ProductsCrud:
             return False
 
     @staticmethod
-    def get_product_by_id(id: int) -> object:
-        sess = Session()
-        prod = sess.query(Products).where(Products.id == id).first()
-        if prod is not None:
-            answer = {"id": prod.id, "name": prod.name, "category": prod.category, "price": prod.product_price}
-            return answer
-        else:
-            return False
-
-    @staticmethod
-    def update_product(id: int, product_name: str, category: str, product_price: float) -> object:
+    def update_product(id: int, product_name: str, category: str, product_price: float) -> ProductDantic:
         sess = Session()
         prod = sess.query(Products).where(Products.id == id).first()
         if prod is not None:
@@ -411,7 +417,7 @@ class ProductsCrud:
             if category is not None:
                 prod.category = category
             sess.commit()
-            product = {"id": prod.id, "name": prod.name, "category": prod.category, "price": prod.product_price}
+            product = ProductDantic(id=prod.id, name=prod.name, category=prod.category, price=prod.product_price)
             sess.close()
             return product
         else:
@@ -476,6 +482,7 @@ class ServicesCrud:
         else:
             sess.close()
             return False
+
 
 # noinspection PyTypeChecker
 class ServiceOrdersCrud:
@@ -592,7 +599,7 @@ class TasksCrud:
 # noinspection PyTypeChecker
 class DistributorsCrud:
     @staticmethod
-    def add(name: str, deliver_service: str) -> object:
+    def add(name: str, deliver_service: str) -> DistributorDantic:
         sess = Session()
         dist = sess.query(Distributors).where(Distributors.name == name).first()
         if dist is not None:
@@ -602,9 +609,9 @@ class DistributorsCrud:
             dist = Distributors(name=name, deliver_service=deliver_service)
             sess.add(dist)
             sess.commit()
-            answer = {"id": dist.id, "name": dist.name, "deliver_service": dist.deliver_service}
+            distributor = DistributorDantic(id=dist.id, name=dist.name, deliver_service=dist.deliver_service)
             sess.close()
-            return answer
+            return distributor
 
     @staticmethod
     def delete(id: int) -> object:
@@ -620,17 +627,17 @@ class DistributorsCrud:
             return False
 
     @staticmethod
-    def get(id: int) -> object:
+    def get(id: int) -> DistributorDantic:
         sess = Session()
         dist = sess.query(Distributors).where(Distributors.id == id).first()
         if dist is not None:
-            distributor = {"id": dist.id, "name": dist.name, "deliver_service": dist.deliver_service}
+            distributor = DistributorDantic(id=dist.id, name=dist.name, deliver_service=dist.deliver_service)
             return distributor
         else:
             return False
 
     @staticmethod
-    def update(id: int, name: str, deliver_service: str) -> object:
+    def update(id: int, name: str, deliver_service: str) -> DistributorDantic:
         sess = Session()
         dist = sess.query(Distributors).where(Distributors.id == id).first()
         if dist is not None:
@@ -639,7 +646,7 @@ class DistributorsCrud:
             if deliver_service is not None:
                 dist.deliver_service = deliver_service
             sess.commit()
-            distributor = {"id": dist.id, "name": dist.name, "deliver_service": dist.deliver_service}
+            distributor = DistributorDantic(id=dist.id, name=dist.name, deliver_service=dist.deliver_service)
             sess.close()
             return distributor
         else:
@@ -673,7 +680,7 @@ class SuppliesCrud:
 # noinspection PyTypeChecker
 class BanksCrud:
     @staticmethod
-    def add_bank(name: str) -> object:
+    def add_bank(name: str) -> BankDantic:
         sess = Session()
         bank = sess.query(Banks).where(Banks.name == name).first()
         if bank is None:
@@ -681,7 +688,7 @@ class BanksCrud:
                 bank = Banks(name=name)
                 sess.add(bank)
                 sess.commit()
-                answer = {"id": bank.id, "name": name}
+                answer = BankDantic(id=bank.id, name=bank.name)
                 return answer
             except Exception as e:
                 print(e)
@@ -690,11 +697,11 @@ class BanksCrud:
                 sess.close()
 
     @staticmethod
-    def get_bank(id: int) -> object:
+    def get_bank(id: int) -> BankDantic:
         sess = Session()
         bank = sess.query(Banks).where(Banks.id == id).first()
         if bank is not None:
-            answer = {"id": bank.id, "name": bank.name}
+            answer = BankDantic(id=bank.id, name=bank.name)
             sess.close()
             return answer
         else:
