@@ -8,17 +8,17 @@ class ComponentsDantic(BaseModel):
 
 
 class EmloyeeDantic(BaseModel):
-    name: str
-    surname: str
+    first_name: str
+    second_name: str
     group: str | None = None
     salary: float | None = None
     contract_end: datetime | None = None
 
 
 class ProductDantic(BaseModel):
-    name: str
+    name: str | None = None
     category: str | None = None
-    price: float
+    price: float | None = None
 
 
 class BankDantic(BaseModel):
@@ -33,3 +33,12 @@ class DistributorDantic(BaseModel):
 class ServiceDantic(BaseModel):
     name: str
     price: float
+
+
+class CustomerDantic(BaseModel):
+    vendor_id: int
+    vendor_type: int
+    name: str
+    surname: str
+    username: str
+    email: str | None = None
