@@ -3,7 +3,8 @@ from sqlalchemy import create_engine, and_, func
 from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.orm import scoped_session, sessionmaker
 from config import database
-from dantic import ComponentsDantic, EmloyeeDantic, ProductDantic, BankDantic, DistributorDantic, ServiceDantic
+from dantic import ComponentsDantic, EmloyeeDantic, ProductDantic, BankDantic, DistributorDantic, ServiceDantic, \
+    CustomerDantic
 from models import Banks, ComponentUsage, Components, Customers, Distributors, Employees, TelegramUsers, Logs, Orders, \
     Products, Services, ServiceOrders, Supplies, Tasks, Transactions
 
@@ -75,6 +76,10 @@ class CustomerCrud:
         sess = Session()
         customer = sess.query(Customers).where(Customers.vendor_id == vendor_id).first()
         if customer is not None:
+            cust = CustomerDantic(id=customer.id, vendor_id=customer.vendor_id, vendor_type=customer.vendor_id,
+                                  first_name=customer.first_name, second_name=customer.second_name,
+                                  username=customer.username, email=customer.email, created_date=customer.created_date,
+                                  updated_date=customer.updated_date)
             sess.close()
             return customer
         else:
@@ -97,15 +102,31 @@ class CustomerCrud:
             return False
 
     @staticmethod
-    def update_customer_email(vendor_id: int, email: str) -> object:
+    def update_customer_email(id: int, vendor_id: int, vendor_type: int, first_name: str, second_name: str,
+                              username: str, email: str) -> CustomerDantic:
         sess = Session()
         try:
-            customer = sess.query(Customers).where(Customers.vendor_id == vendor_id).first()
-            customer.email = email
+            customer = sess.query(Customers).where(Customers.id == id).first()
+            if vendor_id is not None:
+                customer.vendor_id = vendor_id
+            if vendor_type is not None:
+                customer.vendor_type = vendor_type
+            if first_name is not None:
+                customer.first_name = first_name
+            if second_name is not None:
+                customer.second_name = second_name
+            if username is not None:
+                customer.username = username
+            if email is not None:
+                customer.email = email
             customer.updated_date = datetime.datetime.utcnow()
             sess.commit()
+            cust = CustomerDantic(id=customer.id, vendor_id=customer.vendor_id, vendor_type=customer.vendor_id,
+                                  first_name=customer.first_name, second_name=customer.second_name,
+                                  username=customer.username, email=customer.email, created_date=customer.created_date,
+                                  updated_date=customer.updated_date)
             sess.close()
-            return True
+            return cust
         except ProgrammingError:
             return False
 
