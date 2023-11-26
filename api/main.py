@@ -182,7 +182,7 @@ def distributor_delete(id: int):
 
 
 @app.post("/services", tags=["Services"])
-def service_add(service: ServiceDantic) ->ServicesCrud:
+def service_add(service: ServiceDantic) -> ServiceDantic:
     ser = ServicesCrud.add(service.name, service.price)
     if ser is not False:
         return ser
@@ -229,9 +229,14 @@ def customer_add(customer: CustomerDantic):
 
 
 @app.get("/customers/{id}", tags=["Customers"])
-def customer_get(id: int):
+def customer_get(id: int) -> CustomerDantic:
     customer = CustomerCrud.get_customer(id)
     if customer is not False:
         return customer
     else:
         raise HTTPException(status_code=404)
+
+
+@app.put("/customers/{id}", tags=["Customers"])
+def customer_update(id: int, customer: CustomerDantic) -> CustomerDantic:
+    cust = CustomerCrud.update_customer_email()
