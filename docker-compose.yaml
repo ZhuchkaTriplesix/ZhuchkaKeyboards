@@ -1,6 +1,14 @@
 version: '3.5'
 
 services:
+  api:
+    build: .
+    container_name: fastapi-application
+    ports:
+      - '8000:8000'
+    command: pip install uvicorn
+    depends_on:
+      - db.auth
   db.auth:
     container_name: zhuzhu
     ports:
