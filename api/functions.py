@@ -580,10 +580,10 @@ class ServiceOrdersCrud:
             service = ServicesCrud.get_service(order.service_id)
             if manager_id is not None:
                 manager = EmployeesCrud.get_emp(order.manager_id)
-                answer = OutputOrder(id=order.id, customer=customer, manager=manager, transaction=trans,
+                answer = OutputServiceOrder(id=order.id, customer=customer, manager=manager, transaction=trans,
                                      service=service)
             else:
-                answer = OutputOrder(id=order.id, customer=customer, transaction=trans, service=service)
+                answer = OutputServiceOrder(id=order.id, customer=customer, transaction=trans, service=service)
             return answer
         except Exception as e:
             print(e)
@@ -602,7 +602,7 @@ class ServiceOrdersCrud:
             customer = CustomerCrud.get_customer(order.id)
             trans = TransactionsCrud.get(order.transaction_id)
             service = ServicesCrud.get_service(order.service_id)
-            answer = OutputOrder(id=order.id, customer=customer, manager=manager, transaction=trans, service=service)
+            answer = OutputServiceOrder(id=order.id, customer=customer, manager=manager, transaction=trans, service=service)
             sess.close()
             return answer
         else:

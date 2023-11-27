@@ -96,4 +96,4 @@ class OutputServiceOrder(BaseModel):
     customer: CustomerDantic
     manager: EmployeeDantic | None = None
     transaction: OutputTransaction
-    service: ServiceOrderDantic
+    service: ServiceDantic

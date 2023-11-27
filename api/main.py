@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from dantic import ComponentsDantic, EmployeeDantic, ProductDantic, BankDantic, DistributorDantic, ServiceDantic, \
-    CustomerDantic, TransactionDantic, OutputTransaction, OrderDantic, OutputOrder
+    CustomerDantic, TransactionDantic, OutputTransaction, OrderDantic, OutputOrder, OutputServiceOrder, \
+    ServiceOrderDantic
 from functions import ComponentCrud, EmployeesCrud, ProductsCrud, BanksCrud, DistributorsCrud, ServicesCrud, \
     CustomerCrud, TransactionsCrud, OrdersCrud
 
@@ -311,7 +312,7 @@ def order_delete(id: int):
 
 
 @app.post("/orders/services", tags=["Service Orders"])
-def order_add(order: OrderDantic) -> OutputOrder:
+def order_add(order: ServiceOrderDantic) -> OutputServiceOrder:
     ord = OrdersCrud.add(order.customer_id, order.manager_id, order.transaction_id, order.product_id)
     if ord is not False:
         return ord
@@ -320,7 +321,7 @@ def order_add(order: OrderDantic) -> OutputOrder:
 
 
 @app.get("/orders/services/{id}", tags=["Service Orders"])
-def order_get(id: int) -> OutputOrder:
+def order_get(id: int) -> OutputServiceOrder:
     order = OrdersCrud.get_order(id)
     if order is not False:
         return order
