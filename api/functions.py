@@ -115,14 +115,10 @@ class CustomerCrud:
                 customer.vendor_id = vendor_id
             if vendor_type is not None:
                 customer.vendor_type = vendor_type
-            if first_name is not None:
-                customer.first_name = first_name
-            if second_name is not None:
-                customer.second_name = second_name
-            if username is not None:
-                customer.username = username
-            if email is not None:
-                customer.email = email
+            customer.first_name = first_name
+            customer.second_name = second_name
+            customer.username = username
+            customer.email = email
             customer.updated_date = datetime.datetime.utcnow()
             sess.commit()
             cust = CustomerDantic(id=customer.id, vendor_id=customer.vendor_id, vendor_type=customer.vendor_id,
@@ -173,14 +169,10 @@ class EmployeesCrud:
         sess = Session()
         try:
             emp = sess.query(Employees).where(Employees.id == id).first()
-            if first_name is not None:
-                emp.first_name = first_name
-            if second_name is not None:
-                emp.second_name = second_name
-            if group is not None:
-                emp.group = group
-            if salary is not None:
-                emp.salary = salary
+            emp.first_name = first_name
+            emp.second_name = second_name
+            emp.group = group
+            emp.salary = salary
             if contract_end is not None:
                 emp.contract_end = contract_end
             sess.commit()

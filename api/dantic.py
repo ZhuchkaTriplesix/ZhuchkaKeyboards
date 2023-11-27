@@ -9,11 +9,11 @@ class ComponentsDantic(BaseModel):
 
 
 class EmloyeeDantic(BaseModel):
-    id: int | None = None
-    first_name: str | None = None
-    second_name: str | None = None
-    group: str | None = None
-    salary: float | None = None
+    id: int
+    first_name: str
+    second_name: str
+    group: str
+    salary: float
     contract_end: datetime | None = None
 
 
@@ -42,10 +42,10 @@ class ServiceDantic(BaseModel):
 
 
 class CustomerDantic(BaseModel):
-    id: int | None = None
-    vendor_id: int | None = None
-    vendor_type: int | None = None
-    first_name: str | None = None
-    second_name: str | None = None
-    username: str | None = None
+    id: int
+    vendor_id: int
+    vendor_type: int
+    first_name: str
+    second_name: str
+    username: str
     email: str | None = None
