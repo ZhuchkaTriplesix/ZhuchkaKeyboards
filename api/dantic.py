@@ -97,3 +97,17 @@ class OutputServiceOrder(BaseModel):
     manager: EmployeeDantic | None = None
     transaction: OutputTransaction
     service: ServiceDantic
+
+
+class SupplyDantic(BaseModel):
+    id: int | None = None
+    component_id: int
+    count: float
+    distributor: int
+
+
+class OutputSupplyDantic(BaseModel):
+    id: int
+    component: ComponentsDantic
+    count: float
+    distributor: DistributorDantic
