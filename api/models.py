@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base, scoped_session, relationship
 import datetime
 from config import database
-from enum import Enum
+
 
 Base = declarative_base()
 
@@ -12,17 +12,6 @@ engine = create_engine(database, echo=False)
 Session = sessionmaker(bind=engine)
 session = scoped_session(Session)
 conn = engine.connect()
-
-
-class Platform(Enum):
-    TELEGRAM = 1
-    VK = 2
-
-
-class Group(Enum):
-    ENGINEER = 1
-    MANAGER = 2
-    HIGH_MANAGER = 3
 
 
 class TelegramUsers(Base):
