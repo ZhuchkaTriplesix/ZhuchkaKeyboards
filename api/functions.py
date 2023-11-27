@@ -3,7 +3,7 @@ from sqlalchemy import create_engine, and_, func
 from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.orm import scoped_session, sessionmaker
 from config import database
-from dantic import ComponentsDantic, EmloyeeDantic, ProductDantic, BankDantic, DistributorDantic, ServiceDantic, \
+from dantic import ComponentsDantic, EmployeeDantic, ProductDantic, BankDantic, DistributorDantic, ServiceDantic, \
     CustomerDantic, TransactionDantic, OutputTransaction
 from models import Banks, ComponentUsage, Components, Customers, Distributors, Employees, TelegramUsers, Logs, Orders, \
     Products, Services, ServiceOrders, Supplies, Tasks, Transactions
@@ -147,7 +147,7 @@ class CustomerCrud:
 class EmployeesCrud:
     @staticmethod
     def add_emp(first_name: str, second_name: str, group: str, salary: float,
-                contract_end: datetime.datetime) -> EmloyeeDantic:
+                contract_end: datetime.datetime) -> EmployeeDantic:
         sess = Session()
         try:
             emp = Employees(first_name=first_name, second_name=second_name, group=group,
@@ -165,7 +165,7 @@ class EmployeesCrud:
 
     @staticmethod
     def update_emp(id: int, first_name: str, second_name: str, group: str, salary: float,
-                   contract_end) -> EmloyeeDantic:
+                   contract_end) -> EmployeeDantic:
         sess = Session()
         try:
             emp = sess.query(Employees).where(Employees.id == id).first()
@@ -186,7 +186,7 @@ class EmployeesCrud:
             sess.close()
 
     @staticmethod
-    def get_emp(id: int) -> EmloyeeDantic:
+    def get_emp(id: int) -> EmployeeDantic:
         sess = Session()
         try:
             emp = sess.query(Employees).where(Employees.id == id).first()
