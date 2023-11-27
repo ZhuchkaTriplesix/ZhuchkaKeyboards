@@ -308,3 +308,30 @@ def order_delete(id: int):
         raise HTTPException(status_code=200)
     else:
         raise HTTPException(status_code=404)
+
+
+@app.post("/orders/services", tags=["Service Orders"])
+def order_add(order: OrderDantic) -> OutputOrder:
+    ord = OrdersCrud.add(order.customer_id, order.manager_id, order.transaction_id, order.product_id)
+    if ord is not False:
+        return ord
+    else:
+        raise HTTPException(status_code=400)
+
+
+@app.get("/orders/services/{id}", tags=["Service Orders"])
+def order_get(id: int) -> OutputOrder:
+    order = OrdersCrud.get_order(id)
+    if order is not False:
+        return order
+    else:
+        raise HTTPException(status_code=404)
+
+
+@app.delete("/orders/services/{id}", tags=["Service Orders"])
+def order_delete(id: int):
+    order = OrdersCrud.delete_order(id)
+    if order is not False:
+        raise HTTPException(status_code=200)
+    else:
+        raise HTTPException(status_code=404)

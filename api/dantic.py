@@ -81,3 +81,19 @@ class OutputOrder(BaseModel):
     manager: EmployeeDantic | None = None
     transaction: OutputTransaction
     product: ProductDantic
+
+
+class ServiceOrderDantic(BaseModel):
+    id: int | None = None
+    customer_id: int
+    manager_id: int | None = None
+    transaction_id: int
+    service_id: int
+
+
+class OutputServiceOrder(BaseModel):
+    id: int
+    customer: CustomerDantic
+    manager: EmployeeDantic | None = None
+    transaction: OutputTransaction
+    service: ServiceOrderDantic
