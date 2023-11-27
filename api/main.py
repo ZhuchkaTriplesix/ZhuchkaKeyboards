@@ -6,7 +6,6 @@ from functions import ComponentCrud, EmployeesCrud, ProductsCrud, BanksCrud, Dis
     CustomerCrud, TransactionsCrud, OrdersCrud
 
 app = FastAPI()
-SUCCESSFUL_ADD = "Successful addition"
 
 
 @app.post('/components', tags=["Components"])
@@ -52,7 +51,7 @@ def employee_add(employee: EmployeeDantic) -> EmployeeDantic:
     if emp is True:
         return emp
     else:
-        raise HTTPException
+        raise HTTPException(status_code=400)
 
 
 @app.get("/employees/{id}", tags=["Employee"])
@@ -80,7 +79,7 @@ def employee_delete(id: int):
     if emp is False:
         raise HTTPException(status_code=404)
     else:
-        return True
+        raise HTTPException(status_code=200)
 
 
 @app.post("/products", tags=["Products"])
@@ -89,7 +88,7 @@ def product_add(product: ProductDantic) -> ProductDantic:
     if prod is not False:
         return prod
     else:
-        raise HTTPException
+        raise HTTPException(status_code=400)
 
 
 @app.get("/products/{id}", tags=["Products"])
@@ -114,18 +113,18 @@ def product_update(id: int, product: ProductDantic) -> ProductDantic:
 def product_delete(id: int):
     prod = ProductsCrud.delete_product(id)
     if prod is not False:
-        return True
+        raise HTTPException(status_code=200)
     else:
         raise HTTPException(status_code=404)
 
 
 @app.post("/banks", tags=["Banks"])
 def bank_add(bank: BankDantic) -> BankDantic:
-    bank = BanksCrud.add_bank(bank.name)
-    if bank is not False:
-        return bank
+    bnk = BanksCrud.add_bank(bank.name)
+    if bnk is not False:
+        return bnk
     else:
-        raise HTTPException(status_code=404)
+        raise HTTPException(status_code=400)
 
 
 @app.get("/banks/{id}", tags=["Banks"])
@@ -141,7 +140,7 @@ def bank_get(id: int) -> BankDantic:
 def bank_delete(id: int):
     bank = BanksCrud.delete_bank(id)
     if bank is not False:
-        raise HTTPException(status_code=204, detail="OK")
+        raise HTTPException(status_code=200)
     else:
         raise HTTPException(status_code=404)
 
@@ -177,7 +176,7 @@ def distributor_update(id: int, distributor: DistributorDantic) -> DistributorDa
 def distributor_delete(id: int):
     distributor = DistributorsCrud.delete(id)
     if distributor is not False:
-        return True
+        raise HTTPException(status_code=200)
     else:
         raise HTTPException(status_code=404)
 
@@ -188,7 +187,7 @@ def service_add(service: ServiceDantic) -> ServiceDantic:
     if ser is not False:
         return ser
     else:
-        raise HTTPException
+        raise HTTPException(status_code=400)
 
 
 @app.get("/services/{id}", tags=["Services"])
@@ -213,7 +212,7 @@ def service_update(id: int, service: ServiceDantic):
 def service_delete(id: int):
     service = ServicesCrud.delete_service(id)
     if service is not False:
-        return HTTPException(status_code=204, detail="Ok")
+        return HTTPException(status_code=200)
     else:
         raise HTTPException(status_code=404)
 
@@ -226,7 +225,7 @@ def customer_add(customer: CustomerDantic) -> CustomerDantic:
     if cust is not False:
         return cust
     else:
-        raise HTTPException
+        raise HTTPException(status_code=400)
 
 
 @app.get("/customers/{id}", tags=["Customers"])
@@ -254,7 +253,7 @@ def customer_delete(id: int):
     if cust is False:
         raise HTTPException(status_code=404)
     else:
-        raise HTTPException(status_code=202, detail="Ok")
+        raise HTTPException(status_code=200)
 
 
 @app.post("/transactions", tags=["Transactions"])
