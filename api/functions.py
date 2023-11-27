@@ -4,7 +4,7 @@ from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.orm import scoped_session, sessionmaker
 from config import database
 from dantic import ComponentsDantic, EmployeeDantic, ProductDantic, BankDantic, DistributorDantic, ServiceDantic, \
-    CustomerDantic, OutputTransaction, OutputOrder, OutputServiceOrder
+    CustomerDantic, OutputTransaction, OutputOrder, OutputServiceOrder, OutputSupplyDantic
 from models import Banks, ComponentUsage, Components, Customers, Distributors, Employees, TelegramUsers, Logs, Orders, \
     Products, Services, ServiceOrders, Supplies, Tasks, Transactions
 
@@ -581,7 +581,7 @@ class ServiceOrdersCrud:
             if manager_id is not None:
                 manager = EmployeesCrud.get_emp(order.manager_id)
                 answer = OutputServiceOrder(id=order.id, customer=customer, manager=manager, transaction=trans,
-                                     service=service)
+                                            service=service)
             else:
                 answer = OutputServiceOrder(id=order.id, customer=customer, transaction=trans, service=service)
             return answer
@@ -602,7 +602,8 @@ class ServiceOrdersCrud:
             customer = CustomerCrud.get_customer(order.id)
             trans = TransactionsCrud.get(order.transaction_id)
             service = ServicesCrud.get_service(order.service_id)
-            answer = OutputServiceOrder(id=order.id, customer=customer, manager=manager, transaction=trans, service=service)
+            answer = OutputServiceOrder(id=order.id, customer=customer, manager=manager, transaction=trans,
+                                        service=service)
             sess.close()
             return answer
         else:
@@ -765,12 +766,21 @@ class DistributorsCrud:
 # noinspection PyTypeChecker
 class SuppliesCrud:
     @staticmethod
-    def add(component_id: int, count: float, distributor: int):
+    def add(component_id: int, count: float, distributor: int) -> OutputSupplyDantic:
         sess = Session()
-        supply = Supplies(component_id=component_id, count=count, distributor=distributor)
-        sess.add(supply)
-        sess.commit()
-        sess.close()
+        try:
+            supply = Supplies(component_id=component_id, count=count, distributor=distributor)
+            sess.add(supply)
+            sess.commit()
+            component = ComponentCrud.get_component(supply.id)
+            distributor = DistributorsCrud.get(supply.distributor)
+            answer = OutputSupplyDantic(id=supply.id, component=component, count=supply.count, distributor=distributor)
+            return answer
+        except Exception as e:
+            print(e)
+            return False
+        finally:
+            sess.close()
 
     @staticmethod
     def get_count(component_id: int) -> object:
