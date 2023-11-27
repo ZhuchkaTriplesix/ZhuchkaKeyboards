@@ -1,5 +1,6 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+bot/token.txt
 *.py[cod]
 *$py.class
 /bot/toket.txt
