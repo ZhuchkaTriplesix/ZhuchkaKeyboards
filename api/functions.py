@@ -72,7 +72,7 @@ class TelegramUsersCrud:
 # noinspection PyTypeChecker
 class CustomerCrud:
     @staticmethod
-    def get_customer(vendor_id: int) -> object:
+    def get_customer(vendor_id: int) -> CustomerDantic:
         sess = Session()
         customer = sess.query(Customers).where(Customers.vendor_id == vendor_id).first()
         if customer is not None:
@@ -81,14 +81,14 @@ class CustomerCrud:
                                   username=customer.username, email=customer.email, created_date=customer.created_date,
                                   updated_date=customer.updated_date)
             sess.close()
-            return customer
+            return cust
         else:
             sess.close()
             return None
 
     @staticmethod
     def add_customer(vendor_id: int, vendor_type: int, first_name: str, second_name: str, username: str,
-                     email: str) -> object:
+                     email: str) -> CustomerDantic:
         sess = Session()
         customer = sess.query(Customers).where(Customers.vendor_id == vendor_id).first()
         if customer is None:
@@ -96,14 +96,18 @@ class CustomerCrud:
                                  second_name=second_name, username=username, email=email)
             sess.add(customer)
             sess.commit()
+            cust = CustomerDantic(id=customer.id, vendor_id=customer.vendor_id, vendor_type=customer.vendor_id,
+                                  first_name=customer.first_name, second_name=customer.second_name,
+                                  username=customer.username, email=customer.email, created_date=customer.created_date,
+                                  updated_date=customer.updated_date)
             sess.close()
-            return True
+            return cust
         else:
             return False
 
     @staticmethod
-    def update_customer_email(id: int, vendor_id: int, vendor_type: int, first_name: str, second_name: str,
-                              username: str, email: str) -> CustomerDantic:
+    def update(id: int, vendor_id: int, vendor_type: int, first_name: str, second_name: str,
+               username: str, email: str) -> CustomerDantic:
         sess = Session()
         try:
             customer = sess.query(Customers).where(Customers.id == id).first()
