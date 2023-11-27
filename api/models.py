@@ -120,10 +120,10 @@ class Services(Base):
 class ServiceOrders(Base):
     __tablename__ = "service_orders"
     id = Column(Integer, primary_key=True)
-    service_id = Column(Integer, ForeignKey('services.id'))
-    transaction_id = Column(Integer, ForeignKey('transactions.id'))
     customer_id = Column(Integer, ForeignKey('customers.id'))
     manager_id = Column(Integer, ForeignKey('employees.id'))
+    transaction_id = Column(Integer, ForeignKey('transactions.id'))
+    service_id = Column(Integer, ForeignKey('services.id'))
     usage = relationship('Tasks')
 
 
