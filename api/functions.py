@@ -321,7 +321,6 @@ class OrdersCrud:
                            product_id=product_id)
             sess.add(order)
             sess.commit()
-            manager = None
             customer = CustomerCrud.get_customer(order.id)
             trans = TransactionsCrud.get(order.transaction_id)
             prod = ProductsCrud.get_product(order.product_id)
@@ -576,7 +575,6 @@ class ServiceOrdersCrud:
                            service_id=service_id)
             sess.add(order)
             sess.commit()
-            manager = None
             customer = CustomerCrud.get_customer(order.id)
             trans = TransactionsCrud.get(order.transaction_id)
             service = ServicesCrud.get_service(order.service_id)
