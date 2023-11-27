@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 from datetime import datetime
-from enum import Enum
 
 
 class ComponentsDantic(BaseModel):
@@ -9,7 +8,7 @@ class ComponentsDantic(BaseModel):
     type: str | None = None
 
 
-class EmloyeeDantic(BaseModel):
+class EmployeeDantic(BaseModel):
     id: int
     first_name: str
     second_name: str

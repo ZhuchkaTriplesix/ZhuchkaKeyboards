@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from dantic import ComponentsDantic, EmloyeeDantic, ProductDantic, BankDantic, DistributorDantic, ServiceDantic, \
+from dantic import ComponentsDantic, EmployeeDantic, ProductDantic, BankDantic, DistributorDantic, ServiceDantic, \
     CustomerDantic, TransactionDantic, OutputTransaction
 from functions import ComponentCrud, EmployeesCrud, ProductsCrud, BanksCrud, DistributorsCrud, ServicesCrud, \
     CustomerCrud, TransactionsCrud
@@ -45,7 +45,7 @@ def component_delete(id: int):
 
 
 @app.post("/employees", tags=["Employee"])
-def employee_add(employee: EmloyeeDantic) -> EmloyeeDantic:
+def employee_add(employee: EmployeeDantic) -> EmployeeDantic:
     emp = EmployeesCrud.add_emp(employee.first_name, employee.second_name, employee.group, employee.salary,
                                 employee.contract_end)
     if emp is True:
@@ -55,7 +55,7 @@ def employee_add(employee: EmloyeeDantic) -> EmloyeeDantic:
 
 
 @app.get("/employees/{id}", tags=["Employee"])
-def employee_get(id: int) -> EmloyeeDantic:
+def employee_get(id: int) -> EmployeeDantic:
     emp = EmployeesCrud.get_emp(id)
     if emp is not False:
         return emp
@@ -64,7 +64,7 @@ def employee_get(id: int) -> EmloyeeDantic:
 
 
 @app.put("/employees/{id}", tags=["Employee"])
-def employee_update(id: int, employee: EmloyeeDantic):
+def employee_update(id: int, employee: EmployeeDantic):
     emp = EmployeesCrud.update_emp(id, employee.first_name, employee.second_name, employee.group, employee.salary,
                                    employee.contract_end)
     if emp is not False:
@@ -151,7 +151,7 @@ def distributor_add(distributor: DistributorDantic) -> DistributorDantic:
     if distributor is not False:
         return distributor
     else:
-        raise HTTPException()
+        raise HTTPException(status_code=400)
 
 
 @app.get("/distributors/{id}", tags=["Distributors"])
