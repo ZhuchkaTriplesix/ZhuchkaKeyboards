@@ -42,9 +42,10 @@ class ServiceDantic(BaseModel):
 
 
 class CustomerDantic(BaseModel):
-    vendor_id: int
+    id: int | None = None
+    vendor_id: int | None = None
     vendor_type: int | None = None
-    name: str | None = None
-    surname: str | None = None
+    first_name: str | None = None
+    second_name: str | None = None
     username: str | None = None
     email: str | None = None

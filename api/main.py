@@ -218,14 +218,14 @@ def service_delete(id: int):
 
 
 @app.post("/customers", tags=["Customers"])
-def customer_add(customer: CustomerDantic):
-    customer = CustomerCrud.add_customer(vendor_id=customer.vendor_id, vendor_type=customer.vendor_type,
-                                         first_name=customer.name, second_name=customer.surname,
-                                         username=customer.username, email=customer.email)
-    if customer is not False:
-        return SUCCESSFUL_ADD
+def customer_add(customer: CustomerDantic) -> CustomerDantic:
+    cust = CustomerCrud.add_customer(vendor_id=customer.vendor_id, vendor_type=customer.vendor_type,
+                                     first_name=customer.first_name, second_name=customer.second_name,
+                                     username=customer.username, email=customer.email)
+    if cust is not False:
+        return cust
     else:
-        return False
+        raise HTTPException
 
 
 @app.get("/customers/{id}", tags=["Customers"])
@@ -239,4 +239,15 @@ def customer_get(id: int) -> CustomerDantic:
 
 @app.put("/customers/{id}", tags=["Customers"])
 def customer_update(id: int, customer: CustomerDantic) -> CustomerDantic:
-    cust = CustomerCrud.update_customer_email()
+    cust = CustomerCrud.update(id, customer.vendor_id, customer.vendor_type, customer.first_name, customer.second_name,
+                               customer.username, customer.email)
+    if cust is not False:
+        return cust
+    else:
+        raise HTTPException(status_code=404)
+
+
+@app.delete("/customers/{id}", tags=["Customers"])
+def customer_delete(id: int):
+    cust = CustomerCrud.delete_customer(id)
+    return cust
