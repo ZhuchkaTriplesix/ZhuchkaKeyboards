@@ -4,7 +4,7 @@ from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.orm import scoped_session, sessionmaker
 from config import database
 from dantic import ComponentsDantic, EmployeeDantic, ProductDantic, BankDantic, DistributorDantic, ServiceDantic, \
-    CustomerDantic, TransactionDantic, OutputTransaction
+    CustomerDantic, OutputTransaction, OutputOrder
 from models import Banks, ComponentUsage, Components, Customers, Distributors, Employees, TelegramUsers, Logs, Orders, \
     Products, Services, ServiceOrders, Supplies, Tasks, Transactions
 
@@ -72,11 +72,11 @@ class TelegramUsersCrud:
 # noinspection PyTypeChecker
 class CustomerCrud:
     @staticmethod
-    def get_customer(vendor_id: int) -> CustomerDantic:
+    def get_customer(id: int) -> CustomerDantic:
         sess = Session()
-        customer = sess.query(Customers).where(Customers.vendor_id == vendor_id).first()
+        customer = sess.query(Customers).where(Customers.id == id).first()
         if customer is not None:
-            cust = CustomerDantic(id=customer.id, vendor_id=customer.vendor_id, vendor_type=customer.vendor_id,
+            cust = CustomerDantic(id=customer.id, vendor_id=customer.vendor_id, vendor_type=customer.vendor_type,
                                   first_name=customer.first_name, second_name=customer.second_name,
                                   username=customer.username, email=customer.email, created_date=customer.created_date,
                                   updated_date=customer.updated_date)
@@ -314,13 +314,23 @@ class ComponentUsageCrud:
 # noinspection PyTypeChecker
 class OrdersCrud:
     @staticmethod
-    def add(customer_id: int, transaction_id: int, product_id: int) -> object:
+    def add(customer_id: int, manager_id: int, transaction_id: int, product_id: int) -> OutputOrder:
         sess = Session()
         try:
-            order = Orders(customer_id=customer_id, transaction_id=transaction_id, product_id=product_id)
+            order = Orders(customer_id=customer_id, manager_id=manager_id, transaction_id=transaction_id,
+                           product_id=product_id)
             sess.add(order)
             sess.commit()
-            return True
+            manager = None
+            customer = CustomerCrud.get_customer(order.id)
+            trans = TransactionsCrud.get(order.transaction_id)
+            prod = ProductsCrud.get_product(order.product_id)
+            if manager_id is not None:
+                manager = EmployeesCrud.get_emp(order.manager_id)
+                answer = OutputOrder(id=order.id, customer=customer, manager=manager, transaction=trans, product=prod)
+            else:
+                answer = OutputOrder(id=order.id, customer=customer, transaction=trans, product=prod)
+            return answer
         except Exception as e:
             print(e)
             return False
@@ -340,14 +350,34 @@ class OrdersCrud:
         return answer
 
     @staticmethod
-    def get_order(customer_id: int, product_id: int) -> object:
+    def get_order(id: int) -> OutputOrder:
         sess = Session()
-        order = sess.query(Orders).where(and_(Orders.customer_id == customer_id, product_id == product_id)).first()
+        order = sess.query(Orders).where(Orders.id == id).first()
         if order is not None:
-            answer = {"id": order.id, "customer_id": order.customer_id, "manager_id": order.manager_id,
-                      "transaction_id": order.transaction_id, "product_id": order.product_id}
+            manager = None
+            if order.manager_id is not None:
+                manager = EmployeesCrud.get_emp(order.manager_id)
+            customer = CustomerCrud.get_customer(order.id)
+            trans = TransactionsCrud.get(order.transaction_id)
+            prod = ProductsCrud.get_product(order.product_id)
+            answer = OutputOrder(id=order.id, customer=customer, manager=manager, transaction=trans, product=prod)
+            sess.close()
             return answer
         else:
+            sess.close()
+            return False
+
+    @staticmethod
+    def delete_order(id: int) -> object:
+        sess = Session()
+        order = sess.query(Orders).where(Orders.id == id).first()
+        if order is not None:
+            sess.delete(order)
+            sess.commit()
+            sess.close()
+            return True
+        else:
+            sess.close()
             return False
 
 
@@ -393,7 +423,7 @@ class TransactionsCrud:
             return False
 
     @staticmethod
-    def update(id:int, payment: int, status: bool, bank_id: int, card_type) -> OutputTransaction:
+    def update(id: int, payment: int, status: bool, bank_id: int, card_type) -> OutputTransaction:
         sess = Session()
         trans = sess.query(Transactions).where(Transactions.id == id).first()
         if trans is not None:

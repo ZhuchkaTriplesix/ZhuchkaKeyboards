@@ -1,8 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from dantic import ComponentsDantic, EmployeeDantic, ProductDantic, BankDantic, DistributorDantic, ServiceDantic, \
-    CustomerDantic, TransactionDantic, OutputTransaction
+    CustomerDantic, TransactionDantic, OutputTransaction, OrderDantic, OutputOrder
 from functions import ComponentCrud, EmployeesCrud, ProductsCrud, BanksCrud, DistributorsCrud, ServicesCrud, \
-    CustomerCrud, TransactionsCrud
+    CustomerCrud, TransactionsCrud, OrdersCrud
 
 app = FastAPI()
 SUCCESSFUL_ADD = "Successful addition"
@@ -256,7 +256,7 @@ def customer_delete(id: int):
         raise HTTPException(status_code=202, detail="Ok")
 
 
-@app.post("/transaction", tags=["Transactions"])
+@app.post("/transactions", tags=["Transactions"])
 def transaction_add(trans: TransactionDantic) -> OutputTransaction:
     transaction = TransactionsCrud.add(trans.payment, trans.status, trans.bank_id, trans.card_type)
     if transaction is not False:
@@ -265,7 +265,7 @@ def transaction_add(trans: TransactionDantic) -> OutputTransaction:
         raise HTTPException(status_code=400)
 
 
-@app.get("/transaction/{id}", tags=["Transactions"])
+@app.get("/transactions/{id}", tags=["Transactions"])
 def transaction_get(id: int) -> OutputTransaction:
     transaction = TransactionsCrud.get(id)
     if transaction is not False:
@@ -274,10 +274,37 @@ def transaction_get(id: int) -> OutputTransaction:
         raise HTTPException(status_code=404)
 
 
-@app.put("/transaction/{id}", tags=["Transactions"])
+@app.put("/transactions/{id}", tags=["Transactions"])
 def transaction_update(id: int, trans: TransactionDantic) -> OutputTransaction:
     transaction = TransactionsCrud.update(id, trans.payment, trans.status, trans.bank_id, trans.card_type)
     if transaction is not False:
         return transaction
+    else:
+        raise HTTPException(status_code=404)
+
+
+@app.post("/orders", tags=["Orders"])
+def order_add(order: OrderDantic) -> OutputOrder:
+    ord = OrdersCrud.add(order.customer_id, order.manager_id, order.transaction_id, order.product_id)
+    if ord is not False:
+        return ord
+    else:
+        raise HTTPException(status_code=400)
+
+
+@app.get("/orders/{id}", tags=["Orders"])
+def order_get(id: int) -> OutputOrder:
+    order = OrdersCrud.get_order(id)
+    if order is not False:
+        return order
+    else:
+        raise HTTPException(status_code=404)
+
+
+@app.delete("/orders/{id}", tags=["Orders"])
+def order_delete(id: int):
+    order = OrdersCrud.delete_order(id)
+    if order is not False:
+        raise HTTPException(status_code=200)
     else:
         raise HTTPException(status_code=404)
