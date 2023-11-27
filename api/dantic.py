@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
+from enum import Enum
 
 
 class ComponentsDantic(BaseModel):
@@ -49,3 +50,19 @@ class CustomerDantic(BaseModel):
     second_name: str
     username: str
     email: str | None = None
+
+
+class TransactionDantic(BaseModel):
+    id: int | None = None
+    payment: int
+    status: bool | None = False
+    bank_id: int
+    card_type: int
+
+
+class OutputTransaction(BaseModel):
+    id: int
+    payment: int
+    status: bool | None = False
+    card_type: str
+    bank: BankDantic
