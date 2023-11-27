@@ -65,3 +65,19 @@ class OutputTransaction(BaseModel):
     status: bool | None = False
     card_type: str
     bank: BankDantic
+
+
+class OrderDantic(BaseModel):
+    id: int | None = None
+    customer_id: int
+    manager_id: int | None = None
+    transaction_id: int
+    product_id: int
+
+
+class OutputOrder(BaseModel):
+    id: int
+    customer: CustomerDantic
+    manager: EmployeeDantic | None = None
+    transaction: OutputTransaction
+    product: ProductDantic
