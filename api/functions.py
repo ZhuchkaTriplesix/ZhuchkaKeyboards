@@ -388,7 +388,6 @@ class TransactionsCrud:
             transaction = Transactions(payment=payment, status=status, bank_id=bank_id, card_type=card_type)
             sess.add(transaction)
             sess.commit()
-            type = None
             if card_type == 1:
                 type = "debit"
             else:
@@ -766,15 +765,21 @@ class DistributorsCrud:
 # noinspection PyTypeChecker
 class SuppliesCrud:
     @staticmethod
-    def add(component_id: int, count: float, distributor: int) -> OutputSupplyDantic:
+    def add(component_id: int, count: float, distributor_id: int) -> OutputSupplyDantic:
         sess = Session()
         try:
-            supply = Supplies(component_id=component_id, count=count, distributor=distributor)
+            supply = Supplies(component_id=component_id, count=count, distributor=distributor_id)
+            print(1)
             sess.add(supply)
+            print(2)
             sess.commit()
+            print(3)
             component = ComponentCrud.get_component(supply.id)
+            print(4)
             distributor = DistributorsCrud.get(supply.distributor)
+            print(5)
             answer = OutputSupplyDantic(id=supply.id, component=component, count=supply.count, distributor=distributor)
+            print(6)
             return answer
         except Exception as e:
             print(e)

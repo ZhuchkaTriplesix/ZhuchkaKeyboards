@@ -100,14 +100,13 @@ class OutputServiceOrder(BaseModel):
 
 
 class SupplyDantic(BaseModel):
-    id: int | None = None
     component_id: int
     count: float
-    distributor: int
+    distributor_id: int
 
 
 class OutputSupplyDantic(BaseModel):
-    id: int
+    id: int | None = None
     component: ComponentsDantic
-    count: float
+    count: float | None = None
     distributor: DistributorDantic
