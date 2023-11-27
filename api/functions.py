@@ -4,7 +4,7 @@ from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.orm import scoped_session, sessionmaker
 from config import database
 from dantic import ComponentsDantic, EmloyeeDantic, ProductDantic, BankDantic, DistributorDantic, ServiceDantic, \
-    CustomerDantic
+    CustomerDantic, TransactionDantic, OutputTransaction
 from models import Banks, ComponentUsage, Components, Customers, Distributors, Employees, TelegramUsers, Logs, Orders, \
     Products, Services, ServiceOrders, Supplies, Tasks, Transactions
 
@@ -353,13 +353,21 @@ class OrdersCrud:
 
 class TransactionsCrud:
     @staticmethod
-    def add(payment: int, status: bool, bank_id: int, card_type: int):
+    def add(payment: int, status: bool, bank_id: int, card_type: int) -> OutputTransaction:
         sess = Session()
         try:
             transaction = Transactions(payment=payment, status=status, bank_id=bank_id, card_type=card_type)
             sess.add(transaction)
             sess.commit()
-            return True
+            type = None
+            if card_type == 1:
+                type = "debit"
+            else:
+                type = "credit"
+            bank = BanksCrud.get_bank(transaction.bank_id)
+            trans = OutputTransaction(id=transaction.id, payment=transaction.payment, status=transaction.status,
+                                      card_type=type, bank=bank)
+            return trans
         except Exception as e:
             print(e)
             return False
@@ -367,18 +375,45 @@ class TransactionsCrud:
             sess.close()
 
     @staticmethod
-    def get_last_transaction():
+    def get(id: int) -> OutputTransaction:
         sess = Session()
-        try:
-            trans = sess.query(Transactions).order_by(Transactions.id.desc()).first()
-            answer = {"id": trans.id, "payment": trans.payment, "status": trans.status, "bank": trans.bank_id,
-                      "card": trans.card_type}
-            return answer
-        except Exception as e:
-            print(e)
-            return False
-        finally:
+        trans = sess.query(Transactions).where(Transactions.id == id).first()
+        if trans is not None:
+            if trans.card_type == 1:
+                type = "debit"
+            else:
+                type = "credit"
+            bank = BanksCrud.get_bank(trans.bank_id)
+            transaction = OutputTransaction(id=trans.id, payment=trans.payment, status=trans.status,
+                                            card_type=type, bank=bank)
             sess.close()
+            return transaction
+        else:
+            sess.close()
+            return False
+
+    @staticmethod
+    def update(id:int, payment: int, status: bool, bank_id: int, card_type) -> OutputTransaction:
+        sess = Session()
+        trans = sess.query(Transactions).where(Transactions.id == id).first()
+        if trans is not None:
+            trans.payment = payment
+            trans.status = status
+            trans.bank_id = bank_id
+            trans.card_type = card_type
+            sess.commit()
+            if trans.card_type == 1:
+                type = "debit"
+            else:
+                type = "credit"
+            bank = BanksCrud.get_bank(trans.bank_id)
+            transaction = OutputTransaction(id=trans.id, payment=trans.payment, status=trans.status,
+                                            card_type=type, bank=bank)
+            sess.close()
+            return transaction
+        else:
+            sess.close()
+            return False
 
 
 # noinspection PyTypeChecker

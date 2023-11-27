@@ -1,8 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from dantic import ComponentsDantic, EmloyeeDantic, ProductDantic, BankDantic, DistributorDantic, ServiceDantic, \
-    CustomerDantic
+    CustomerDantic, TransactionDantic, OutputTransaction
 from functions import ComponentCrud, EmployeesCrud, ProductsCrud, BanksCrud, DistributorsCrud, ServicesCrud, \
-    CustomerCrud
+    CustomerCrud, TransactionsCrud
 
 app = FastAPI()
 SUCCESSFUL_ADD = "Successful addition"
@@ -212,7 +212,7 @@ def service_update(id: int, service: ServiceDantic):
 def service_delete(id: int):
     service = ServicesCrud.delete_service(id)
     if service is not False:
-        return True
+        return HTTPException(status_code=204, detail="Ok")
     else:
         raise HTTPException(status_code=404)
 
@@ -250,4 +250,34 @@ def customer_update(id: int, customer: CustomerDantic) -> CustomerDantic:
 @app.delete("/customers/{id}", tags=["Customers"])
 def customer_delete(id: int):
     cust = CustomerCrud.delete_customer(id)
-    return cust
+    if cust is False:
+        raise HTTPException(status_code=404)
+    else:
+        raise HTTPException(status_code=202, detail="Ok")
+
+
+@app.post("/transaction", tags=["Transactions"])
+def transaction_add(trans: TransactionDantic) -> OutputTransaction:
+    transaction = TransactionsCrud.add(trans.payment, trans.status, trans.bank_id, trans.card_type)
+    if transaction is not False:
+        return transaction
+    else:
+        raise HTTPException(status_code=400)
+
+
+@app.get("/transaction/{id}", tags=["Transactions"])
+def transaction_get(id: int) -> OutputTransaction:
+    transaction = TransactionsCrud.get(id)
+    if transaction is not False:
+        return transaction
+    else:
+        raise HTTPException(status_code=404)
+
+
+@app.put("/transaction/{id}", tags=["Transactions"])
+def transaction_update(id: int, trans: TransactionDantic) -> OutputTransaction:
+    transaction = TransactionsCrud.update(id, trans.payment, trans.status, trans.bank_id, trans.card_type)
+    if transaction is not False:
+        return transaction
+    else:
+        raise HTTPException(status_code=404)
