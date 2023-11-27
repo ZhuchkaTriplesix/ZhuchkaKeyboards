@@ -4,7 +4,7 @@ from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.orm import scoped_session, sessionmaker
 from config import database
 from dantic import ComponentsDantic, EmployeeDantic, ProductDantic, BankDantic, DistributorDantic, ServiceDantic, \
-    CustomerDantic, OutputTransaction, OutputOrder
+    CustomerDantic, OutputTransaction, OutputOrder, OutputServiceOrder
 from models import Banks, ComponentUsage, Components, Customers, Distributors, Employees, TelegramUsers, Logs, Orders, \
     Products, Services, ServiceOrders, Supplies, Tasks, Transactions
 
@@ -569,32 +569,60 @@ class ServicesCrud:
 # noinspection PyTypeChecker
 class ServiceOrdersCrud:
     @staticmethod
-    def add(service_id: int, transaction_id: int, customer_id: int):
+    def add(customer_id: int, manager_id: int, transaction_id: int, service_id: int) -> OutputServiceOrder:
         sess = Session()
         try:
-            order = ServiceOrders(service_id=service_id, transaction_id=transaction_id, customer_id=customer_id,
-                                  manager_id=None)
+            order = Orders(customer_id=customer_id, manager_id=manager_id, transaction_id=transaction_id,
+                           service_id=service_id)
             sess.add(order)
             sess.commit()
-            answer = {"status": "200", "answer": "Successful add"}
+            manager = None
+            customer = CustomerCrud.get_customer(order.id)
+            trans = TransactionsCrud.get(order.transaction_id)
+            service = ServicesCrud.get_service(order.service_id)
+            if manager_id is not None:
+                manager = EmployeesCrud.get_emp(order.manager_id)
+                answer = OutputOrder(id=order.id, customer=customer, manager=manager, transaction=trans,
+                                     service=service)
+            else:
+                answer = OutputOrder(id=order.id, customer=customer, transaction=trans, service=service)
             return answer
         except Exception as e:
             print(e)
-            answer = {"status": "400", "answer": "error"}
-            return answer
+            return False
         finally:
             sess.close()
 
     @staticmethod
-    def update_manager(id: int, manager_id: int):
+    def get_order(id: int) -> OutputServiceOrder:
+        sess = Session()
+        order = sess.query(Orders).where(Orders.id == id).first()
+        if order is not None:
+            manager = None
+            if order.manager_id is not None:
+                manager = EmployeesCrud.get_emp(order.manager_id)
+            customer = CustomerCrud.get_customer(order.id)
+            trans = TransactionsCrud.get(order.transaction_id)
+            service = ServicesCrud.get_service(order.service_id)
+            answer = OutputOrder(id=order.id, customer=customer, manager=manager, transaction=trans, service=service)
+            sess.close()
+            return answer
+        else:
+            sess.close()
+            return False
+
+    @staticmethod
+    def delete_order(id: int) -> object:
         sess = Session()
         order = sess.query(ServiceOrders).where(ServiceOrders.id == id).first()
         if order is not None:
-            order.manager_id = manager_id
+            sess.delete(order)
             sess.commit()
             sess.close()
+            return True
         else:
             sess.close()
+            return False
 
 
 # noinspection PyTypeChecker
