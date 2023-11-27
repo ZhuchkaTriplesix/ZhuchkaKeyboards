@@ -140,7 +140,7 @@ def bank_get(id: int) -> BankDantic:
 def bank_delete(id: int):
     bank = BanksCrud.delete_bank(id)
     if bank is not False:
-        return "Successful delete"
+        raise HTTPException(status_code=204, detail="OK")
     else:
         raise HTTPException(status_code=404)
 
@@ -151,7 +151,7 @@ def distributor_add(distributor: DistributorDantic) -> DistributorDantic:
     if distributor is not False:
         return distributor
     else:
-        raise HTTPException
+        raise HTTPException()
 
 
 @app.get("/distributors/{id}", tags=["Distributors"])
