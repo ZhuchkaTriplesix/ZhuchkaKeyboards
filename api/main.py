@@ -1,11 +1,11 @@
 from fastapi import FastAPI, HTTPException
-from dantic import ComponentsDantic, EmloyeeDantic, ProductDantic, BankDantic, DistributorDantic, ServiceDantic, \
-    CustomerDantic
+from dantic import ComponentsDantic, EmployeeDantic, ProductDantic, BankDantic, DistributorDantic, ServiceDantic, \
+    CustomerDantic, TransactionDantic, OutputTransaction, OrderDantic, OutputOrder, OutputServiceOrder, \
+    ServiceOrderDantic, SupplyDantic, OutputSupplyDantic
 from functions import ComponentCrud, EmployeesCrud, ProductsCrud, BanksCrud, DistributorsCrud, ServicesCrud, \
-    CustomerCrud
+    CustomerCrud, TransactionsCrud, OrdersCrud, SuppliesCrud
 
 app = FastAPI()
-SUCCESSFUL_ADD = "Successful addition"
 
 
 @app.post('/components', tags=["Components"])
@@ -45,17 +45,17 @@ def component_delete(id: int):
 
 
 @app.post("/employees", tags=["Employee"])
-def employee_add(employee: EmloyeeDantic) -> EmloyeeDantic:
+def employee_add(employee: EmployeeDantic) -> EmployeeDantic:
     emp = EmployeesCrud.add_emp(employee.first_name, employee.second_name, employee.group, employee.salary,
                                 employee.contract_end)
     if emp is True:
         return emp
     else:
-        raise HTTPException
+        raise HTTPException(status_code=400)
 
 
 @app.get("/employees/{id}", tags=["Employee"])
-def employee_get(id: int) -> EmloyeeDantic:
+def employee_get(id: int) -> EmployeeDantic:
     emp = EmployeesCrud.get_emp(id)
     if emp is not False:
         return emp
@@ -64,7 +64,7 @@ def employee_get(id: int) -> EmloyeeDantic:
 
 
 @app.put("/employees/{id}", tags=["Employee"])
-def employee_update(id: int, employee: EmloyeeDantic):
+def employee_update(id: int, employee: EmployeeDantic):
     emp = EmployeesCrud.update_emp(id, employee.first_name, employee.second_name, employee.group, employee.salary,
                                    employee.contract_end)
     if emp is not False:
@@ -79,7 +79,7 @@ def employee_delete(id: int):
     if emp is False:
         raise HTTPException(status_code=404)
     else:
-        return True
+        raise HTTPException(status_code=200)
 
 
 @app.post("/products", tags=["Products"])
@@ -88,7 +88,7 @@ def product_add(product: ProductDantic) -> ProductDantic:
     if prod is not False:
         return prod
     else:
-        raise HTTPException
+        raise HTTPException(status_code=400)
 
 
 @app.get("/products/{id}", tags=["Products"])
@@ -113,18 +113,18 @@ def product_update(id: int, product: ProductDantic) -> ProductDantic:
 def product_delete(id: int):
     prod = ProductsCrud.delete_product(id)
     if prod is not False:
-        return True
+        raise HTTPException(status_code=200)
     else:
         raise HTTPException(status_code=404)
 
 
 @app.post("/banks", tags=["Banks"])
 def bank_add(bank: BankDantic) -> BankDantic:
-    bank = BanksCrud.add_bank(bank.name)
-    if bank is not False:
-        return bank
+    bnk = BanksCrud.add_bank(bank.name)
+    if bnk is not False:
+        return bnk
     else:
-        raise HTTPException(status_code=404)
+        raise HTTPException(status_code=400)
 
 
 @app.get("/banks/{id}", tags=["Banks"])
@@ -140,7 +140,7 @@ def bank_get(id: int) -> BankDantic:
 def bank_delete(id: int):
     bank = BanksCrud.delete_bank(id)
     if bank is not False:
-        return "Successful delete"
+        raise HTTPException(status_code=200)
     else:
         raise HTTPException(status_code=404)
 
@@ -151,7 +151,7 @@ def distributor_add(distributor: DistributorDantic) -> DistributorDantic:
     if distributor is not False:
         return distributor
     else:
-        raise HTTPException
+        raise HTTPException(status_code=400)
 
 
 @app.get("/distributors/{id}", tags=["Distributors"])
@@ -176,7 +176,7 @@ def distributor_update(id: int, distributor: DistributorDantic) -> DistributorDa
 def distributor_delete(id: int):
     distributor = DistributorsCrud.delete(id)
     if distributor is not False:
-        return True
+        raise HTTPException(status_code=200)
     else:
         raise HTTPException(status_code=404)
 
@@ -187,7 +187,7 @@ def service_add(service: ServiceDantic) -> ServiceDantic:
     if ser is not False:
         return ser
     else:
-        raise HTTPException
+        raise HTTPException(status_code=400)
 
 
 @app.get("/services/{id}", tags=["Services"])
@@ -212,7 +212,7 @@ def service_update(id: int, service: ServiceDantic):
 def service_delete(id: int):
     service = ServicesCrud.delete_service(id)
     if service is not False:
-        return True
+        return HTTPException(status_code=200)
     else:
         raise HTTPException(status_code=404)
 
@@ -225,7 +225,7 @@ def customer_add(customer: CustomerDantic) -> CustomerDantic:
     if cust is not False:
         return cust
     else:
-        raise HTTPException
+        raise HTTPException(status_code=400)
 
 
 @app.get("/customers/{id}", tags=["Customers"])
@@ -250,4 +250,97 @@ def customer_update(id: int, customer: CustomerDantic) -> CustomerDantic:
 @app.delete("/customers/{id}", tags=["Customers"])
 def customer_delete(id: int):
     cust = CustomerCrud.delete_customer(id)
-    return cust
+    if cust is False:
+        raise HTTPException(status_code=404)
+    else:
+        raise HTTPException(status_code=200)
+
+
+@app.post("/transactions", tags=["Transactions"])
+def transaction_add(trans: TransactionDantic) -> OutputTransaction:
+    transaction = TransactionsCrud.add(trans.payment, trans.status, trans.bank_id, trans.card_type)
+    if transaction is not False:
+        return transaction
+    else:
+        raise HTTPException(status_code=400)
+
+
+@app.get("/transactions/{id}", tags=["Transactions"])
+def transaction_get(id: int) -> OutputTransaction:
+    transaction = TransactionsCrud.get(id)
+    if transaction is not False:
+        return transaction
+    else:
+        raise HTTPException(status_code=404)
+
+
+@app.put("/transactions/{id}", tags=["Transactions"])
+def transaction_update(id: int, trans: TransactionDantic) -> OutputTransaction:
+    transaction = TransactionsCrud.update(id, trans.payment, trans.status, trans.bank_id, trans.card_type)
+    if transaction is not False:
+        return transaction
+    else:
+        raise HTTPException(status_code=404)
+
+
+@app.post("/orders", tags=["Orders"])
+def order_add(order: OrderDantic) -> OutputOrder:
+    ord = OrdersCrud.add(order.customer_id, order.manager_id, order.transaction_id, order.product_id)
+    if ord is not False:
+        return ord
+    else:
+        raise HTTPException(status_code=400)
+
+
+@app.get("/orders/{id}", tags=["Orders"])
+def order_get(id: int) -> OutputOrder:
+    order = OrdersCrud.get_order(id)
+    if order is not False:
+        return order
+    else:
+        raise HTTPException(status_code=404)
+
+
+@app.delete("/orders/{id}", tags=["Orders"])
+def order_delete(id: int):
+    order = OrdersCrud.delete_order(id)
+    if order is not False:
+        raise HTTPException(status_code=200)
+    else:
+        raise HTTPException(status_code=404)
+
+
+@app.post("/orders/services", tags=["Service Orders"])
+def order_add(order: ServiceOrderDantic) -> OutputServiceOrder:
+    ord = OrdersCrud.add(order.customer_id, order.manager_id, order.transaction_id, order.product_id)
+    if ord is not False:
+        return ord
+    else:
+        raise HTTPException(status_code=400)
+
+
+@app.get("/orders/services/{id}", tags=["Service Orders"])
+def order_get(id: int) -> OutputServiceOrder:
+    order = OrdersCrud.get_order(id)
+    if order is not False:
+        return order
+    else:
+        raise HTTPException(status_code=404)
+
+
+@app.delete("/orders/services/{id}", tags=["Service Orders"])
+def order_delete(id: int):
+    order = OrdersCrud.delete_order(id)
+    if order is not False:
+        raise HTTPException(status_code=200)
+    else:
+        raise HTTPException(status_code=404)
+
+
+@app.post("/supplies", tags=["Supplies"])
+def supply_add(supply: SupplyDantic) -> OutputSupplyDantic:
+    sup = SuppliesCrud.add(supply.component_id, supply.count, supply.distributor_id)
+    if sup is not False:
+        return sup
+    else:
+        raise HTTPException(status_code=400)

@@ -1,0 +1,5 @@
+fastapi
+pydantic
+SQLAlchemy
+pg8000
+uvicorn
