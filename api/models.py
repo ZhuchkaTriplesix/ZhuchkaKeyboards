@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base, scoped_session, relationship
 import datetime
 from config import database
-from enum import Enum
+
 
 Base = declarative_base()
 
@@ -12,17 +12,6 @@ engine = create_engine(database, echo=False)
 Session = sessionmaker(bind=engine)
 session = scoped_session(Session)
 conn = engine.connect()
-
-
-class Platform(Enum):
-    TELEGRAM = 1
-    VK = 2
-
-
-class Group(Enum):
-    ENGINEER = 1
-    MANAGER = 2
-    HIGH_MANAGER = 3
 
 
 class TelegramUsers(Base):
@@ -131,10 +120,10 @@ class Services(Base):
 class ServiceOrders(Base):
     __tablename__ = "service_orders"
     id = Column(Integer, primary_key=True)
-    service_id = Column(Integer, ForeignKey('services.id'))
-    transaction_id = Column(Integer, ForeignKey('transactions.id'))
     customer_id = Column(Integer, ForeignKey('customers.id'))
     manager_id = Column(Integer, ForeignKey('employees.id'))
+    transaction_id = Column(Integer, ForeignKey('transactions.id'))
+    service_id = Column(Integer, ForeignKey('services.id'))
     usage = relationship('Tasks')
 
 
