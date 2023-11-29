@@ -782,6 +782,21 @@ class SuppliesCrud:
             sess.close()
 
     @staticmethod
+    def get(id: int) -> OutputSupplyDantic:
+        sess = Session()
+        try:
+            supply = sess.query(Supplies).where(Supplies.id == id).first()
+            component = ComponentCrud.get_component(supply.id)
+            distributor = DistributorsCrud.get(supply.distributor)
+            answer = OutputSupplyDantic(id=supply.id, component=component, count=supply.count, distributor=distributor)
+            return answer
+        except Exception as e:
+            print(e)
+            return None
+        finally:
+            sess.close()
+
+    @staticmethod
     def get_count(component_id: int) -> object:
         sess = Session()
         try:
@@ -793,8 +808,23 @@ class SuppliesCrud:
         finally:
             sess.close()
 
+    @staticmethod
+    def delete(id: int):
+        sess = Session()
+        try:
+            supply = sess.query(Supplies).where(Supplies.id == id).first()
+            sess.delete(supply)
+            sess.commit()
+            return True
+        except Exception as e:
+            print(e)
+            return False
+        finally:
+            sess.close()
 
-# noinspection PyTypeChecker
+        # noinspection PyTypeChecker
+
+
 class BanksCrud:
     @staticmethod
     def add_bank(name: str) -> BankDantic:
