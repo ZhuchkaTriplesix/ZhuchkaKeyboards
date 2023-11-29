@@ -319,7 +319,7 @@ def order_add(order: ServiceOrderDantic) -> OutputServiceOrder:
         raise HTTPException(status_code=400)
 
 
-@app.get("/orders/services/{id}", tags=["Service Orders"])
+@app.get("/orders/services/{id}", tags=["Service Orders"], status_code=200)
 def order_get(id: int) -> OutputServiceOrder:
     order = OrdersCrud.get_order(id)
     if order is not False:
@@ -328,19 +328,35 @@ def order_get(id: int) -> OutputServiceOrder:
         raise HTTPException(status_code=404)
 
 
-@app.delete("/orders/services/{id}", tags=["Service Orders"])
+@app.delete("/orders/services/{id}", tags=["Service Orders"], status_code=202)
 def order_delete(id: int):
     order = OrdersCrud.delete_order(id)
     if order is not False:
-        raise HTTPException(status_code=200)
+        raise HTTPException(status_code=202)
     else:
         raise HTTPException(status_code=404)
 
 
-@app.post("/supplies", tags=["Supplies"])
+@app.post("/supplies", tags=["Supplies"], status_code=201)
 def supply_add(supply: SupplyDantic) -> OutputSupplyDantic:
     sup = SuppliesCrud.add(supply.component_id, supply.count, supply.distributor_id)
     if sup is not False:
         return sup
     else:
         raise HTTPException(status_code=400)
+
+
+@app.get("/supplies/{id}", tags=["Supplies"], status_code=200)
+def supply_get(id: int) -> OutputSupplyDantic:
+    sup = SuppliesCrud.get(id)
+    if sup is not None:
+        return sup
+
+
+@app.delete("/supplies/{id}", tags=["Supplies"], status_code=202)
+def supply_delete(id: int):
+    sup = SuppliesCrud.delete(id)
+    if sup is False:
+        raise HTTPException(status_code=404)
+    else:
+        raise HTTPException(status_code=202, detail="Deleted")
