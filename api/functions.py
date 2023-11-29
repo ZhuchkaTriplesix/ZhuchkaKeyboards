@@ -769,17 +769,11 @@ class SuppliesCrud:
         sess = Session()
         try:
             supply = Supplies(component_id=component_id, count=count, distributor=distributor_id)
-            print(1)
             sess.add(supply)
-            print(2)
             sess.commit()
-            print(3)
             component = ComponentCrud.get_component(supply.id)
-            print(4)
             distributor = DistributorsCrud.get(supply.distributor)
-            print(5)
             answer = OutputSupplyDantic(id=supply.id, component=component, count=supply.count, distributor=distributor)
-            print(6)
             return answer
         except Exception as e:
             print(e)
