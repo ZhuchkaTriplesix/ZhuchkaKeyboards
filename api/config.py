@@ -1,1 +1,1 @@
-database = f'postgresql+pg8000://zhuchka:root@localhost:5432/postgres'
+database = f'postgresql+pg8000://zhuchechka:root@localhost:5432/postgres'
