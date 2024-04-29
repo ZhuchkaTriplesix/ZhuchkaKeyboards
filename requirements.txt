@@ -1,5 +1,3 @@
-fastapi
-pydantic
-SQLAlchemy
-pg8000
-uvicorn
+SQLAlchemy~=2.0.29
+fastapi~=0.110.2
+pydantic~=2.7.1
