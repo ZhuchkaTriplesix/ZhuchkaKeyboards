@@ -1,8 +1,8 @@
 from fastapi import FastAPI, HTTPException
-from dantic import ComponentsDantic, EmployeeDantic, ProductDantic, BankDantic, DistributorDantic, ServiceDantic, \
+from schemas.dantic import ComponentsDantic, EmployeeDantic, ProductDantic, BankDantic, DistributorDantic, ServiceDantic, \
     CustomerDantic, TransactionDantic, OutputTransaction, OrderDantic, OutputOrder, OutputServiceOrder, \
     ServiceOrderDantic, SupplyDantic, OutputSupplyDantic
-from functions import ComponentCrud, EmployeesCrud, ProductsCrud, BanksCrud, DistributorsCrud, ServicesCrud, \
+from api.functions import ComponentCrud, EmployeesCrud, ProductsCrud, BanksCrud, DistributorsCrud, ServicesCrud, \
     CustomerCrud, TransactionsCrud, OrdersCrud, SuppliesCrud
 
 app = FastAPI()
@@ -314,6 +314,7 @@ def order_delete(id: int):
 def order_add(order: ServiceOrderDantic) -> OutputServiceOrder:
     ord = OrdersCrud.add(order.customer_id, order.manager_id, order.transaction_id, order.product_id)
     if ord is not False:
+        # need rework
         return ord
     else:
         raise HTTPException(status_code=400)
@@ -324,6 +325,7 @@ def order_get(id: int) -> OutputServiceOrder:
     order = OrdersCrud.get_order(id)
     if order is not False:
         return order
+    # need rework
     else:
         raise HTTPException(status_code=404)
 
