@@ -7,6 +7,7 @@ from schemas.dantic import ComponentsDantic, EmployeeDantic, ProductDantic, Bank
     CustomerDantic, OutputTransaction, OutputOrder, OutputServiceOrder, OutputSupplyDantic
 from models import Banks, ComponentUsage, Components, Customers, Distributors, Employees, TelegramUsers, Logs, Orders, \
     Products, Services, ServiceOrders, Supplies, Tasks, Transactions
+from db.session import session_add
 
 engine = create_engine(database, echo=False)
 
@@ -26,8 +27,7 @@ class TelegramUsersCrud:
             return False
         else:
             user = TelegramUsers(id=telegram_id, username=username)
-            sess.add(user)
-            sess.commit()
+            session_add(user, sess)
             sess.close()
             return True
 
@@ -94,8 +94,7 @@ class CustomerCrud:
         if customer is None:
             customer = Customers(vendor_id=vendor_id, vendor_type=vendor_type, first_name=first_name,
                                  second_name=second_name, username=username, email=email)
-            sess.add(customer)
-            sess.commit()
+            session_add(customer, sess)
             cust = CustomerDantic(id=customer.id, vendor_id=customer.vendor_id, vendor_type=customer.vendor_id,
                                   first_name=customer.first_name, second_name=customer.second_name,
                                   username=customer.username, email=customer.email, created_date=customer.created_date,
@@ -152,8 +151,7 @@ class EmployeesCrud:
         try:
             emp = Employees(first_name=first_name, second_name=second_name, group=group,
                             salary=salary, contract_end=contract_end)
-            sess.add(emp)
-            sess.commit()
+            session_add(emp, sess)
             employee = Employees(id=emp.id, first_name=emp.first_name, second_name=emp.second_name, group=emp.group,
                                  salary=emp.salary, contract_end=emp.contract_end)
             return employee
@@ -220,8 +218,7 @@ class LogsCrud:
     def add_log(employee_id: int, operation: str):
         sess = Session()
         log = Logs(employee_id=employee_id, operation=operation)
-        sess.add(log)
-        sess.commit()
+        session_add(log, sess)
         sess.close()
 
 
@@ -235,10 +232,8 @@ class ComponentCrud:
             return False
         else:
             component = Components(component_name=component_name, component_type=component_type)
-            sess.add(component)
-            sess.commit()
+            session_add(component, sess)
             component = ComponentsDantic(id=component.id, name=component.component_name, type=component.component_type)
-
             sess.close()
             return component
 
@@ -293,8 +288,7 @@ class ComponentUsageCrud:
         sess = Session()
         comp = ComponentUsage(component_id=component_id, usage_name=usage_name, usage_count=usage_count,
                               task_id=task_id)
-        sess.add(comp)
-        sess.commit()
+        session_add(comp, sess)
         sess.close()
 
     @staticmethod

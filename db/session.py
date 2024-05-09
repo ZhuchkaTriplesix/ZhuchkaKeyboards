@@ -8,3 +8,8 @@ db_session = scoped_session(
     sessionmaker(autocommit=False, autoflush=False, bind=engine)
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+
+def session_add(data, session):
+    session.add(data)
+    session.commit()
