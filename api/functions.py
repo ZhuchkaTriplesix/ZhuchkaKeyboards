@@ -313,8 +313,7 @@ class OrdersCrud:
         try:
             order = Orders(customer_id=customer_id, manager_id=manager_id, transaction_id=transaction_id,
                            product_id=product_id)
-            sess.add(order)
-            sess.commit()
+            session_add(order, sess)
             customer = CustomerCrud.get_customer(order.id)
             trans = TransactionsCrud.get(order.transaction_id)
             prod = ProductsCrud.get_product(order.product_id)
@@ -380,8 +379,7 @@ class TransactionsCrud:
         sess = Session()
         try:
             transaction = Transactions(payment=payment, status=status, bank_id=bank_id, card_type=card_type)
-            sess.add(transaction)
-            sess.commit()
+            session_add(transaction, sess)
             if card_type == 1:
                 type = "debit"
             else:
@@ -448,8 +446,7 @@ class ProductsCrud:
             return False
         else:
             prod = Products(name=name, category=category, product_price=product_price)
-            sess.add(prod)
-            sess.commit()
+            session_add(prod, sess)
             product = ProductDantic(id=prod.id, name=prod.name, category=prod.category, price=prod.product_price)
             sess.close()
             return product
@@ -509,8 +506,7 @@ class ServicesCrud:
             return False
         else:
             ser = Services(name=name, service_price=service_price)
-            sess.add(ser)
-            sess.commit()
+            session_add(ser, sess)
             answer = ServiceDantic(id=ser.id, name=ser.name, price=ser.service_price)
             sess.close()
             return answer
@@ -566,8 +562,7 @@ class ServiceOrdersCrud:
         try:
             order = Orders(customer_id=customer_id, manager_id=manager_id, transaction_id=transaction_id,
                            service_id=service_id)
-            sess.add(order)
-            sess.commit()
+            session_add(order, sess)
             customer = CustomerCrud.get_customer(order.id)
             trans = TransactionsCrud.get(order.transaction_id)
             service = ServicesCrud.get_service(order.service_id)
@@ -624,8 +619,7 @@ class TasksCrud:
         sess = Session()
         try:
             task = Tasks(order_id=order_id, service_order_id=None, worker_id=worker_id, status=1, type=1)
-            sess.add(task)
-            sess.commit()
+            session_add(task, sess)
             return True
         except Exception as e:
             print(e)
@@ -638,8 +632,7 @@ class TasksCrud:
         sess = Session()
         try:
             task = Tasks(order_id=None, service_order_id=order, worker_id=worker, status=1, type=2)
-            sess.add(task)
-            sess.commit()
+            session_add(task, sess)
             return True
         except Exception as e:
             print(e)
