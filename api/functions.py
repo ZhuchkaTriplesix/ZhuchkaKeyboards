@@ -702,8 +702,7 @@ class DistributorsCrud:
             return False
         else:
             dist = Distributors(name=name, deliver_service=deliver_service)
-            sess.add(dist)
-            sess.commit()
+            session_add(dist, sess)
             distributor = DistributorDantic(id=dist.id, name=dist.name, deliver_service=dist.deliver_service)
             sess.close()
             return distributor
@@ -756,17 +755,11 @@ class SuppliesCrud:
         sess = Session()
         try:
             supply = Supplies(component_id=component_id, count=count, distributor=distributor_id)
-            print(1)
             sess.add(supply)
-            print(2)
             sess.commit()
-            print(3)
             component = ComponentCrud.get_component(supply.id)
-            print(4)
             distributor = DistributorsCrud.get(supply.distributor)
-            print(5)
             answer = OutputSupplyDantic(id=supply.id, component=component, count=supply.count, distributor=distributor)
-            print(6)
             return answer
         except Exception as e:
             print(e)
@@ -796,8 +789,7 @@ class BanksCrud:
         if bank is None:
             try:
                 bank = Banks(name=name)
-                sess.add(bank)
-                sess.commit()
+                session_add(bank, sess)
                 answer = BankDantic(id=bank.id, name=bank.name)
                 return answer
             except Exception as e:
