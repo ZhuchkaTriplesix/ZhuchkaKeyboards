@@ -17,7 +17,7 @@ logger = get_logger(__name__)
 
 
 class RateLimiterMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app, max_requests: int = 20, time_window: int = 60):
+    def __init__(self, app, max_requests: int = 50, time_window: int = 60):
         super().__init__(app)
         self.max_requests = max_requests
         self.time_window = time_window
