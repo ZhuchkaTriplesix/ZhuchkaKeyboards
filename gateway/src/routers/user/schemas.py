@@ -1,20 +1,30 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr
 
 
-class Auth(BaseModel):
-    username: str
-
-
-class AuthSchema(Auth):
-    password: str = Field(..., min_length=6)
-
-
-class TokenResponse(BaseModel):
-    access_token: str
-    token_type: str
-    expires_in: float
-
-
-class LoginRequest(BaseModel):
-    username: str
+class SignUp(BaseModel):
+    email: EmailStr
     password: str
+    phone_number: str
+
+
+class UserToken(BaseModel):
+    session_id: str
+
+
+class VerifyEmail(BaseModel):
+    token: str
+
+
+class ChangePassword(BaseModel):
+    current_password: str
+    new_password: str
+    new_password_secondary: str
+
+
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordForm(BaseModel):
+    token: str
+    new_password: str

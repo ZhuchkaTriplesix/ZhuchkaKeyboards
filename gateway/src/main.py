@@ -7,7 +7,7 @@ from fastapi.security import HTTPBasicCredentials, HTTPBasic
 from starlette import status
 from starlette.responses import HTMLResponse
 from configuration.app import App
-from utils.resonses import api_responses
+from utils.responses import api_responses
 from utils.logger import get_logger
 from main_schemas import *
 
