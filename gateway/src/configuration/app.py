@@ -9,6 +9,8 @@ from config import mongo_cfg
 import asyncio
 import os
 from utils.logger import get_logger
+from sqlalchemy.ext.asyncio import AsyncSession
+from src.database.core import engine
 
 from starlette.responses import JSONResponse
 
@@ -58,6 +60,14 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
         return max(1, int(self.time_window - time_passed))
 
 
+class DBSessionMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        async with AsyncSession(engine) as session:
+            request.state.db = session
+            response = await call_next(request)
+            return response
+
+
 class App:
     def __init__(self):
         self._app: FastAPI = FastAPI(
@@ -75,6 +85,7 @@ class App:
             allow_headers=["*"]
         )
         self._app.add_middleware(RateLimiterMiddleware)
+        self._app.add_middleware(DBSessionMiddleware)
         self._register_routers()
 
     def _register_routers(self) -> None:

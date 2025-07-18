@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from routers.auth.router import router as auth_router
+from user.auth.router import router as user_router
 
 
 @dataclass(frozen=True)
 class Router:
     routers = [
-        (auth_router, "/api/auth", ["auth"]),   
+        (user_router, "/api/user", ["user"]),   
     ]
