@@ -10,10 +10,10 @@ class CfgBase(ABC):
 
 @dataclass
 class RedisCfg(CfgBase):
-    host: str = os.getenv("REDIS_HOST")
-    port: int = os.getenv("REDIS_PORT")
-    db: int = os.getenv("REDIS_DB")
-    password: str = os.getenv("REDIS_PASSWORD")
+    host: str = os.getenv("REDIS_HOST", "localhost")
+    port: int = int(os.getenv("REDIS_PORT", "6379"))
+    db: int = int(os.getenv("REDIS_DB", "0"))
+    password: str = os.getenv("REDIS_PASSWORD", "")
 
 
 
