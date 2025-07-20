@@ -31,46 +31,47 @@ def redis_retry(max_retries=3, delay=1):
 
 class RedisManager:
     def __init__(self):
-        self.redis = self._create_connection()
-        self._test_connection()
-
-    def _create_connection(self):
-        return redis.Redis(
-            host=os.getenv("REDIS_HOST", "auth_redis"),
+        self.redis_client = redis.Redis(
+            host=os.getenv("REDIS_HOST", "localhost"),
             port=int(os.getenv("REDIS_PORT", 6379)),
-            password=os.getenv("REDIS_PASSWORD"),
-            db=0,
-            decode_responses=True,
-            socket_connect_timeout=5,
-            socket_keepalive=True,
-            retry_on_timeout=True,
-            health_check_interval=30
+            db=int(os.getenv("REDIS_DB", 0)),
+            password=os.getenv("REDIS_PASSWORD", ""),
+            decode_responses=True
         )
 
-    def _test_connection(self):
+    async def get_record(self, tag: str, key: str) -> Optional[str]:
+        """Get record from Redis by tag and key."""
         try:
-            if not self.redis.ping():
-                raise ConnectionError("Redis connection failed")
-            logger.info("Successfully connected to Redis")
+            return self.redis_client.get(f"{tag}:{key}")
         except Exception as e:
-            logger.error(f"Redis connection error: {str(e)}")
-            raise
+            logger.error(f"Error getting record from Redis: {e}")
+            return None
 
-    @redis_retry(max_retries=3, delay=1)
-    def set_token(self, username: str, token: str, expire: int):
-        self.redis.setex(f"user:{username}:token", expire, token)
+    async def del_record(self, tag: str, key: str) -> bool:
+        """Delete record from Redis by tag and key."""
+        try:
+            return bool(self.redis_client.delete(f"{tag}:{key}"))
+        except Exception as e:
+            logger.error(f"Error deleting record from Redis: {e}")
+            return False
 
-    @redis_retry(max_retries=3, delay=1)
     def get_token(self, username: str) -> Optional[str]:
-        return self.redis.get(f"user:{username}:token")
-
-    @redis_retry(max_retries=3, delay=1)
-    def delete_token(self, username: str):
-        self.redis.delete(f"user:{username}:token")
+        """Get token for user from Redis."""
+        try:
+            return self.redis_client.get(f"token:{username}")
+        except Exception as e:
+            logger.error(f"Error getting token from Redis: {e}")
+            return None
 
     def token_exists(self, username: str, token: str) -> bool:
-        stored_token = self.get_token(username)
-        return stored_token is not None and stored_token == token
+        """Check if token exists for user in Redis."""
+        try:
+            stored_token = self.redis_client.get(f"token:{username}")
+            return stored_token == token
+        except Exception as e:
+            logger.error(f"Error checking token in Redis: {e}")
+            return False
 
 
+# Создаем глобальный экземпляр
 redis_manager = RedisManager()
