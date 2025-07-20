@@ -19,6 +19,20 @@ services:
       retries: 5
       start_period: 30s
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   gateway:
     build: ./gateway
     container_name: gateway
@@ -27,12 +41,17 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
       - POSTGRES_USER=zhuchechka
       - POSTGRES_PASSWORD=root
       - POSTGRES_DB=zhuchka
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
 
 volumes:
   pgdata:
+  redisdata: 
