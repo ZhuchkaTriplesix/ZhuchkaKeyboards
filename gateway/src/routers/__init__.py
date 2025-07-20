@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from user.auth.router import router as user_router
+from routers.user.router import router as user_router
 
 
 @dataclass(frozen=True)

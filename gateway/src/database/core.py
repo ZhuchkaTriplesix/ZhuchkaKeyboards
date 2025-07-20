@@ -5,8 +5,8 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine, AsyncSessio
 from sqlalchemy.orm import declared_attr, declarative_base
 from starlette.requests import Request
 
-from src import config
-from src.database.logging import SessionTracker
+from config import postgres_cfg
+from database.logging import SessionTracker
 
 
 def create_db_engine(connection_string: str) -> AsyncEngine:
@@ -20,25 +20,23 @@ def create_db_engine(connection_string: str) -> AsyncEngine:
     # Use existing configuration values with fallbacks
     timeout_kwargs = {
         # Connection timeout - how long to wait for a connection from the pool
-        "pool_timeout": config.PostgresCfg().database_engine_pool_timeout,
+        "pool_timeout": postgres_cfg.database_engine_pool_timeout,
         # Recycle connections after this many seconds
-        "pool_recycle": config.PostgresCfg().database_engine_pool_recycle,
+        "pool_recycle": postgres_cfg.database_engine_pool_recycle,
         # Maximum number of connections to keep in the pool
-        "pool_size": config.PostgresCfg().database_engine_pool_size,
+        "pool_size": postgres_cfg.database_engine_pool_size,
         # Maximum overflow connections allowed beyond pool_size
-        "max_overflow": config.PostgresCfg().database_engine_max_overflow,
+        "max_overflow": postgres_cfg.database_engine_max_overflow,
         # Connection pre-ping to verify connection is still alive
-        "pool_pre_ping": config.PostgresCfg().database_engine_pool_ping,
+        "pool_pre_ping": postgres_cfg.database_engine_pool_ping,
         # Enables/Disables engine logging.
-        "echo": config.PostgresCfg().database_echo,
+        "echo": postgres_cfg.database_echo,
     }
     return create_async_engine(url=url, **timeout_kwargs)
 
 
 # Create the default engine with standard timeout
-engine = create_db_engine(
-    config.PostgresCfg().url,
-)
+engine = create_db_engine(postgres_cfg.url)
 
 
 def resolve_table_name(name):

@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr
+from typing import Optional
 
 
 class SignUp(BaseModel):
@@ -16,9 +17,8 @@ class VerifyEmail(BaseModel):
 
 
 class ChangePassword(BaseModel):
-    current_password: str
+    old_password: str
     new_password: str
-    new_password_secondary: str
 
 
 class ResetPasswordRequest(BaseModel):
