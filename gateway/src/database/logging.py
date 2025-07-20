@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from utils.logger import get_logger
 
 logger = get_logger(__name__)
 

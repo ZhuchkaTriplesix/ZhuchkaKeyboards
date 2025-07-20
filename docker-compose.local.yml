@@ -33,6 +33,7 @@ services:
       - POSTGRES_USER=zhuchechka
       - POSTGRES_PASSWORD=root
       - POSTGRES_DB=zhuchka
+      - DATABASE_URL=postgresql+asyncpg://zhuchechka:root@db:5432/zhuchka
 
 volumes:
   pgdata:

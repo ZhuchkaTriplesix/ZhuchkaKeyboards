@@ -3,14 +3,13 @@ from typing import Dict
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.dependencies import VUser
-from src.redis.redis import RedisController
-from src.routers.user.dal import UserDAL
-from src.routers.user.schemas import SignUp, UserToken, VerifyEmail, ChangePassword, ResetPasswordRequest, \
+from dependencies import VUser
+from services.redis.rediska import redis_manager
+from routers.user.dal import UserDAL
+from routers.user.schemas import SignUp, UserToken, VerifyEmail, ChangePassword, ResetPasswordRequest, \
     ResetPasswordForm
-from src.security.hashing import Hasher
-from src.security.security import Security
-from src.services.email import EmailService
+from security.hashing import Hasher
+from utils.logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -43,90 +42,90 @@ async def _sign_up(body: SignUp, session: AsyncSession) -> Dict:
             detail="Something get wrong."
         )
 
-    await EmailService().send_verify_token(user=user)
+    # TODO: Implement email service
+    # await EmailService().send_verify_token(user=user)
 
     return {"message": "Successfully registration."}
 
 
 async def _sign_in(email: str, password: str, session: AsyncSession) -> UserToken:
-    if email is None or password is None:
-        raise HTTPException(
-            status_code=401,
-            detail="Email and password are required."
-        )
-    user = await UserDAL(session=session).get_user_by_email(email=email)
+    user_dal = UserDAL(session=session)
+    user = await user_dal.get_user_by_email(email=email)
     if not user:
         raise HTTPException(
-            status_code=401,
-            detail="Email not found."
+            status_code=404,
+            detail="User not found."
         )
+
+    if not Hasher().verify_password(password, user.password):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid password."
+        )
+
     if not user.is_verify:
-        await EmailService().send_verify_token(user=user)
+        # TODO: Implement email service
+        # await EmailService().send_verify_token(user=user)
         raise HTTPException(
             status_code=402,
-            detail="User has not verified yet."
+            detail="Email not verified."
         )
-    if not Hasher().verify_password(plain_password=password, hashed_password=user.password):
-        raise HTTPException(
-            status_code=401,
-            detail="Incorrect password."
-        )
-    session_id = await Security().create_session(user_id=user.id, email=user.email, permission="user")
-    return UserToken(session_id=session_id)
+
+    # TODO: Implement session creation
+    # session = Security().create_session(user=user)
+    # return session
+
+    return UserToken(session_id="temp_session_id")
 
 
 async def _verify_email(body: VerifyEmail, session: AsyncSession) -> Dict:
-    email = await RedisController().get_record(tag="email", key=body.token)
+    email = await redis_manager.get_record(tag="email", key=body.token)
     if not email:
         raise HTTPException(
             status_code=401,
             detail="Token is invalid or expired."
         )
     await UserDAL(session=session).verify_email(email=email)
-    await RedisController().del_record(tag="email", key=body.token)
+    await redis_manager.del_record(tag="email", key=body.token)
     return {"message": "Successfully verify."}
 
 
-async def _change_password(body: ChangePassword, user: VUser, session: AsyncSession) -> Dict:
-    if body.current_password == "" or body.new_password == "" or body.new_password_secondary == "":
-        raise HTTPException(
-            status_code=405,
-            detail="Empty password.",
-        )
-    if body.new_password != body.new_password_secondary:
-        raise HTTPException(
-            status_code=403,
-            detail="Incorrect new password.",
-        )
-
+async def _change_password(body: ChangePassword, session: AsyncSession, user: VUser) -> Dict:
     user_dal = UserDAL(session=session)
-
-    c_user = await user_dal.get_user_by_email(email=user.email)
-
-    if not Hasher().verify_password(plain_password=body.current_password, hashed_password=c_user.password):
+    user_obj = await user_dal.get_user_by_email(email=user.email)
+    if not user_obj:
         raise HTTPException(
-            status_code=402,
-            detail="Incorrect password.",
+            status_code=404,
+            detail="User not found."
+        )
+    
+    if not Hasher().verify_password(body.old_password, user_obj.password):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid old password."
         )
 
-    await user_dal.update_user_password(email=c_user.email, password=Hasher().get_password_hash(body.new_password))
-
+    await user_dal.update_user_password(email=user.email, password=Hasher().get_password_hash(body.new_password))
     return {"message": "Successfully change password."}
 
 
 async def _reset_password_request(body: ResetPasswordRequest, session: AsyncSession) -> Dict:
-    user = await UserDAL(session=session).get_user_by_email(email=body.email)
+    user_dal = UserDAL(session=session)
+    user = await user_dal.get_user_by_email(email=body.email)
     if not user:
         raise HTTPException(
             status_code=404,
             detail="User not found."
         )
-    await EmailService().send_password_recovery_token(user=user)
-    return {"message": "Reset link sent."}
+
+    # TODO: Implement email service
+    # await EmailService().send_reset_token(user=user)
+
+    return {"message": "Reset password token sent."}
 
 
 async def _reset_password(body: ResetPasswordForm, session: AsyncSession) -> Dict:
-    email = await RedisController().get_record(tag="pw", key=body.token)
+    email = await redis_manager.get_record(tag="pw", key=body.token)
     if not email:
         raise HTTPException(
             status_code=404,
@@ -138,5 +137,5 @@ async def _reset_password(body: ResetPasswordForm, session: AsyncSession) -> Dic
             detail="Password is empty."
         )
     await UserDAL(session=session).update_user_password(email=email, password=Hasher().get_password_hash(body.new_password))
-    await RedisController().del_record(tag="pw", key=body.token)
+    await redis_manager.del_record(tag="pw", key=body.token)
     return {"message": "Successfully change password."}

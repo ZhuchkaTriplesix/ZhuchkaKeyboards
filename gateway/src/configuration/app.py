@@ -5,12 +5,11 @@ from datetime import datetime, timedelta
 from starlette.responses import JSONResponse
 from typing import Dict, List
 from routers import Router
-from config import mongo_cfg
 import asyncio
 import os
 from utils.logger import get_logger
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.database.core import engine
+from database.core import engine
 
 from starlette.responses import JSONResponse
 
