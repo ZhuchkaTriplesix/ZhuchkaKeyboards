@@ -23,11 +23,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project
 COPY . .
 
-# Make migration script executable
-RUN chmod +x /app/run_migrations.sh
+# Make migration script executable (если понадобится)
+RUN chmod -R a+rx /app/src/database/alembic
 
-# Set work directory to src
+# Set work directory to src/database for alembic
+WORKDIR /app/src/database
+ENV PYTHONPATH=/app/src
+
+# Для запуска приложения по умолчанию (оставляем как есть)
 WORKDIR /app/src
-
-# Use uvicorn directly
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001", "--reload", "--log-level", "debug"]
