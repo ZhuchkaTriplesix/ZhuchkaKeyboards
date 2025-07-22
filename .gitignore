@@ -1,6 +1,10 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 bot/token.txt
+api/config.py
+.idea
+.idea/misc.xml
+.idea/ZhuchkaKeyboards.iml
 *.py[cod]
 *$py.class
 /bot/toket.txt
@@ -11,7 +15,6 @@ venv
 bot/config/token.txt
 # C extensions
 *.so
-.idea
 # Distribution / packaging
 .Python
 build/
