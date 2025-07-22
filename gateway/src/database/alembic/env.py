@@ -8,21 +8,10 @@ import os
 import sys
 
 # Добавляем путь к src для импорта моделей
-# В Docker контейнере мы находимся в /app
-current_dir = os.path.dirname(os.path.abspath(__file__))
-app_dir = os.path.dirname(current_dir)  # /app
-src_dir = os.path.join(app_dir, 'src')  # /app/src
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-sys.path.insert(0, src_dir)
-
-try:
-    from database.core import Base
-    from routers.user.models import User  # Импортируем все модели
-except ImportError as e:
-    print(f"Error importing modules: {e}")
-    print(f"Current directory: {os.getcwd()}")
-    print(f"Python path: {sys.path}")
-    raise
+from database.core import Base
+from routers.user.models import User  # Импортируйте все модели, чтобы Alembic видел их
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -35,8 +24,7 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-# target_metadata = Base.metadata
-target_metadata = None  # Пока используем None
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -48,22 +36,12 @@ def get_url():
     """Получаем URL базы данных из переменных окружения или конфига."""
     return os.getenv(
         "DATABASE_URL",
-        "postgresql+asyncpg://zhuchechka:root@db:5432/zhuchka"
+        config.get_main_option("sqlalchemy.url")
     )
 
 
 def run_migrations_offline() -> None:
-    """Run migrations in 'offline' mode.
-
-    This configures the context with just a URL
-    and not an Engine, though an Engine is acceptable
-    here as well.  By skipping the Engine creation
-    we don't even need a DBAPI to be available.
-
-    Calls to context.execute() here emit the given string to the
-    script output.
-
-    """
+    """Run migrations in 'offline' mode."""
     url = get_url()
     context.configure(
         url=url,
@@ -84,13 +62,8 @@ def do_run_migrations(connection: Connection) -> None:
 
 
 async def run_async_migrations() -> None:
-    """In this scenario we need to create an Engine
-    and associate a connection with the context.
-
-    """
     configuration = config.get_section(config.config_ini_section)
     configuration["sqlalchemy.url"] = get_url()
-    
     connectable = async_engine_from_config(
         configuration,
         prefix="sqlalchemy.",
@@ -99,17 +72,10 @@ async def run_async_migrations() -> None:
 
     async with connectable.connect() as connection:
         await connection.run_sync(do_run_migrations)
-
     await connectable.dispose()
 
 
 def run_migrations_online() -> None:
-    """Run migrations in 'online' mode.
-
-    In this scenario we need to create an Engine
-    and associate a connection with the context.
-
-    """
     asyncio.run(run_async_migrations())
 
 
