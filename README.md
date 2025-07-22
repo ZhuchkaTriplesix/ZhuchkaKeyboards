@@ -90,6 +90,7 @@ ZhuchkaKeyboards/
 │       ├── main_schemas.py
 │       ├── dependencies.py
 │       ├── configuration/
+│       │   └── app.py
 │       ├── database/
 │       │   ├── alembic.ini
 │       │   ├── core.py
@@ -116,6 +117,10 @@ ZhuchkaKeyboards/
 │       │   └── redis/
 │       │       └── rediska.py
 │       └── utils/
+│       │   ├── logger.py
+│       │   ├── responses_schemas.py
+│       │   ├── responses.py
+|       |   └── __init__.py
 └── .github/
 ```
 
