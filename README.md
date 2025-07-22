@@ -1,101 +1,98 @@
 # ZhuchkaKeyboards 🎹
 
-Система управления производством и продажами клавиатур с веб-интерфейсом, API, ботом.
+Система управления производством и продажами клавиатур с веб-интерфейсом, API, ботом и GUI-приложением.
+
+---
 
 ## 🏗️ Архитектура
 
-Проект состоит из нескольких компонентов:
+- **Gateway** — FastAPI сервис (src)
+- **Database** — PostgreSQL (docker-compose)
+- **Cache** — Redis (docker-compose)
+- **Alembic** — миграции в `src/database/alembic`
+- **API** — REST API
+- **Bot** — Telegram бот
+- **GUI** — Десктопное приложение
 
-- **Gateway** - FastAPI сервис для обработки запросов
-- **Database** - PostgreSQL для хранения данных
-- **Cache** - Redis для кеширования
-- **API** - REST API для работы с данными
-- **Bot** - Telegram бот для уведомлений
-- **GUI** - Десктопное приложение
+---
 
 ## 🚀 Быстрый старт
 
 ### Предварительные требования
-
 - Docker и Docker Compose
-- Python 3.13+
+- Python 3.11+
 - Git
 
 ### Запуск через Docker Compose
 
-1. **Клонируйте репозиторий:**
 ```bash
 git clone <repository-url>
 cd ZhuchkaKeyboards
-```
-
-2. **Создайте файл .env (опционально):**
-```bash
-# PostgreSQL
-POSTGRES_HOST=db
-POSTGRES_PORT=5432
-POSTGRES_USER=zhuchechka
-POSTGRES_PASSWORD=root
-POSTGRES_DB=zhuchka
-
-# Redis
-REDIS_HOST=redis
-REDIS_PORT=6379
-
-# JWT
-JWT_SECRET=your-secret-key
-JWT_ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=11520
-```
-
-3. **Запустите все сервисы:**
-```bash
 docker-compose up --build
 ```
 
-4. **Проверьте работу:**
 - Gateway API: http://localhost:8001
 - PostgreSQL: localhost:5432
 - Redis: localhost:6379
 
-### Локальная разработка
+---
 
-Для разработки используйте локальный compose:
+## 📦 Миграции Alembic
 
+Миграции и конфиг Alembic находятся в `gateway/src/database/alembic` и `gateway/src/database/alembic.ini`.
+
+### Генерация новой миграции
 ```bash
-docker-compose -f docker-compose.local.yml up --build
+docker-compose exec gateway bash -c "cd /app/src/database && alembic revision --autogenerate -m 'описание'"
 ```
+
+### Применение миграций
+```bash
+docker-compose exec gateway bash -c "cd /app/src/database && alembic upgrade head"
+```
+
+### Откат миграции
+```bash
+docker-compose exec gateway bash -c "cd /app/src/database && alembic downgrade -1"
+```
+
+### Структура Alembic
+```
+gateway/
+└── src/
+    └── database/
+        ├── alembic.ini
+        └── alembic/
+            ├── env.py
+            ├── script.py.mako
+            └── versions/
+```
+
+---
 
 ## 📁 Структура проекта
 
 ```
 ZhuchkaKeyboards/
 ├── api/                    # Основной API сервис
-│   ├── endpoints/         # API эндпоинты
-│   ├── functions.py       # CRUD операции
-│   ├── models.py          # SQLAlchemy модели
-│   └── api.py            # Роутинг API
 ├── gateway/               # Gateway сервис
 │   ├── src/
 │   │   ├── configuration/ # Конфигурация приложения
-│   │   ├── database/      # Работа с БД
+│   │   ├── database/      # Alembic, core.py, миграции
 │   │   ├── routers/       # Роутеры
 │   │   ├── services/      # Бизнес-логика
 │   │   └── main.py       # Точка входа
 │   ├── Dockerfile
 │   └── requirements.txt
 ├── core/                  # Общие настройки
-│   ├── config.py         # Конфигурация
-│   └── security.py       # Безопасность
 ├── db/                    # Работа с БД
-│   └── session.py        # Сессии SQLAlchemy
 ├── schemas/               # Pydantic схемы
-│   ├── dantic.py         # Модели данных
-│   └── crud.py           # CRUD схемы
 ├── docker-compose.yaml    # Продакшн конфигурация
 ├── docker-compose.local.yml # Локальная разработка
 └── README.md
 ```
+
+---
 
 ## 🔧 Конфигурация
 
@@ -114,61 +111,7 @@ ZhuchkaKeyboards/
 | `JWT_ALGORITHM` | Алгоритм JWT | `HS256` |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | Время жизни токена | `11520` |
 
-### Настройки базы данных
-
-```python
-# Пример подключения к PostgreSQL
-from src.database.core import engine, get_db
-from fastapi import Depends
-
-@app.get("/users")
-async def get_users(db = Depends(get_db)):
-    # Ваш код здесь
-    pass
-```
-
-## 📊 Модели данных
-
-### Основные сущности
-
-- **Customers** - Клиенты
-- **Employees** - Сотрудники
-- **Products** - Продукты
-- **Orders** - Заказы
-- **Services** - Услуги
-- **Components** - Компоненты
-- **Transactions** - Транзакции
-- **Tasks** - Задачи
-
-### Примеры API
-
-```bash
-# Получить всех клиентов
-GET /api/customers
-
-# Создать нового клиента
-POST /api/customers
-{
-  "vendor_id": 123,
-  "vendor_type": 1,
-  "first_name": "Иван",
-  "second_name": "Иванов",
-  "username": "ivan",
-  "email": "ivan@example.com"
-}
-
-# Получить заказ по ID
-GET /api/orders/{id}
-
-# Создать заказ
-POST /api/orders
-{
-  "customer_id": 1,
-  "manager_id": 1,
-  "transaction_id": 1,
-  "product_id": 1
-}
-```
+---
 
 ## 🛠️ Разработка
 
@@ -189,7 +132,7 @@ pip install -r requirements.txt
 ```bash
 # Gateway
 cd gateway/src
-uvicorn main:app --reload --port 8001
+ython main:app --reload --port 8001
 
 # API
 cd ../../api
@@ -199,77 +142,64 @@ uvicorn main:app --reload --port 8000
 ### Тестирование
 
 ```bash
-# Запуск тестов
 pytest
-
-# Проверка типов
 mypy .
-
-# Линтинг
 flake8 .
 ```
 
-## 🔒 Безопасность
+---
 
+## 🔒 Безопасность
 - JWT токены для аутентификации
 - Хеширование паролей с bcrypt
 - CORS настройки
 - Rate limiting
 - Валидация данных через Pydantic
 
+---
+
 ## 📝 API Документация
+- **Swagger UI**: http://localhost:8001/api/docs
+- **ReDoc**: http://localhost:8001/api/redoc
+- **OpenAPI JSON**: http://localhost:8001/api/openapi.json
 
-После запуска приложения документация доступна по адресам:
-
-- **Swagger UI**: http://localhost:8001/docs
-- **ReDoc**: http://localhost:8001/redoc
-- **OpenAPI JSON**: http://localhost:8001/openapi.json
+---
 
 ## 🐳 Docker
 
-### Сборка образов
-
+### Сборка и запуск
 ```bash
-# Сборка gateway
-docker build -t zhuchka-gateway ./gateway
-
-# Сборка API
-docker build -t zhuchka-api ./api
+docker-compose up --build
 ```
 
-### Запуск контейнеров
-
+### Генерация и применение миграций (в контейнере)
 ```bash
-# Продакшн
-docker-compose up -d
-
-# Локальная разработка
-docker-compose -f docker-compose.local.yml up -d
-
-# Просмотр логов
-docker-compose logs -f gateway
+docker-compose exec gateway bash -c "cd /app/src/database && alembic revision --autogenerate -m 'описание'"
+docker-compose exec gateway bash -c "cd /app/src/database && alembic upgrade head"
 ```
+
+---
 
 ## 🤝 Вклад в проект
-
 1. Форкните репозиторий
 2. Создайте ветку для новой функции
 3. Внесите изменения
 4. Добавьте тесты
 5. Создайте Pull Request
 
-## 📄 Лицензия
+---
 
+## 📄 Лицензия
 Этот проект лицензирован под MIT License.
 
+---
+
 ## 📞 Поддержка
-
 Если у вас есть вопросы или проблемы:
-
 1. Создайте Issue в GitHub
 2. Опишите проблему подробно
 3. Приложите логи и конфигурацию
 
 ---
 
-**ZhuchkaKeyboards** - Система управления производством клавиатур 🎹
+**ZhuchkaKeyboards** — Система управления производством клавиатур 🎹
