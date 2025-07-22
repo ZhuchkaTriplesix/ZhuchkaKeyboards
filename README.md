@@ -74,22 +74,49 @@ gateway/
 
 ```
 ZhuchkaKeyboards/
-├── api/                    # Основной API сервис
-├── gateway/               # Gateway сервис
-│   ├── src/
-│   │   ├── configuration/ # Конфигурация приложения
-│   │   ├── database/      # Alembic, core.py, миграции
-│   │   ├── routers/       # Роутеры
-│   │   ├── services/      # Бизнес-логика
-│   │   └── main.py       # Точка входа
+├── README.md
+├── docker-compose.yaml
+├── docker-compose.local.yml
+├── Makefile
+├── main.py
+├── requirements.txt
+├── LICENSE
+├── gateway/
+│   ├── requirements.txt
 │   ├── Dockerfile
-│   └── requirements.txt
-├── core/                  # Общие настройки
-├── db/                    # Работа с БД
-├── schemas/               # Pydantic схемы
-├── docker-compose.yaml    # Продакшн конфигурация
-├── docker-compose.local.yml # Локальная разработка
-└── README.md
+│   └── src/
+│       ├── config.py
+│       ├── main.py
+│       ├── main_schemas.py
+│       ├── dependencies.py
+│       ├── configuration/
+│       ├── database/
+│       │   ├── alembic.ini
+│       │   ├── core.py
+│       │   ├── logging.py
+│       │   ├── dependencies.py
+│       │   └── alembic/
+│       │       ├── env.py
+│       │       ├── script.py.mako
+│       │       └── versions/
+│       │           └── __init__.py
+│       ├── routers/
+│       │   ├── __init__.py
+│       │   └── user/
+│       │       ├── actions.py
+│       │       ├── dal.py
+│       │       ├── models.py
+│       │       ├── router.py
+│       │       ├── schemas.py
+│       │       └── __init__.py
+│       ├── security/
+│       │   ├── hashing.py
+|       |   └── security.py
+│       ├── services/
+│       │   └── redis/
+│       │       └── rediska.py
+│       └── utils/
+└── .github/
 ```
 
 ---
