@@ -1,13 +1,13 @@
 from logging.config import fileConfig
-from src.config import postgres_cfg
+from config import postgres_cfg
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
 
-from src.database.core import Base
+from database.core import Base
 
-from src.routers.user.models import User
+from routers.user.models import User
 
 
 config = context.config

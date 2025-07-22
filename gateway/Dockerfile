@@ -14,6 +14,7 @@ RUN apk add --no-cache \
     musl-dev \
     postgresql17-dev \
     curl \
+    tini \
     && rm -rf /var/cache/apk/*
 
 # Copy requirements and install Python dependencies
@@ -23,13 +24,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project
 COPY . .
 
-# Make migration script executable (если понадобится)
+# Make alembic scripts executable
 RUN chmod -R a+rx /app/src/database/alembic
 
-# Set work directory to src/database for alembic
-WORKDIR /app/src/database
+# Set environment for alembic
 ENV PYTHONPATH=/app/src
 
-# Для запуска приложения по умолчанию (оставляем как есть)
-WORKDIR /app/src
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001", "--reload", "--log-level", "debug"]
+# Use tini as entrypoint for proper signal handling
+ENTRYPOINT ["/sbin/tini", "--"]
+
+# Run migrations and then start the app
+CMD alembic -c /app/src/database/alembic.ini upgrade head && uvicorn main:app --host 0.0.0.0 --port 8001 --reload --log-level debug
