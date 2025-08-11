@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from datetime import datetime, timedelta
-from starlette.responses import JSONResponse
+from fastapi.responses import ORJSONResponse
 from typing import Dict, List
 from routers import Router
 from utils.logger import get_logger
@@ -29,7 +29,7 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
             if len(self.request_logs[client_ip]) >= self.max_requests:
                 retry_after = self._calculate_retry_after(client_ip, current_time)
                 logger.warning(f"Rate limit exceeded for IP: {client_ip}")
-                return JSONResponse(
+                return ORJSONResponse(
                     status_code=429,
                     content={
                         "detail": f"Too many requests. Limit is {self.max_requests} per minute.",
@@ -74,6 +74,8 @@ class App:
             docs_url=None,
             redoc_url=None,
             openapi_url="/api/openapi.json",
+            # Настройки для использования orjson
+            default_response_class=ORJSONResponse,
         )
         self._app.add_middleware(
             CORSMiddleware,
