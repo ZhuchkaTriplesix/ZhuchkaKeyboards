@@ -41,6 +41,14 @@ class PostgresCfg(CfgBase):
         return f"postgresql+asyncpg://{self.user}:{self.password}@{self.host}:{self.port}/{self.db}"
 
 
+@dataclass
+class PydanticCfg(CfgBase):
+    """Настройки для Pydantic"""
+    use_orjson: bool = True
+    orjson_options: int = 0  # orjson.OPT_* флаги
+
+
 jwt_cfg = JWTCfg()
 redis_cfg = RedisCfg()
 postgres_cfg = PostgresCfg()
+pydantic_cfg = PydanticCfg()
