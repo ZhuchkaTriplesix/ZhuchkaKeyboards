@@ -1,9 +1,12 @@
 from pydantic import BaseModel
+from pydantic_config import default_config
 
 
 class ErrorBase(BaseModel):
     detail: str
     error_type: str | None = None
+
+    model_config = default_config
 
 
 class BadRequestError(ErrorBase):
@@ -22,27 +25,21 @@ class UnauthorizedError(ErrorBase):
     """401 Unauthorized"""
 
     class Config:
-        schema_extra = {
-            "example": {"detail": "Not authenticated", "error_type": "auth_error"}
-        }
+        schema_extra = {"detail": "Not authenticated", "error_type": "auth_error"}
 
 
 class ForbiddenError(ErrorBase):
     """403 Forbidden"""
 
     class Config:
-        schema_extra = {
-            "example": {"detail": "Permission denied", "error_type": "permission_error"}
-        }
+        schema_extra = {"detail": "Permission denied", "error_type": "permission_error"}
 
 
 class NotFoundError(ErrorBase):
     """404 Not Found"""
 
     class Config:
-        schema_extra = {
-            "example": {"detail": "Resource not found", "error_type": "not_found"}
-        }
+        schema_extra = {"detail": "Resource not found", "error_type": "not_found"}
 
 
 class TooManyRequestsError(ErrorBase):
@@ -52,11 +49,9 @@ class TooManyRequestsError(ErrorBase):
 
     class Config:
         schema_extra = {
-            "example": {
-                "detail": "Rate limit exceeded",
-                "error_type": "rate_limit",
-                "retry_after": 30,
-            }
+            "detail": "Rate limit exceeded",
+            "error_type": "rate_limit",
+            "retry_after": 30,
         }
 
 
@@ -64,6 +59,4 @@ class InternalError(ErrorBase):
     """500 Internal Server Error"""
 
     class Config:
-        schema_extra = {
-            "example": {"detail": "Internal server error", "error_type": "server_error"}
-        }
+        schema_extra = {"detail": "Internal server error", "error_type": "server_error"}
