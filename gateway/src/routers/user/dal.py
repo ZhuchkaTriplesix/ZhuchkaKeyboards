@@ -11,11 +11,7 @@ class UserDAL:
         self.session = session
 
     async def create_user(self, email: str, phone_number: str, password: str) -> User:
-        user = User(
-            email=email,
-            password=password,
-            phone_number=phone_number
-        )
+        user = User(email=email, password=password, phone_number=phone_number)
         self.session.add(user)
         await self.session.flush()
         return user
@@ -35,13 +31,17 @@ class UserDAL:
             return user[0]
 
     async def verify_email(self, email: str) -> Optional[User]:
-        query = (update(User).where(User.email == email).values(is_verify=True)).returning(User)
+        query = (
+            update(User).where(User.email == email).values(is_verify=True)
+        ).returning(User)
         res = await self.session.execute(query)
         row = res.fetchone()
         return row[0] if row else None
 
     async def update_user_password(self, email: str, password: str) -> Optional[User]:
-        query = (update(User).where(User.email == email).values(password=password)).returning(User)
+        query = (
+            update(User).where(User.email == email).values(password=password)
+        ).returning(User)
         res = await self.session.execute(query)
         row = res.fetchone()
         return row[0] if row else None

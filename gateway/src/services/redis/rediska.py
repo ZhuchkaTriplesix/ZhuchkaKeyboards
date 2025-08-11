@@ -19,7 +19,9 @@ def redis_retry(max_retries=3, delay=1):
                     return f(*args, **kwargs)
                 except (redis.ConnectionError, redis.TimeoutError) as e:
                     last_exception = e
-                    logger.warning(f"Redis connection attempt {attempt + 1} failed: {str(e)}")
+                    logger.warning(
+                        f"Redis connection attempt {attempt + 1} failed: {str(e)}"
+                    )
                     if attempt < max_retries - 1:
                         sleep(delay * (attempt + 1))
             raise last_exception
@@ -36,7 +38,7 @@ class RedisManager:
             port=int(os.getenv("REDIS_PORT", 6379)),
             db=int(os.getenv("REDIS_DB", 0)),
             password=os.getenv("REDIS_PASSWORD", ""),
-            decode_responses=True
+            decode_responses=True,
         )
 
     async def get_record(self, tag: str, key: str) -> Optional[str]:

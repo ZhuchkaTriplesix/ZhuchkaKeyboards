@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from fastapi import status
 
 
 class ErrorBase(BaseModel):
@@ -14,7 +13,7 @@ class BadRequestError(ErrorBase):
         schema_extra = {
             "example": {
                 "detail": "Invalid request parameters",
-                "error_type": "validation_error"
+                "error_type": "validation_error",
             }
         }
 
@@ -24,10 +23,7 @@ class UnauthorizedError(ErrorBase):
 
     class Config:
         schema_extra = {
-            "example": {
-                "detail": "Not authenticated",
-                "error_type": "auth_error"
-            }
+            "example": {"detail": "Not authenticated", "error_type": "auth_error"}
         }
 
 
@@ -36,10 +32,7 @@ class ForbiddenError(ErrorBase):
 
     class Config:
         schema_extra = {
-            "example": {
-                "detail": "Permission denied",
-                "error_type": "permission_error"
-            }
+            "example": {"detail": "Permission denied", "error_type": "permission_error"}
         }
 
 
@@ -48,15 +41,13 @@ class NotFoundError(ErrorBase):
 
     class Config:
         schema_extra = {
-            "example": {
-                "detail": "Resource not found",
-                "error_type": "not_found"
-            }
+            "example": {"detail": "Resource not found", "error_type": "not_found"}
         }
 
 
 class TooManyRequestsError(ErrorBase):
     """429 Too Many Requests"""
+
     retry_after: int
 
     class Config:
@@ -64,7 +55,7 @@ class TooManyRequestsError(ErrorBase):
             "example": {
                 "detail": "Rate limit exceeded",
                 "error_type": "rate_limit",
-                "retry_after": 30
+                "retry_after": 30,
             }
         }
 
@@ -74,8 +65,5 @@ class InternalError(ErrorBase):
 
     class Config:
         schema_extra = {
-            "example": {
-                "detail": "Internal server error",
-                "error_type": "server_error"
-            }
+            "example": {"detail": "Internal server error", "error_type": "server_error"}
         }
