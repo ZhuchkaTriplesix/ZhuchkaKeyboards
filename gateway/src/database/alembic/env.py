@@ -7,7 +7,7 @@ from alembic import context
 
 from database.core import Base
 
-from routers.user.models import User
+from routers.user.models import User  # noqa: F401
 
 
 config = context.config
@@ -56,9 +56,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

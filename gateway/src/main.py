@@ -9,13 +9,15 @@ from starlette.responses import HTMLResponse
 from configuration.app import App
 from utils.responses import api_responses
 from utils.logger import get_logger
-from main_schemas import *
+from main_schemas import TestSchema
 
 # Инициализируем логгер
 logger = get_logger(__name__)
 
 REQUEST_ID_CTX_KEY: Final[str] = "request_id"
-_request_id_ctx_var: ContextVar[Optional[str]] = ContextVar(REQUEST_ID_CTX_KEY, default=None)
+_request_id_ctx_var: ContextVar[Optional[str]] = ContextVar(
+    REQUEST_ID_CTX_KEY, default=None
+)
 
 
 def get_request_id() -> Optional[str]:
@@ -24,7 +26,10 @@ def get_request_id() -> Optional[str]:
 
 app = App().app
 
-def get_current_username(credentials: HTTPBasicCredentials = Depends(HTTPBasic())) -> str:
+
+def get_current_username(
+    credentials: HTTPBasicCredentials = Depends(HTTPBasic()),
+) -> str:
     correct_username = secrets.compare_digest(credentials.username, "123")
     correct_password = secrets.compare_digest(credentials.password, "123")
     if not (correct_username and correct_password):
