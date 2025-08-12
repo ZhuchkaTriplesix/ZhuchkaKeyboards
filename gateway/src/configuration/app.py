@@ -62,8 +62,15 @@ class DBSessionMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         async with AsyncSession(engine) as session:
             request.state.db = session
-            response = await call_next(request)
-            return response
+            try:
+                response = await call_next(request)
+                await session.commit()
+                return response
+            except Exception:
+                await session.rollback()
+                raise
+            finally:
+                await session.close()
 
 
 class App:

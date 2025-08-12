@@ -3,7 +3,7 @@ version: '3.5'
 services:
   db:
     image: postgres:15-alpine
-    container_name: postgres-db
+    container_name: postgres-keyboards
     ports:
       - '5432:5432'
     environment:
@@ -21,7 +21,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: redis
+    container_name: redis-keyboards
     ports:
       - '6379:6379'
     volumes:
@@ -35,7 +35,7 @@ services:
 
   migrations:
     build: ./gateway
-    container_name: gateway-migrations
+    container_name: gateway-migrations-keyboards
     depends_on:
       db:
         condition: service_healthy
@@ -47,7 +47,7 @@ services:
 
   gateway:
     build: ./gateway
-    container_name: gateway
+    container_name: gateway-keyboards
     ports:
       - '8001:8001'
     depends_on:
