@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from pydantic import BaseModel
+from pydantic_config import default_config
 
 
 class User(BaseModel):
@@ -10,4 +11,6 @@ class User(BaseModel):
 
 
 class TestSchema(BaseModel):
-    hello: str | None = "123"
+    hello: str
+
+    model_config = default_config

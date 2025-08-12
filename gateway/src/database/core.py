@@ -60,7 +60,13 @@ class CustomBase:
     @property
     def _id_str(self):
         ids = inspect(self).identity
-        return "-".join([str(x) for x in ids]) if ids and len(ids) > 1 else str(ids[0]) if ids else "None"
+        return (
+            "-".join([str(x) for x in ids])
+            if ids and len(ids) > 1
+            else str(ids[0])
+            if ids
+            else "None"
+        )
 
     @property
     def _repr_attrs_str(self):
@@ -70,7 +76,9 @@ class CustomBase:
         single = len(self.__repr_attrs__) == 1
         for key in self.__repr_attrs__:
             if not hasattr(self, key):
-                raise KeyError(f"{self.__class__} has incorrect attribute '{key}' in __repr__attrs__")
+                raise KeyError(
+                    f"{self.__class__} has incorrect attribute '{key}' in __repr__attrs__"
+                )
             value = getattr(self, key)
             wrap_in_quote = isinstance(value, str)
 
