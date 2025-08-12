@@ -1,10 +1,8 @@
 import uuid
-from typing import List
 from uuid import UUID
 from sqlalchemy import types, String, Boolean
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 from database.core import Base
-
 
 
 class User(Base):
