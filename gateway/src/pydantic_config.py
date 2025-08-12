@@ -1,6 +1,7 @@
 """
 Конфигурация Pydantic для использования orjson
 """
+
 import orjson
 from pydantic import ConfigDict
 
@@ -13,8 +14,12 @@ def get_pydantic_config() -> ConfigDict:
         # Используем orjson для сериализации
         json_encoders={
             # Настройки для orjson
-            dict: lambda v: orjson.dumps(v, option=orjson.OPT_NAIVE_UTC | orjson.OPT_SERIALIZE_NUMPY),
-            list: lambda v: orjson.dumps(v, option=orjson.OPT_NAIVE_UTC | orjson.OPT_SERIALIZE_NUMPY),
+            dict: lambda v: orjson.dumps(
+                v, option=orjson.OPT_NAIVE_UTC | orjson.OPT_SERIALIZE_NUMPY
+            ),
+            list: lambda v: orjson.dumps(
+                v, option=orjson.OPT_NAIVE_UTC | orjson.OPT_SERIALIZE_NUMPY
+            ),
         },
         # Другие настройки Pydantic
         validate_assignment=True,
