@@ -1,6 +1,7 @@
 """
 Pydantic схемы для управления производством
 """
+
 from datetime import datetime
 from typing import Optional, List
 from uuid import UUID
@@ -12,30 +13,48 @@ from .models import OrderStatus, ProductionStage, QualityStatus, ResourceType
 
 # ==================== ЗАКАЗЫ ====================
 
+
 class OrderBase(BaseModel):
     """Базовая схема заказа"""
-    customer_name: str = Field(..., min_length=1, max_length=200, description="Имя заказчика")
+
+    customer_name: str = Field(
+        ..., min_length=1, max_length=200, description="Имя заказчика"
+    )
     customer_email: EmailStr = Field(..., description="Email заказчика")
-    customer_phone: str = Field(..., min_length=1, max_length=50, description="Телефон заказчика")
-    keyboard_model: str = Field(..., min_length=1, max_length=100, description="Модель клавиатуры")
+    customer_phone: str = Field(
+        ..., min_length=1, max_length=50, description="Телефон заказчика"
+    )
+    keyboard_model: str = Field(
+        ..., min_length=1, max_length=100, description="Модель клавиатуры"
+    )
     quantity: int = Field(..., gt=0, description="Количество")
     unit_price: float = Field(..., gt=0, description="Цена за единицу")
     priority: int = Field(1, ge=1, le=5, description="Приоритет (1-5)")
-    description: Optional[str] = Field(None, max_length=1000, description="Описание заказа")
-    special_requirements: Optional[str] = Field(None, max_length=1000, description="Особые требования")
-    planned_start_date: Optional[datetime] = Field(None, description="Планируемая дата начала")
-    planned_completion_date: Optional[datetime] = Field(None, description="Планируемая дата завершения")
+    description: Optional[str] = Field(
+        None, max_length=1000, description="Описание заказа"
+    )
+    special_requirements: Optional[str] = Field(
+        None, max_length=1000, description="Особые требования"
+    )
+    planned_start_date: Optional[datetime] = Field(
+        None, description="Планируемая дата начала"
+    )
+    planned_completion_date: Optional[datetime] = Field(
+        None, description="Планируемая дата завершения"
+    )
 
     model_config = default_config
 
 
 class OrderCreate(OrderBase):
     """Схема создания заказа"""
+
     pass
 
 
 class OrderUpdate(BaseModel):
     """Схема обновления заказа"""
+
     customer_name: Optional[str] = Field(None, min_length=1, max_length=200)
     customer_email: Optional[EmailStr] = None
     customer_phone: Optional[str] = Field(None, min_length=1, max_length=50)
@@ -55,6 +74,7 @@ class OrderUpdate(BaseModel):
 
 class OrderResponse(OrderBase):
     """Схема ответа заказа"""
+
     id: UUID
     order_number: str
     status: OrderStatus
@@ -71,6 +91,7 @@ class OrderResponse(OrderBase):
 
 class OrderListResponse(BaseModel):
     """Схема списка заказов"""
+
     orders: List[OrderResponse]
     total: int
     page: int
@@ -81,25 +102,37 @@ class OrderListResponse(BaseModel):
 
 # ==================== ЗАДАЧИ ПРОИЗВОДСТВА ====================
 
+
 class ProductionTaskBase(BaseModel):
     """Базовая схема задачи производства"""
+
     name: str = Field(..., min_length=1, max_length=200, description="Название задачи")
-    description: Optional[str] = Field(None, max_length=1000, description="Описание задачи")
+    description: Optional[str] = Field(
+        None, max_length=1000, description="Описание задачи"
+    )
     stage: ProductionStage = Field(..., description="Этап производства")
-    planned_duration_hours: float = Field(..., gt=0, description="Планируемая продолжительность в часах")
-    planned_start_date: Optional[datetime] = Field(None, description="Планируемая дата начала")
-    planned_end_date: Optional[datetime] = Field(None, description="Планируемая дата завершения")
+    planned_duration_hours: float = Field(
+        ..., gt=0, description="Планируемая продолжительность в часах"
+    )
+    planned_start_date: Optional[datetime] = Field(
+        None, description="Планируемая дата начала"
+    )
+    planned_end_date: Optional[datetime] = Field(
+        None, description="Планируемая дата завершения"
+    )
 
     model_config = default_config
 
 
 class ProductionTaskCreate(ProductionTaskBase):
     """Схема создания задачи производства"""
+
     order_id: UUID = Field(..., description="ID заказа")
 
 
 class ProductionTaskUpdate(BaseModel):
     """Схема обновления задачи производства"""
+
     name: Optional[str] = Field(None, min_length=1, max_length=200)
     description: Optional[str] = Field(None, max_length=1000)
     stage: Optional[ProductionStage] = None
@@ -117,6 +150,7 @@ class ProductionTaskUpdate(BaseModel):
 
 class ProductionTaskResponse(ProductionTaskBase):
     """Схема ответа задачи производства"""
+
     id: UUID
     order_id: UUID
     actual_duration_hours: Optional[float]
@@ -132,10 +166,16 @@ class ProductionTaskResponse(ProductionTaskBase):
 
 # ==================== ПРОВЕРКА КАЧЕСТВА ====================
 
+
 class QualityChecklistItemBase(BaseModel):
     """Базовая схема элемента чек-листа качества"""
-    item_name: str = Field(..., min_length=1, max_length=200, description="Название элемента")
-    description: Optional[str] = Field(None, max_length=1000, description="Описание элемента")
+
+    item_name: str = Field(
+        ..., min_length=1, max_length=200, description="Название элемента"
+    )
+    description: Optional[str] = Field(
+        None, max_length=1000, description="Описание элемента"
+    )
     is_required: bool = Field(True, description="Обязательный элемент")
 
     model_config = default_config
@@ -143,11 +183,13 @@ class QualityChecklistItemBase(BaseModel):
 
 class QualityChecklistItemCreate(QualityChecklistItemBase):
     """Схема создания элемента чек-листа качества"""
+
     pass
 
 
 class QualityChecklistItemUpdate(BaseModel):
     """Схема обновления элемента чек-листа качества"""
+
     item_name: Optional[str] = Field(None, min_length=1, max_length=200)
     description: Optional[str] = Field(None, max_length=1000)
     is_required: Optional[bool] = None
@@ -159,6 +201,7 @@ class QualityChecklistItemUpdate(BaseModel):
 
 class QualityChecklistItemResponse(QualityChecklistItemBase):
     """Схема ответа элемента чек-листа качества"""
+
     id: UUID
     is_passed: Optional[bool]
     notes: Optional[str]
@@ -170,20 +213,29 @@ class QualityChecklistItemResponse(QualityChecklistItemBase):
 
 class QualityCheckBase(BaseModel):
     """Базовая схема проверки качества"""
-    check_name: str = Field(..., min_length=1, max_length=200, description="Название проверки")
-    description: Optional[str] = Field(None, max_length=1000, description="Описание проверки")
-    checklist_items: List[QualityChecklistItemCreate] = Field(..., description="Элементы чек-листа")
+
+    check_name: str = Field(
+        ..., min_length=1, max_length=200, description="Название проверки"
+    )
+    description: Optional[str] = Field(
+        None, max_length=1000, description="Описание проверки"
+    )
+    checklist_items: List[QualityChecklistItemCreate] = Field(
+        ..., description="Элементы чек-листа"
+    )
 
     model_config = default_config
 
 
 class QualityCheckCreate(QualityCheckBase):
     """Схема создания проверки качества"""
+
     order_id: UUID = Field(..., description="ID заказа")
 
 
 class QualityCheckUpdate(BaseModel):
     """Схема обновления проверки качества"""
+
     check_name: Optional[str] = Field(None, min_length=1, max_length=200)
     description: Optional[str] = Field(None, max_length=1000)
     status: Optional[QualityStatus] = None
@@ -197,6 +249,7 @@ class QualityCheckUpdate(BaseModel):
 
 class QualityCheckResponse(QualityCheckBase):
     """Схема ответа проверки качества"""
+
     id: UUID
     order_id: UUID
     status: QualityStatus
@@ -213,12 +266,18 @@ class QualityCheckResponse(QualityCheckBase):
 
 # ==================== РЕСУРСЫ ====================
 
+
 class ResourceBase(BaseModel):
     """Базовая схема ресурса"""
+
     name: str = Field(..., min_length=1, max_length=200, description="Название ресурса")
     resource_type: ResourceType = Field(..., description="Тип ресурса")
-    description: Optional[str] = Field(None, max_length=1000, description="Описание ресурса")
-    capacity: Optional[float] = Field(None, gt=0, description="Производительность/мощность")
+    description: Optional[str] = Field(
+        None, max_length=1000, description="Описание ресурса"
+    )
+    capacity: Optional[float] = Field(
+        None, gt=0, description="Производительность/мощность"
+    )
     unit: Optional[str] = Field(None, max_length=50, description="Единица измерения")
     cost_per_hour: Optional[float] = Field(None, gt=0, description="Стоимость в час")
 
@@ -227,11 +286,13 @@ class ResourceBase(BaseModel):
 
 class ResourceCreate(ResourceBase):
     """Схема создания ресурса"""
+
     pass
 
 
 class ResourceUpdate(BaseModel):
     """Схема обновления ресурса"""
+
     name: Optional[str] = Field(None, min_length=1, max_length=200)
     resource_type: Optional[ResourceType] = None
     description: Optional[str] = Field(None, max_length=1000)
@@ -246,6 +307,7 @@ class ResourceUpdate(BaseModel):
 
 class ResourceResponse(ResourceBase):
     """Схема ответа ресурса"""
+
     id: UUID
     is_available: bool
     is_active: bool
@@ -257,8 +319,10 @@ class ResourceResponse(ResourceBase):
 
 # ==================== НАЗНАЧЕНИЕ РЕСУРСОВ ====================
 
+
 class TaskResourceBase(BaseModel):
     """Базовая схема назначения ресурса на задачу"""
+
     assigned_hours: float = Field(..., gt=0, description="Назначенные часы")
     start_time: Optional[datetime] = Field(None, description="Время начала")
     end_time: Optional[datetime] = Field(None, description="Время завершения")
@@ -268,12 +332,14 @@ class TaskResourceBase(BaseModel):
 
 class TaskResourceCreate(TaskResourceBase):
     """Схема создания назначения ресурса"""
+
     task_id: UUID = Field(..., description="ID задачи")
     resource_id: UUID = Field(..., description="ID ресурса")
 
 
 class TaskResourceUpdate(BaseModel):
     """Схема обновления назначения ресурса"""
+
     assigned_hours: Optional[float] = Field(None, gt=0)
     actual_hours: Optional[float] = Field(None, gt=0)
     start_time: Optional[datetime] = None
@@ -284,6 +350,7 @@ class TaskResourceUpdate(BaseModel):
 
 class TaskResourceResponse(TaskResourceBase):
     """Схема ответа назначения ресурса"""
+
     id: UUID
     task_id: UUID
     resource_id: UUID
@@ -297,8 +364,10 @@ class TaskResourceResponse(TaskResourceBase):
 
 # ==================== СТАТИСТИКА ====================
 
+
 class ProductionStats(BaseModel):
     """Статистика производства"""
+
     total_orders: int
     orders_in_production: int
     orders_completed: int
@@ -312,6 +381,7 @@ class ProductionStats(BaseModel):
 
 class OrderTimeline(BaseModel):
     """Временная линия заказа"""
+
     order_id: UUID
     order_number: str
     customer_name: str

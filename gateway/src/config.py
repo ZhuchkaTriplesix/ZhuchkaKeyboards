@@ -44,6 +44,7 @@ class PostgresCfg(CfgBase):
 @dataclass
 class PydanticCfg(CfgBase):
     """Настройки для Pydantic"""
+
     use_orjson: bool = True
     orjson_options: int = 0  # orjson.OPT_* флаги
 
