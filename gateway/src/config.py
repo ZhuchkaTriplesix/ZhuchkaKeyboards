@@ -1,7 +1,6 @@
 import os
 from abc import ABC
 from dataclasses import asdict, dataclass
-from typing import Optional
 
 
 class CfgBase(ABC):
@@ -16,12 +15,12 @@ class RedisCfg(CfgBase):
     password: str = os.getenv("REDIS_PASSWORD", "")
 
 
-
 @dataclass
 class JWTCfg(CfgBase):
     jwt_secret: str = os.getenv("JWT_SECRET")
     jwt_algorithm: str = os.getenv("JWT_ALGORITHM")
     jwt_exp: int = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+
 
 @dataclass
 class PostgresCfg(CfgBase):
@@ -41,6 +40,16 @@ class PostgresCfg(CfgBase):
     def url(self) -> str:
         return f"postgresql+asyncpg://{self.user}:{self.password}@{self.host}:{self.port}/{self.db}"
 
+
+@dataclass
+class PydanticCfg(CfgBase):
+    """Настройки для Pydantic"""
+
+    use_orjson: bool = True
+    orjson_options: int = 0  # orjson.OPT_* флаги
+
+
 jwt_cfg = JWTCfg()
 redis_cfg = RedisCfg()
 postgres_cfg = PostgresCfg()
+pydantic_cfg = PydanticCfg()

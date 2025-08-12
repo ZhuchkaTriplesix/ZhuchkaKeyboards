@@ -1,17 +1,14 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from datetime import datetime, timedelta
-from starlette.responses import JSONResponse
+from fastapi.responses import ORJSONResponse
 from typing import Dict, List
 from routers import Router
-import asyncio
-import os
 from utils.logger import get_logger
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.core import engine
 
-from starlette.responses import JSONResponse
 
 # Инициализируем логгер
 logger = get_logger(__name__)
@@ -32,13 +29,13 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
             if len(self.request_logs[client_ip]) >= self.max_requests:
                 retry_after = self._calculate_retry_after(client_ip, current_time)
                 logger.warning(f"Rate limit exceeded for IP: {client_ip}")
-                return JSONResponse(
+                return ORJSONResponse(
                     status_code=429,
                     content={
                         "detail": f"Too many requests. Limit is {self.max_requests} per minute.",
-                        "retry_after": retry_after
+                        "retry_after": retry_after,
                     },
-                    headers={"Retry-After": str(retry_after)}
+                    headers={"Retry-After": str(retry_after)},
                 )
             self.request_logs[client_ip].append(current_time)
         else:
@@ -49,7 +46,9 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
     def _cleanup_old_entries(self, current_time: datetime):
         cutoff_time = current_time - timedelta(seconds=self.time_window)
         for ip in list(self.request_logs.keys()):
-            self.request_logs[ip] = [t for t in self.request_logs[ip] if t > cutoff_time]
+            self.request_logs[ip] = [
+                t for t in self.request_logs[ip] if t > cutoff_time
+            ]
             if not self.request_logs[ip]:
                 del self.request_logs[ip]
 
@@ -75,13 +74,15 @@ class App:
             docs_url=None,
             redoc_url=None,
             openapi_url="/api/openapi.json",
+            # Настройки для использования orjson
+            default_response_class=ORJSONResponse,
         )
         self._app.add_middleware(
             CORSMiddleware,
             allow_origins=["*"],
             allow_credentials=True,
             allow_methods=["GET", "POST", "DELETE", "PATCH"],
-            allow_headers=["*"]
+            allow_headers=["*"],
         )
         self._app.add_middleware(RateLimiterMiddleware)
         self._app.add_middleware(DBSessionMiddleware)
