@@ -24,6 +24,7 @@ def get_request_id() -> Optional[str]:
     return _request_id_ctx_var.get()
 
 
+# Создаем экземпляр приложения
 app = App().app
 
 
