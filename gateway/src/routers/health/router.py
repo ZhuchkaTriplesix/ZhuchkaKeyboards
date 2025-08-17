@@ -120,22 +120,22 @@ async def metrics_summary():
         return ORJSONResponse(
             {
                 "message": "Enhanced HTTP metrics collection enabled",
-                "prometheus_endpoint": "/metrics", 
+                "prometheus_endpoint": "/metrics",
                 "metrics_info": {
                     "http_requests_total": "Total HTTP requests by method, endpoint, status_code, handler",
                     "http_request_duration_seconds": "HTTP request duration histograms with detailed buckets",
                     "http_requests_in_progress": "Current number of requests being processed",
-                    "http_request_size_bytes": "HTTP request size histograms", 
+                    "http_request_size_bytes": "HTTP request size histograms",
                     "http_response_size_bytes": "HTTP response size histograms",
                     "http_requests_by_user_agent_total": "Requests grouped by user agent family and version",
                     "http_requests_by_ip_total": "Requests grouped by client IP",
                     "http_slow_requests_total": "Number of slow requests (>1s)",
-                    "http_errors_by_type_total": "HTTP errors grouped by error type"
+                    "http_errors_by_type_total": "HTTP errors grouped by error type",
                 },
                 "health_endpoints": {
                     "basic": "/health",
                     "deep": "/health/deep",
-                    "liveness": "/health/liveness", 
+                    "liveness": "/health/liveness",
                     "readiness": "/health/readiness",
                 },
             }

@@ -263,7 +263,7 @@ class InventoryLevel(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
-    
+
     @property
     def available_quantity(self) -> int:
         """Calculate available quantity"""
@@ -309,7 +309,7 @@ class InventoryTransaction(Base):
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     created_by: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
-    
+
     @property
     def total_cost(self) -> Optional[float]:
         """Calculate total cost"""
@@ -493,12 +493,12 @@ class PurchaseOrderItem(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
-    
+
     @property
     def total_cost(self) -> float:
         """Calculate total cost"""
         return self.quantity * self.unit_cost
-    
+
     @property
     def is_fully_received(self) -> bool:
         """Check if item is fully received"""
