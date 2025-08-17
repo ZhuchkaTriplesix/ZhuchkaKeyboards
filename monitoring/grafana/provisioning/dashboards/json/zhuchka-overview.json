@@ -1,0 +1,155 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "ZhuchkaKeyboards - Application Overview",
+    "tags": ["zhuchka", "application"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "HTTP Requests per Second",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total[5m])",
+            "refId": "A"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+        "options": {
+          "reduceOptions": {
+            "calcs": ["lastNotNull"]
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Response Time (95th percentile)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
+            "refId": "A"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+        "options": {
+          "reduceOptions": {
+            "calcs": ["lastNotNull"]
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "HTTP Status Codes",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total[5m])",
+            "refId": "A",
+            "legendFormat": "{{status_code}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 }
+      },
+      {
+        "id": 4,
+        "title": "Database Query Duration",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(db_query_duration_seconds_sum[5m]) / rate(db_query_duration_seconds_count[5m])",
+            "refId": "A",
+            "legendFormat": "{{operation}} - {{table}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 }
+      },
+      {
+        "id": 5,
+        "title": "Active Database Connections",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "db_connections_total",
+            "refId": "A"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 }
+      },
+      {
+        "id": 6,
+        "title": "Orders Created",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(orders_total[5m])",
+            "refId": "A",
+            "legendFormat": "{{status}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 }
+      },
+      {
+        "id": 7,
+        "title": "Production Tasks",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(production_tasks_total[5m])",
+            "refId": "A",
+            "legendFormat": "{{stage}} - {{status}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 }
+      },
+      {
+        "id": 8,
+        "title": "Redis Operations",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(redis_operations_total[5m])",
+            "refId": "A",
+            "legendFormat": "{{operation}} - {{status}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 }
+      },
+      {
+        "id": 9,
+        "title": "Cache Hit Ratio",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "cache_hit_ratio",
+            "refId": "A"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 32 },
+        "options": {
+          "unit": "percent"
+        }
+      },
+      {
+        "id": 10,
+        "title": "Error Rate",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(errors_total[5m])",
+            "refId": "A",
+            "legendFormat": "{{error_type}} - {{component}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 24, "x": 0, "y": 40 }
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "10s"
+  }
+}

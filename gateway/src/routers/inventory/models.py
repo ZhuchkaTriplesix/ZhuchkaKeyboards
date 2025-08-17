@@ -240,9 +240,6 @@ class InventoryLevel(Base):
     reserved_quantity: Mapped[int] = mapped_column(
         Integer, default=0
     )  # Зарезервировано
-    available_quantity: Mapped[int] = mapped_column(
-        Integer, computed="current_quantity - reserved_quantity"
-    )
 
     # Локация
     location_code: Mapped[Optional[str]] = mapped_column(
@@ -265,6 +262,11 @@ class InventoryLevel(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
+    
+    @property
+    def available_quantity(self) -> int:
+        """Calculate available quantity"""
+        return self.current_quantity - self.reserved_quantity
 
 
 class InventoryTransaction(Base):
@@ -286,9 +288,6 @@ class InventoryTransaction(Base):
     )
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     unit_cost: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    total_cost: Mapped[Optional[float]] = mapped_column(
-        Float, computed="quantity * unit_cost"
-    )
 
     # Ссылки на документы
     reference_number: Mapped[Optional[str]] = mapped_column(
@@ -307,6 +306,13 @@ class InventoryTransaction(Base):
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     created_by: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    
+    @property
+    def total_cost(self) -> Optional[float]:
+        """Calculate total cost"""
+        if self.unit_cost is not None:
+            return self.quantity * self.unit_cost
+        return None
 
 
 class Supplier(Base):
@@ -466,13 +472,9 @@ class PurchaseOrderItem(Base):
     # Количество и цена
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     unit_cost: Mapped[float] = mapped_column(Float, nullable=False)
-    total_cost: Mapped[float] = mapped_column(Float, computed="quantity * unit_cost")
 
     # Статус получения
     received_quantity: Mapped[int] = mapped_column(Integer, default=0)
-    is_fully_received: Mapped[bool] = mapped_column(
-        Boolean, computed="received_quantity >= quantity"
-    )
 
     # Связи
     purchase_order: Mapped["PurchaseOrder"] = relationship(
@@ -484,3 +486,13 @@ class PurchaseOrderItem(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
+    
+    @property
+    def total_cost(self) -> float:
+        """Calculate total cost"""
+        return self.quantity * self.unit_cost
+    
+    @property
+    def is_fully_received(self) -> bool:
+        """Check if item is fully received"""
+        return self.received_quantity >= self.quantity
