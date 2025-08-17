@@ -1,7 +1,7 @@
 # ZhuchkaKeyboards Makefile
 # Commands for development, testing, and deployment
 
-.PHONY: help dev monitoring test test-unit test-integration test-performance test-rps test-metrics-performance clean build
+.PHONY: help dev monitoring test test-unit test-integration test-performance test-rps test-all-methods-rps test-rps-benchmarks test-metrics-performance load-test-data-small load-test-data-medium load-test-data-large load-test-data-stress generate-test-data clean build
 
 # Default target
 help:
@@ -13,7 +13,13 @@ help:
 	@echo "  test-integration - Run integration tests (requires containers)"
 	@echo "  test-performance - Run all performance tests"
 	@echo "  test-rps         - Run high RPS performance tests"
+	@echo "  test-all-methods-rps - Run RPS tests for all API methods"
+	@echo "  test-rps-benchmarks - Run comprehensive RPS benchmarks"
 	@echo "  test-metrics-performance - Run metrics performance tests"
+	@echo "  load-test-data-small - Load small test dataset into API"
+	@echo "  load-test-data-medium - Load medium test dataset into API"
+	@echo "  load-test-data-large - Load large test dataset into API"
+	@echo "  generate-test-data - Generate realistic test data files"
 	@echo "  build            - Build all containers"
 	@echo "  clean            - Stop and remove all containers"
 	@echo "  migrate          - Run database migrations"
@@ -70,11 +76,54 @@ test-rps:
 	pytest tests/performance/test_high_rps.py -m performance -v --tb=short -s
 	@echo "✅ RPS tests completed!"
 
+test-all-methods-rps:
+	@echo "🔥 Running RPS tests for all API methods..."
+	@echo "⚠️  Make sure containers are running: make dev"
+	pytest tests/performance/test_all_methods_rps.py -m performance -v --tb=short -s
+	@echo "✅ All methods RPS tests completed!"
+
+test-rps-benchmarks:
+	@echo "📊 Running comprehensive RPS benchmarks..."
+	@echo "⚠️  Make sure containers are running: make dev"
+	pytest tests/performance/test_rps_benchmarks.py -m performance -v --tb=short -s
+	@echo "✅ RPS benchmarks completed!"
+
 test-metrics-performance:
 	@echo "📈 Running metrics performance tests..."
 	@echo "⚠️  Make sure containers are running: make dev"
 	pytest tests/performance/test_metrics_load.py -m performance -v --tb=short -s
 	@echo "✅ Metrics performance tests completed!"
+
+# Test data loading commands
+load-test-data-small:
+	@echo "🏭 Loading small test dataset into API..."
+	@echo "⚠️  Make sure containers are running: make dev"
+	python tests/performance/load_test_data.py --size small
+	@echo "✅ Small dataset loaded!"
+
+load-test-data-medium:
+	@echo "🏭 Loading medium test dataset into API..."
+	@echo "⚠️  Make sure containers are running: make dev"
+	python tests/performance/load_test_data.py --size medium
+	@echo "✅ Medium dataset loaded!"
+
+load-test-data-large:
+	@echo "🏭 Loading large test dataset into API..."
+	@echo "⚠️  Make sure containers are running: make dev"
+	python tests/performance/load_test_data.py --size large
+	@echo "✅ Large dataset loaded!"
+
+load-test-data-stress:
+	@echo "💥 Stress testing data loading into API..."
+	@echo "⚠️  Make sure containers are running: make dev"
+	python tests/performance/load_test_data.py --size stress
+	@echo "✅ Stress loading completed!"
+
+# Generate test data files
+generate-test-data:
+	@echo "📦 Generating realistic test data files..."
+	python tests/performance/data_generators.py
+	@echo "✅ Test data files generated!"
 
 # Quick test commands
 test-quick:
