@@ -8,6 +8,7 @@ from routers import Router
 from utils.logger import get_logger
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.core import engine
+from services.metrics import prometheus_metrics
 
 
 # Инициализируем логгер
@@ -15,7 +16,7 @@ logger = get_logger(__name__)
 
 
 class RateLimiterMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app, max_requests: int = 50, time_window: int = 60):
+    def __init__(self, app, max_requests: int = 100000, time_window: int = 60):
         super().__init__(app)
         self.max_requests = max_requests
         self.time_window = time_window
@@ -62,8 +63,16 @@ class DBSessionMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         async with AsyncSession(engine) as session:
             request.state.db = session
-            response = await call_next(request)
-            return response
+            try:
+                response = await call_next(request)
+                await session.commit()
+                return response
+            except Exception:
+                await session.rollback()
+                raise
+            finally:
+                await session.close()
+
 
 
 class App:
@@ -84,8 +93,13 @@ class App:
             allow_methods=["GET", "POST", "DELETE", "PATCH"],
             allow_headers=["*"],
         )
-        self._app.add_middleware(RateLimiterMiddleware)
+        # Отключаем rate limiter для performance тестов
+        # self._app.add_middleware(RateLimiterMiddleware, max_requests=100000, time_window=60)
         self._app.add_middleware(DBSessionMiddleware)
+        
+        # Initialize Prometheus metrics
+        prometheus_metrics.init_app(self._app)
+        
         self._register_routers()
 
     def _register_routers(self) -> None:
@@ -95,3 +109,5 @@ class App:
     @property
     def app(self) -> FastAPI:
         return self._app
+
+

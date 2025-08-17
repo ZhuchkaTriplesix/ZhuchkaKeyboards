@@ -1,0 +1,12 @@
+[1mdiff --git a/gateway/Dockerfile b/gateway/Dockerfile[m
+[1mindex c6f60c6..6a29a84 100644[m
+[1m--- a/gateway/Dockerfile[m
+[1m+++ b/gateway/Dockerfile[m
+[36m@@ -5,7 +5,6 @@[m [mWORKDIR /app[m
+ [m
+ COPY . .[m
+ [m
+[31m-[m
+ # Install dependencies[m
+ RUN pip install --no-cache-dir -r requirements.txt[m
+ [m
