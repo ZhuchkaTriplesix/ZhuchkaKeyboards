@@ -16,7 +16,7 @@ logger = get_logger(__name__)
 
 
 class RateLimiterMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app, max_requests: int = 100000, time_window: int = 60):
+    def __init__(self, app, max_requests: int = 999999, time_window: int = 60):
         super().__init__(app)
         self.max_requests = max_requests
         self.time_window = time_window
@@ -93,8 +93,8 @@ class App:
             allow_methods=["GET", "POST", "DELETE", "PATCH"],
             allow_headers=["*"],
         )
-        # Отключаем rate limiter для performance тестов
-        # self._app.add_middleware(RateLimiterMiddleware, max_requests=100000, time_window=60)
+        # Rate limiter с очень высоким лимитом для performance тестов  
+        self._app.add_middleware(RateLimiterMiddleware, max_requests=999999, time_window=60)
         self._app.add_middleware(DBSessionMiddleware)
         
         # Initialize Prometheus metrics

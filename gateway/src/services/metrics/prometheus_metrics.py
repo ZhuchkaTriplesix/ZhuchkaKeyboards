@@ -304,6 +304,21 @@ class MetricsMiddleware(BaseHTTPMiddleware):
         return family, version
 
 
+def init_app(app: FastAPI):
+    """Initialize Prometheus metrics for FastAPI app"""
+    instrumentator = Instrumentator(
+        should_group_status_codes=False,
+        should_ignore_untemplated=True,
+        should_respect_env_var=True,
+        should_instrument_requests_inprogress=True,
+        excluded_handlers=["/metrics"],
+    )
+    
+    instrumentator.instrument(app)
+    instrumentator.expose(app, endpoint="/metrics")
+
+
+# Global metrics instance for backward compatibility
 class PrometheusMetrics:
     """Main metrics collection class"""
 
@@ -312,166 +327,8 @@ class PrometheusMetrics:
 
     def init_app(self, app: FastAPI) -> None:
         """Initialize Prometheus metrics for FastAPI application"""
-
-        # Initialize instrumentator with basic configuration
-        self.instrumentator = Instrumentator()
-
-        # Add default metrics
-        self.instrumentator.add(metrics.default())
-        self.instrumentator.add(metrics.latency())
-
-        # Initialize instrumentator
-        self.instrumentator.instrument(app)
-
-        # Add custom middleware
-        app.add_middleware(MetricsMiddleware)
-
-        # Expose metrics endpoint
-        self.instrumentator.expose(app, endpoint="/metrics")
-
-    # Database metrics methods
-    def record_db_query(
-        self, operation: str, table: str, duration: float, success: bool = True
-    ):
-        """Record database query metrics"""
-        status = "success" if success else "error"
-        db_queries_total.labels(operation=operation, table=table, status=status).inc()
-        db_query_duration_seconds.labels(operation=operation, table=table).observe(
-            duration
-        )
-
-    def set_db_connections(self, count: int):
-        """Set current database connections count"""
-        db_connections_total.set(count)
-
-    # Redis metrics methods
-    def record_redis_operation(self, operation: str, success: bool = True):
-        """Record Redis operation metrics"""
-        status = "success" if success else "error"
-        redis_operations_total.labels(operation=operation, status=status).inc()
-
-    def set_redis_pool_size(self, size: int):
-        """Set Redis connection pool size"""
-        redis_connection_pool_size.set(size)
-
-    # Business metrics methods
-    def record_order_created(self, status: str):
-        """Record new order creation"""
-        orders_total.labels(status=status).inc()
-
-    def record_order_processing_time(self, stage: str, duration: float):
-        """Record order processing time"""
-        orders_processing_time_seconds.labels(stage=stage).observe(duration)
-
-    def record_production_task(self, stage: str, status: str):
-        """Record production task metrics"""
-        production_tasks_total.labels(stage=stage, status=status).inc()
-
-    def record_quality_check(self, status: str):
-        """Record quality check result"""
-        quality_checks_total.labels(status=status).inc()
-
-    def set_inventory_level(self, item_sku: str, warehouse_code: str, level: int):
-        """Set inventory level for item"""
-        inventory_levels.labels(item_sku=item_sku, warehouse_code=warehouse_code).set(
-            level
-        )
-
-    # Session and connection metrics
-    def set_active_sessions(self, count: int):
-        """Set number of active sessions"""
-        active_sessions.set(count)
-
-    def set_websocket_connections(self, count: int):
-        """Set number of WebSocket connections"""
-        websocket_connections.set(count)
-
-    # Error metrics
-    def record_error(self, error_type: str, component: str):
-        """Record application error"""
-        errors_total.labels(error_type=error_type, component=component).inc()
-
-    # Cache metrics
-    def record_cache_operation(self, operation: str, result: str):
-        """Record cache operation (hit/miss)"""
-        cache_operations_total.labels(operation=operation, result=result).inc()
-
-    def set_cache_hit_ratio(self, ratio: float):
-        """Set cache hit ratio percentage"""
-        cache_hit_ratio.set(ratio)
-    
-    # HTTP metrics methods
-    def record_http_request(
-        self, 
-        method: str, 
-        endpoint: str, 
-        status_code: str, 
-        duration: float,
-        handler: str = "api"
-    ):
-        """Record HTTP request metrics manually"""
-        http_requests_total.labels(
-            method=method, 
-            endpoint=endpoint, 
-            status_code=status_code,
-            handler=handler
-        ).inc()
-        
-        http_request_duration_seconds.labels(
-            method=method, 
-            endpoint=endpoint, 
-            status_code=status_code
-        ).observe(duration)
-        
-        if duration > 1.0:
-            http_slow_requests_total.labels(
-                method=method, 
-                endpoint=endpoint, 
-                status_code=status_code
-            ).inc()
-    
-    def record_http_error(
-        self, 
-        method: str, 
-        endpoint: str, 
-        error_type: str, 
-        status_code: str = "500"
-    ):
-        """Record HTTP error metrics"""
-        http_errors_by_type.labels(
-            method=method,
-            endpoint=endpoint,
-            error_type=error_type,
-            status_code=status_code
-        ).inc()
-    
-    def record_request_size(self, method: str, endpoint: str, size_bytes: int):
-        """Record HTTP request size"""
-        http_request_size_bytes.labels(method=method, endpoint=endpoint).observe(size_bytes)
-    
-    def record_response_size(
-        self, 
-        method: str, 
-        endpoint: str, 
-        status_code: str, 
-        size_bytes: int
-    ):
-        """Record HTTP response size"""
-        http_response_size_bytes.labels(
-            method=method, 
-            endpoint=endpoint, 
-            status_code=status_code
-        ).observe(size_bytes)
-    
-    def get_http_metrics_summary(self) -> dict:
-        """Get summary of current HTTP metrics"""
-        return {
-            "total_requests": "Use Prometheus queries to get current values",
-            "requests_in_progress": "Use http_requests_in_progress metric",
-            "slow_requests": "Use http_slow_requests_total metric",
-            "error_rate": "Use rate(http_errors_by_type_total[5m]) query",
-            "avg_response_time": "Use rate(http_request_duration_seconds_sum[5m]) / rate(http_request_duration_seconds_count[5m]) query"
-        }
+        # Use simplified init_app function
+        init_app(app)
 
 
 # Global metrics instance

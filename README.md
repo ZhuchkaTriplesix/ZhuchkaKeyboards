@@ -9,7 +9,10 @@
 - **Gateway** — FastAPI сервис (src)
 - **Database** — PostgreSQL (docker-compose)
 - **Cache** — Redis (docker-compose)
+<<<<<<< HEAD
 - **Monitoring** — Prometheus + Grafana + Loki (docker-compose)
+=======
+>>>>>>> performance-optimizations
 - **Alembic** — миграции в `src/database/alembic`
 - **API** — REST API
 - **Bot** — Telegram бот
@@ -29,6 +32,7 @@
 ```bash
 git clone <repository-url>
 cd ZhuchkaKeyboards
+<<<<<<< HEAD
 
 # Запуск разработки
 make dev
@@ -46,6 +50,14 @@ make monitoring
 - **Grafana**: http://localhost:3000 (admin/admin123)
 - **Prometheus**: http://localhost:9090
 - **Loki**: http://localhost:3100
+=======
+docker-compose up --build
+```
+
+- Gateway API: http://localhost:8001
+- PostgreSQL: localhost:5432
+- Redis: localhost:6379
+>>>>>>> performance-optimizations
 
 ---
 
@@ -220,6 +232,7 @@ docker-compose exec gateway python test_orjson.py
 
 ---
 
+<<<<<<< HEAD
 ## 📊 Мониторинг и Метрики
 
 ### Стек мониторинга
@@ -318,6 +331,8 @@ make logs
 
 ---
 
+=======
+>>>>>>> performance-optimizations
 ## 🔒 Безопасность
 - JWT токены для аутентификации
 - Хеширование паролей с bcrypt
