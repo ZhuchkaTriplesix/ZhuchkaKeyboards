@@ -1,248 +1,227 @@
-# 🚀 Performance Tests - High RPS Testing
+# 🚀 Performance Testing Suite
 
-Тесты производительности для проверки способности API обрабатывать высокие нагрузки (тысячи RPS).
+Comprehensive performance testing suite for ZhuchkaKeyboards API with realistic data generation and RPS testing.
 
-## 📁 Структура тестов
+## 📊 Test Categories
 
-```
-tests/performance/
-├── __init__.py
-├── test_high_rps.py          # Основные тесты высоких RPS
-├── test_metrics_load.py      # Тесты производительности метрик
-└── README.md                 # Эта документация
-```
+### 🎯 RPS Tests (Requests Per Second)
+- **`test_high_rps.py`** - High-load RPS tests targeting 1000+ RPS
+- **`test_all_methods_rps.py`** - RPS tests for all API methods (GET, POST, PUT, DELETE)
+- **`test_rps_benchmarks.py`** - Comprehensive benchmarks comparing different load scenarios
 
-## 🎯 Типы тестов
+### 📈 Performance Analysis
+- **`test_metrics_load.py`** - Tests metrics collection performance under load
+- **`test_simple_rps.py`** - Basic RPS tests for debugging and validation
+- **`test_realistic_load.py`** - Tests with realistic user behavior patterns
 
-### 1. High RPS Tests (`test_high_rps.py`)
+## 🏭 Test Data Generation
 
-#### `test_health_endpoint_high_rps`
-- **Цель**: 1000 RPS на `/api/health` в течение 10 секунд
-- **Технология**: aiohttp с async/await
-- **Метрики**: RPS, время ответа (avg, P95, P99), процент успеха
+### Realistic Data Generators
+- **`data_generators.py`** - Generates massive amounts of realistic keyboard manufacturing data
+- **`load_test_data.py`** - Loads test data into the API for performance testing
 
-#### `test_warehouse_list_high_rps`
-- **Цель**: 500 RPS на `/api/inventory/warehouses` в течение 5 секунд
-- **Проверяет**: производительность DB-зависимых endpoints
+### Dataset Sizes
+- **Small**: 5 warehouses, 100 items, 200 inventory levels
+- **Medium**: 20 warehouses, 2,000 items, 5,000 inventory levels  
+- **Large**: 50 warehouses, 10,000 items, 50,000 inventory levels
+- **Massive**: 100 warehouses, 50,000 items, 250,000 inventory levels
 
-#### `test_mixed_endpoints_load`
-- **Цель**: 800 total RPS на смешанные endpoints
-- **Распределение**:
-  - 30% - `/api/health`
-  - 25% - `/api/inventory/warehouses`
-  - 25% - `/api/inventory/items`
-  - 15% - `/api/inventory/analytics/summary`
-  - 5% - `/api/inventory/analytics/low-stock`
+## 🎮 Quick Start
 
-#### `test_burst_load_with_threads`
-- **Цель**: 1500 RPS burst load с ThreadPoolExecutor
-- **Проверяет**: способность выдерживать внезапные пиковые нагрузки
-
-#### `test_sustained_high_load`
-- **Цель**: 300 RPS в течение 30 секунд
-- **Проверяет**: стабильность под длительной нагрузкой
-
-#### `test_gradual_ramp_up`
-- **Цель**: поиск точки отказа API
-- **Уровни**: 100, 200, 400, 600, 800, 1000, 1200, 1500 RPS
-- **Критерии остановки**: success rate < 80% или avg time > 500ms
-
-### 2. Metrics Performance Tests (`test_metrics_load.py`)
-
-#### `test_metrics_endpoint_performance`
-- **Цель**: 200 RPS на `/metrics` endpoint
-- **Проверяет**: производительность Prometheus метрик
-
-#### `test_metrics_collection_under_load`
-- **Цель**: точность сбора метрик под нагрузкой
-- **Проверяет**: что счетчики метрик корректно работают при высоком RPS
-
-#### `test_health_and_metrics_mixed_load`
-- **Цель**: 400 RPS смешанной нагрузки (80% health, 20% metrics)
-- **Проверяет**: реалистичный сценарий мониторинга
-
-## 🚀 Запуск тестов
-
-### Требования
+### 1. Start the API
 ```bash
-# Убедитесь что backend запущен
-make dev
-
-# Установите зависимости для performance тестов
-pip install aiohttp>=3.8.5
+make dev  # Starts postgres, redis, gateway
 ```
 
-### Команды запуска
-
+### 2. Generate Test Data Files
 ```bash
-# Все performance тесты
+make generate-test-data
+```
+
+### 3. Load Test Data into API
+```bash
+# Small dataset for quick testing
+make load-test-data-small
+
+# Medium dataset for realistic testing
+make load-test-data-medium
+
+# Large dataset for stress testing
+make load-test-data-large
+```
+
+### 4. Run Performance Tests
+```bash
+# All performance tests
 make test-performance
 
-# Только тесты высоких RPS
-make test-rps
-
-# Только тесты метрик
-make test-metrics-performance
-
-# Конкретный тест
-pytest tests/performance/test_high_rps.py::TestHighRPSPerformance::test_health_endpoint_high_rps -v -s
-
-# С подробным выводом
-pytest tests/performance/ -m performance -v -s --tb=short
+# Specific RPS tests
+make test-rps                    # High RPS tests
+make test-all-methods-rps       # All API methods
+make test-rps-benchmarks        # Comprehensive benchmarks
 ```
 
-## 📊 Целевые показатели производительности
+## 📊 Test Data Categories
 
-### Health Endpoint
-- **RPS**: 1000+ RPS
-- **Время ответа**: < 100ms average, < 200ms P95
-- **Успешность**: > 95%
+### Warehouses
+- **50 realistic locations** across Asia, USA, Europe, Australia
+- **Strategic facility types**: Distribution centers, assembly plants, testing labs
+- **Geographic distribution**: Shenzhen, Taipei, Seoul, Los Angeles, London, etc.
+- **Operational details**: Capacity, security levels, climate control
 
-### Database Endpoints (warehouses, items)
-- **RPS**: 500+ RPS
-- **Время ответа**: < 200ms average
-- **Успешность**: > 90%
+### Items (Keyboard Components)
+- **Switches**: Cherry, Gateron, Kailh (Red, Blue, Brown, etc.)
+- **Keycaps**: ABS, PBT profiles (OEM, Cherry, SA, XDA)
+- **PCBs**: 60%, 65%, 75%, TKL layouts with hot-swap, RGB
+- **Cases**: Aluminum, plastic materials in various colors
+- **Cables**: USB-C, coiled, aviator connectors
+- **Tools**: Switch pullers, lube, films, springs
 
-### Analytics Endpoints
-- **RPS**: 100+ RPS (более тяжелые запросы)
-- **Время ответа**: < 500ms average
-- **Успешность**: > 85%
+### Suppliers
+- **200+ realistic suppliers** from major manufacturing regions
+- **Certification tracking**: ISO, RoHS compliance
+- **Payment terms**: Net 30, Net 15, COD, Prepayment
+- **Quality ratings** and lead times
 
-### Metrics Endpoint
-- **RPS**: 200+ RPS
-- **Время ответа**: < 500ms average
-- **Успешность**: > 95%
+### Inventory Levels
+- **Realistic stock patterns**: 10% low stock, 80% normal, 10% overstock
+- **Warehouse locations**: Zone/row/shelf/bin tracking
+- **ABC classification**: Fast/medium/slow velocity items
+- **Reserved quantities** for pending orders
 
-### Sustained Load
-- **Длительность**: 30+ секунд без деградации
-- **RPS**: 300+ RPS stable
-- **Память**: без утечек
+## ⚡ Performance Targets
 
-## 🔧 Технические детали
+### Current Baseline (Single Container)
+- **Health endpoint**: ~68-718 RPS (20 concurrent connections)
+- **GET operations**: 150-300 RPS target
+- **POST operations**: 30-50 RPS target  
+- **Mixed CRUD**: 100 RPS target
+- **Analytics**: 50 RPS target
 
-### Async HTTP клиент (aiohttp)
-```python
-# Оптимальная конфигурация для высоких RPS
-connector = aiohttp.TCPConnector(
-    limit=100,           # Общий лимит соединений
-    limit_per_host=100   # Лимит на хост
-)
-timeout = aiohttp.ClientTimeout(total=30)
-```
+### Production Goals
+- **GET operations**: 500+ RPS
+- **POST operations**: 100+ RPS
+- **Concurrent users**: 1000+
+- **Response time**: <100ms P95
 
-### Батчи запросов
-```python
-# Для очень высоких RPS используем батчи
-batch_size = 100
-for batch in range(total_requests // batch_size):
-    tasks = [make_request() for _ in range(batch_size)]
-    results = await asyncio.gather(*tasks)
-```
+## 🔧 Test Architecture
 
-### Threading для burst тестов
-```python
-# ThreadPoolExecutor для имитации burst load
-with ThreadPoolExecutor(max_workers=50) as executor:
-    futures = [executor.submit(make_request) for _ in range(total)]
-    results = [f.result() for f in as_completed(futures)]
-```
+### Async Performance Testing
+- **aiohttp**: High-performance async HTTP client
+- **Concurrent connections**: Configurable connection pools
+- **Batch testing**: Parallel request processing
+- **Real-time metrics**: Response times, success rates, throughput
 
-## 📈 Интерпретация результатов
+### Load Simulation Patterns
+- **Burst load**: Maximum requests as fast as possible
+- **Sustained load**: Consistent RPS over time
+- **Gradual ramp-up**: Finding breaking points
+- **User simulation**: Realistic think times and patterns
 
-### Успешный тест
-```
-📊 Results:
-  Total requests: 10000
-  Successful: 9950
-  Failed: 50
-  Success rate: 99.50%
-  Actual RPS: 987.65
-  Avg response time: 45.23ms
-  P95 response time: 78.45ms
-  P99 response time: 123.67ms
-```
+## 📈 Metrics Collection
 
-### Проблемные сигналы
-- **Success rate < 90%**: проблемы со стабильностью
-- **Avg response time > 200ms**: узкие места в производительности
-- **P99 > 1000ms**: проблемы с outliers
-- **Actual RPS << Target RPS**: API не справляется с нагрузкой
+### Response Time Analysis
+- **Average, Min, Max** response times
+- **Median and P95** percentiles
+- **Distribution analysis** across different endpoints
 
-## 🛠️ Настройка окружения для максимальной производительности
+### Throughput Metrics
+- **Actual RPS** achieved vs target
+- **Success rate** percentage
+- **Error distribution** by status code
+- **Performance degradation** under load
 
-### Docker compose limits
-```yaml
-gateway:
-  deploy:
-    resources:
-      limits:
-        cpus: '2.0'
-        memory: 2G
-      reservations:
-        cpus: '1.0'
-        memory: 1G
-```
+### Resource Usage
+- **Connection pool** utilization
+- **Database performance** impact
+- **Memory and CPU** usage patterns
+- **Network throughput** analysis
 
-### FastAPI настройки
-```python
-# В main.py
-app = FastAPI(
-    title="ZhuchkaKeyboards Gateway",
-    docs_url="/docs" if settings.DEBUG else None,
-    redoc_url="/redoc" if settings.DEBUG else None
-)
+## 🎯 Test Scenarios
 
-# Uvicorn с оптимизацией
-uvicorn.run(
-    "main:app",
-    host="0.0.0.0",
-    port=8001,
-    workers=4,  # CPU cores
-    loop="uvloop",  # Для максимальной производительности
-    http="httptools"
-)
-```
+### Empty Database Baseline
+Tests API performance with minimal database load to establish baseline metrics.
 
-### PostgreSQL connection pool
-```python
-# Увеличиваем pool size для высоких RPS
-engine = create_async_engine(
-    database_url,
-    pool_size=20,
-    max_overflow=30,
-    pool_pre_ping=True
-)
-```
+### Loaded Database Performance
+Tests with realistic amounts of data (thousands of items, hundreds of warehouses).
 
-## 🚨 Troubleshooting
+### Heavy Database Stress
+Complex queries, large result sets, multiple filters, analytics operations.
 
-### Connection refused / timeout
+### Mixed CRUD Operations
+Realistic distribution: 70% GET, 20% POST, 8% PUT, 2% DELETE operations.
+
+### Concurrent User Simulation
+Multiple users with realistic behavior patterns and think times.
+
+## 🚀 Optimization Recommendations
+
+Based on performance test results, the following optimizations are recommended:
+
+### Database Optimizations
+- **Indexing**: Add indexes for search and filter operations
+- **Connection pooling**: Optimize PostgreSQL connection limits
+- **Query optimization**: Analyze slow queries with EXPLAIN
+
+### Caching Strategy
+- **Redis caching**: Cache frequently accessed read operations
+- **Response caching**: Cache analytics and search results
+- **Session caching**: Reduce database hits for user sessions
+
+### Application Scaling
+- **Uvicorn workers**: Multiple worker processes
+- **Load balancing**: Nginx or cloud load balancer
+- **Connection limits**: Fine-tune async connection pools
+
+### Infrastructure
+- **Database replicas**: Read replicas for analytics
+- **CDN**: Static content delivery
+- **Auto-scaling**: Container orchestration
+
+## 📊 Sample Test Results
+
 ```bash
-# Проверьте лимиты системы
-ulimit -n  # file descriptors
-ulimit -u  # processes
-
-# Увеличьте если нужно
-ulimit -n 65536
+📊 Mixed CRUD Operations Results:
+  Total requests: 1000
+  Successful: 847
+  Success rate: 84.70%
+  Target RPS: 100
+  Actual RPS: 76.12
+  Test duration: 11.13s
+  Avg response time: 145.23ms
+  🟡 Performance: 76.1% (Good)
 ```
 
-### Memory leaks
-```bash
-# Мониторьте память во время тестов
-docker stats gateway-keyboards
+## 🔍 Debugging Performance Issues
 
-# Если есть утечки - проверьте connection pooling
-```
+### Common Issues
+- **Connection timeouts**: Increase timeout values
+- **Database locks**: Check for blocking queries
+- **Memory leaks**: Monitor container memory usage
+- **Slow queries**: Use database query analysis
 
-### High CPU usage
-```bash
-# Профилируйте gateway
-docker exec gateway-keyboards python -m cProfile -s cumulative your_script.py
-```
+### Monitoring
+- **Prometheus metrics**: Built-in metrics collection
+- **Grafana dashboards**: Real-time performance visualization
+- **Application logs**: Detailed error tracking
+- **Database monitoring**: Query performance analysis
 
-## 📚 Дополнительные ресурсы
+## 🎉 Best Practices
 
-- [FastAPI Performance](https://fastapi.tiangolo.com/advanced/async-tests/)
-- [aiohttp Performance](https://docs.aiohttp.org/en/stable/client_advanced.html)
-- [Load Testing Best Practices](https://k6.io/docs/testing-guides/api-load-testing/)
-- [PostgreSQL Performance Tuning](https://wiki.postgresql.org/wiki/Performance_Optimization)
+### Test Data Management
+- **Isolated environments**: Separate test databases
+- **Data cleanup**: Reset between test runs
+- **Realistic datasets**: Mirror production data patterns
+- **Version control**: Track test data schemas
+
+### Performance Testing
+- **Baseline establishment**: Always start with empty database tests
+- **Gradual load increase**: Find breaking points systematically
+- **Multiple runs**: Average results across multiple test executions
+- **Environment consistency**: Same hardware/network conditions
+
+### Results Analysis
+- **Trend tracking**: Monitor performance over time
+- **Bottleneck identification**: Profile slow operations
+- **Capacity planning**: Predict scaling requirements
+- **Optimization validation**: Measure improvement impact
