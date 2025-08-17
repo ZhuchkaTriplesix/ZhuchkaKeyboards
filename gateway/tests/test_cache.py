@@ -3,9 +3,8 @@
 """
 
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 from fastapi import Request, Response
-from starlette.responses import Response as StarletteResponse
 
 from services.cache.api_cache import APICache, api_cache
 
