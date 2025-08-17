@@ -16,7 +16,10 @@ from sqlalchemy import (
     Text,
     Enum,
     Numeric,
+<<<<<<< HEAD
     ForeignKey,
+=======
+>>>>>>> performance-optimizations
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID as PostgresUUID
@@ -132,9 +135,15 @@ class Item(Base):
     transactions: Mapped[List["InventoryTransaction"]] = relationship(
         "InventoryTransaction", back_populates="item"
     )
+<<<<<<< HEAD
     # supplier_items: Mapped[List["SupplierItem"]] = relationship(
     #     "SupplierItem", back_populates="item"
     # )
+=======
+    supplier_items: Mapped[List["SupplierItem"]] = relationship(
+        "SupplierItem", back_populates="item"
+    )
+>>>>>>> performance-optimizations
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
@@ -193,7 +202,11 @@ class WarehouseZone(Base):
         PostgresUUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     warehouse_id: Mapped[UUID] = mapped_column(
+<<<<<<< HEAD
         PostgresUUID(as_uuid=True), ForeignKey("warehouses.id"), nullable=False
+=======
+        PostgresUUID(as_uuid=True), nullable=False
+>>>>>>> performance-optimizations
     )
 
     # Основная информация
@@ -228,6 +241,7 @@ class InventoryLevel(Base):
     id: Mapped[UUID] = mapped_column(
         PostgresUUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
+<<<<<<< HEAD
     item_id: Mapped[UUID] = mapped_column(
         PostgresUUID(as_uuid=True), ForeignKey("items.id"), nullable=False
     )
@@ -236,6 +250,14 @@ class InventoryLevel(Base):
     )
     zone_id: Mapped[Optional[UUID]] = mapped_column(
         PostgresUUID(as_uuid=True), ForeignKey("warehouse_zones.id"), nullable=True
+=======
+    item_id: Mapped[UUID] = mapped_column(PostgresUUID(as_uuid=True), nullable=False)
+    warehouse_id: Mapped[UUID] = mapped_column(
+        PostgresUUID(as_uuid=True), nullable=False
+    )
+    zone_id: Mapped[Optional[UUID]] = mapped_column(
+        PostgresUUID(as_uuid=True), nullable=True
+>>>>>>> performance-optimizations
     )
 
     # Количества
@@ -243,6 +265,12 @@ class InventoryLevel(Base):
     reserved_quantity: Mapped[int] = mapped_column(
         Integer, default=0
     )  # Зарезервировано
+<<<<<<< HEAD
+=======
+    available_quantity: Mapped[int] = mapped_column(
+        Integer, computed="current_quantity - reserved_quantity"
+    )
+>>>>>>> performance-optimizations
 
     # Локация
     location_code: Mapped[Optional[str]] = mapped_column(
@@ -265,11 +293,14 @@ class InventoryLevel(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
+<<<<<<< HEAD
     
     @property
     def available_quantity(self) -> int:
         """Calculate available quantity"""
         return self.current_quantity - self.reserved_quantity
+=======
+>>>>>>> performance-optimizations
 
 
 class InventoryTransaction(Base):
@@ -280,11 +311,17 @@ class InventoryTransaction(Base):
     id: Mapped[UUID] = mapped_column(
         PostgresUUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
+<<<<<<< HEAD
     item_id: Mapped[UUID] = mapped_column(
         PostgresUUID(as_uuid=True), ForeignKey("items.id"), nullable=False
     )
     warehouse_id: Mapped[UUID] = mapped_column(
         PostgresUUID(as_uuid=True), ForeignKey("warehouses.id"), nullable=False
+=======
+    item_id: Mapped[UUID] = mapped_column(PostgresUUID(as_uuid=True), nullable=False)
+    warehouse_id: Mapped[UUID] = mapped_column(
+        PostgresUUID(as_uuid=True), nullable=False
+>>>>>>> performance-optimizations
     )
 
     # Детали операции
@@ -293,6 +330,12 @@ class InventoryTransaction(Base):
     )
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     unit_cost: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+<<<<<<< HEAD
+=======
+    total_cost: Mapped[Optional[float]] = mapped_column(
+        Float, computed="quantity * unit_cost"
+    )
+>>>>>>> performance-optimizations
 
     # Ссылки на документы
     reference_number: Mapped[Optional[str]] = mapped_column(
@@ -311,6 +354,7 @@ class InventoryTransaction(Base):
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     created_by: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+<<<<<<< HEAD
     
     @property
     def total_cost(self) -> Optional[float]:
@@ -318,6 +362,8 @@ class InventoryTransaction(Base):
         if self.unit_cost is not None:
             return self.quantity * self.unit_cost
         return None
+=======
+>>>>>>> performance-optimizations
 
 
 class Supplier(Base):
@@ -380,11 +426,17 @@ class SupplierItem(Base):
         PostgresUUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     supplier_id: Mapped[UUID] = mapped_column(
+<<<<<<< HEAD
         PostgresUUID(as_uuid=True), ForeignKey("suppliers.id"), nullable=False
     )
     item_id: Mapped[UUID] = mapped_column(
         PostgresUUID(as_uuid=True), ForeignKey("items.id"), nullable=False
     )
+=======
+        PostgresUUID(as_uuid=True), nullable=False
+    )
+    item_id: Mapped[UUID] = mapped_column(PostgresUUID(as_uuid=True), nullable=False)
+>>>>>>> performance-optimizations
 
     # Информация о товаре у поставщика
     supplier_sku: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
@@ -405,7 +457,11 @@ class SupplierItem(Base):
     supplier: Mapped["Supplier"] = relationship(
         "Supplier", back_populates="supplier_items"
     )
+<<<<<<< HEAD
     # item: Mapped["Item"] = relationship("Item", back_populates="supplier_items")
+=======
+    item: Mapped["Item"] = relationship("Item", back_populates="supplier_items")
+>>>>>>> performance-optimizations
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
@@ -422,7 +478,11 @@ class PurchaseOrder(Base):
         PostgresUUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     supplier_id: Mapped[UUID] = mapped_column(
+<<<<<<< HEAD
         PostgresUUID(as_uuid=True), ForeignKey("suppliers.id"), nullable=False
+=======
+        PostgresUUID(as_uuid=True), nullable=False
+>>>>>>> performance-optimizations
     )
 
     # Основная информация
@@ -472,18 +532,34 @@ class PurchaseOrderItem(Base):
         PostgresUUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     purchase_order_id: Mapped[UUID] = mapped_column(
+<<<<<<< HEAD
         PostgresUUID(as_uuid=True), ForeignKey("purchase_orders.id"), nullable=False
     )
     item_id: Mapped[UUID] = mapped_column(
         PostgresUUID(as_uuid=True), ForeignKey("items.id"), nullable=False
     )
+=======
+        PostgresUUID(as_uuid=True), nullable=False
+    )
+    item_id: Mapped[UUID] = mapped_column(PostgresUUID(as_uuid=True), nullable=False)
+>>>>>>> performance-optimizations
 
     # Количество и цена
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     unit_cost: Mapped[float] = mapped_column(Float, nullable=False)
+<<<<<<< HEAD
 
     # Статус получения
     received_quantity: Mapped[int] = mapped_column(Integer, default=0)
+=======
+    total_cost: Mapped[float] = mapped_column(Float, computed="quantity * unit_cost")
+
+    # Статус получения
+    received_quantity: Mapped[int] = mapped_column(Integer, default=0)
+    is_fully_received: Mapped[bool] = mapped_column(
+        Boolean, computed="received_quantity >= quantity"
+    )
+>>>>>>> performance-optimizations
 
     # Связи
     purchase_order: Mapped["PurchaseOrder"] = relationship(
@@ -495,6 +571,7 @@ class PurchaseOrderItem(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
+<<<<<<< HEAD
     
     @property
     def total_cost(self) -> float:
@@ -505,3 +582,5 @@ class PurchaseOrderItem(Base):
     def is_fully_received(self) -> bool:
         """Check if item is fully received"""
         return self.received_quantity >= self.quantity
+=======
+>>>>>>> performance-optimizations

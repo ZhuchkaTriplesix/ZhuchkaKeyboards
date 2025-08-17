@@ -17,5 +17,5 @@ ENV PYTHONPATH=/app/src
 # Use tini as entrypoint for proper signal handling
 ENTRYPOINT ["/sbin/tini", "--"]
 
-# Run migrations and then start the app
-CMD sh -c "alembic -c /app/src/database/alembic.ini upgrade head && uvicorn main:app --host 0.0.0.0 --port 8001 --reload --log-level debug"
+# Run migrations and then start the app with performance optimizations
+CMD sh -c "alembic -c /app/src/database/alembic.ini upgrade head && uvicorn main:app --host 0.0.0.0 --port 8001 --loop asyncio --limit-concurrency 1000 --limit-max-requests 10000 --log-level info"

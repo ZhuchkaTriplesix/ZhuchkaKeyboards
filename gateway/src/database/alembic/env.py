@@ -7,6 +7,7 @@ from alembic import context
 
 from database.core import Base
 
+<<<<<<< HEAD
 # Import all models for Alembic autogenerate to detect them
 from routers.user.models import User  # noqa: F401
 from routers.production.models import (  # noqa: F401
@@ -28,6 +29,9 @@ from routers.inventory.models import (  # noqa: F401
     PurchaseOrder,
     PurchaseOrderItem,
 )
+=======
+from routers.user.models import User  # noqa: F401
+>>>>>>> performance-optimizations
 
 
 config = context.config

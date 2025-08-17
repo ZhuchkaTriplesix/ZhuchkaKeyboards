@@ -6,7 +6,10 @@ from database.core import Base
 
 
 class User(Base):
+<<<<<<< HEAD
     __tablename__ = "users"
+=======
+>>>>>>> performance-optimizations
     id: Mapped[UUID] = mapped_column(types.UUID, primary_key=True, default=uuid.uuid4)
 
     email: Mapped[str] = mapped_column(String(100), nullable=False)
