@@ -25,17 +25,19 @@ def test_debug_warehouse_creation():
         "contact_person": "Debug Manager",
         "phone": "+1-555-0123",
         "email": "debug@test.com",
-        "is_active": True
+        "is_active": True,
     }
-    
+
     print(f"Sending warehouse data: {json.dumps(warehouse_data, indent=2)}")
-    
-    response = requests.post(f"{BASE_URL}/api/inventory/warehouses", json=warehouse_data)
-    
+
+    response = requests.post(
+        f"{BASE_URL}/api/inventory/warehouses", json=warehouse_data
+    )
+
     print(f"Status code: {response.status_code}")
     print(f"Response headers: {dict(response.headers)}")
     print(f"Response content: {response.text}")
-    
+
     if response.status_code != 201:
         try:
             error_data = response.json()
@@ -63,17 +65,17 @@ def test_debug_item_creation():
         "unit_cost": 1.0,
         "selling_price": 2.0,
         "is_active": True,
-        "is_tracked": True
+        "is_tracked": True,
     }
-    
+
     print(f"Sending item data: {json.dumps(item_data, indent=2)}")
-    
+
     response = requests.post(f"{BASE_URL}/api/inventory/items", json=item_data)
-    
+
     print(f"Status code: {response.status_code}")
     print(f"Response headers: {dict(response.headers)}")
     print(f"Response content: {response.text}")
-    
+
     if response.status_code != 201:
         try:
             error_data = response.json()
@@ -87,17 +89,17 @@ def test_debug_endpoints_exist():
     """Check which endpoints exist"""
     endpoints_to_check = [
         "/api/inventory/warehouses",
-        "/api/inventory/items", 
+        "/api/inventory/items",
         "/api/inventory/inventory",
         "/api/inventory/analytics/summary",
-        "/docs"
+        "/docs",
     ]
-    
+
     for endpoint in endpoints_to_check:
         try:
             response = requests.get(f"{BASE_URL}{endpoint}")
             print(f"GET {endpoint}: {response.status_code}")
-            
+
             if endpoint == "/docs":
                 print(f"  Content length: {len(response.content)}")
             elif response.status_code == 200:
@@ -108,7 +110,7 @@ def test_debug_endpoints_exist():
                     elif isinstance(data, list):
                         print(f"  List length: {len(data)}")
                 except:
-                    print(f"  Could not parse JSON")
+                    print("  Could not parse JSON")
         except Exception as e:
             print(f"GET {endpoint}: ERROR - {e}")
 

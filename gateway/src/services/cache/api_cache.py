@@ -4,9 +4,8 @@
 
 import hashlib
 import json
-from typing import Any, Optional, Callable
+from typing import Optional
 from fastapi import Request, Response
-from starlette.responses import Response as StarletteResponse
 
 from services.redis.rediska import redis_manager
 from utils.logger import get_logger

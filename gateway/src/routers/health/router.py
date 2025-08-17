@@ -1,29 +1,19 @@
-<<<<<<< HEAD
 """
 Health check and monitoring endpoints
 """
 
 import time
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import ORJSONResponse
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import text
 from services.redis.rediska import redis_manager
-from services.metrics import prometheus_metrics
-from database.core import get_db
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
-=======
-from fastapi import APIRouter
-from fastapi.responses import ORJSONResponse
->>>>>>> performance-optimizations
 
 router = APIRouter()
 
 
-<<<<<<< HEAD
-@router.get("/health")
+@router.get("")
 async def health_check():
     """Basic health check endpoint"""
     return ORJSONResponse(
@@ -31,34 +21,11 @@ async def health_check():
             "status": "healthy",
             "timestamp": time.time(),
             "service": "ZhuchkaKeyboards Gateway",
-=======
-@router.get("")
-async def health_check():
-    """Simple health check endpoint"""
-    return ORJSONResponse(
-        content={"status": "healthy", "message": "API is running"}
-    )
-
-
-@router.get("/deep")
-async def deep_health_check():
-    """Deep health check"""
-    return ORJSONResponse(
-        content={
-            "status": "healthy",
-            "message": "Deep health check passed",
-            "services": {
-                "api": "healthy",
-                "database": "healthy",
-                "redis": "healthy"
-            }
->>>>>>> performance-optimizations
         }
     )
 
 
-<<<<<<< HEAD
-@router.get("/health/deep")
+@router.get("/deep")
 async def deep_health_check():
     """Deep health check that tests all dependencies"""
     health_status = {
@@ -85,8 +52,6 @@ async def deep_health_check():
             "message": "Database connection failed",
         }
 
-        # Record metric
-        prometheus_metrics.record_error("DatabaseError", "health_check")
         logger.error(f"Database health check failed: {e}")
 
     # Check Redis connection
@@ -101,18 +66,12 @@ async def deep_health_check():
                 "response_time": redis_duration,
                 "message": "Redis connection successful",
             }
-
-            # Record metric
-            prometheus_metrics.record_redis_operation("ping", True)
         else:
             overall_healthy = False
             health_status["checks"]["redis"] = {
                 "status": "unhealthy",
                 "message": "Redis ping failed",
             }
-
-            # Record metric
-            prometheus_metrics.record_redis_operation("ping", False)
 
     except Exception as e:
         overall_healthy = False
@@ -122,8 +81,6 @@ async def deep_health_check():
             "message": "Redis connection failed",
         }
 
-        # Record metric
-        prometheus_metrics.record_error("RedisError", "health_check")
         logger.error(f"Redis health check failed: {e}")
 
     # Set overall status
@@ -133,13 +90,13 @@ async def deep_health_check():
     return ORJSONResponse(health_status, status_code=200 if overall_healthy else 503)
 
 
-@router.get("/health/liveness")
+@router.get("/liveness")
 async def liveness_probe():
     """Kubernetes liveness probe endpoint"""
     return ORJSONResponse({"status": "alive"})
 
 
-@router.get("/health/readiness")
+@router.get("/readiness")
 async def readiness_probe():
     """Kubernetes readiness probe endpoint"""
     try:
@@ -160,9 +117,6 @@ async def readiness_probe():
 async def metrics_summary():
     """Summary of application metrics for dashboard"""
     try:
-        # Enhanced metrics summary with HTTP metrics info
-        summary = prometheus_metrics.get_http_metrics_summary()
-        
         return ORJSONResponse(
             {
                 "message": "Enhanced HTTP metrics collection enabled",
@@ -184,7 +138,6 @@ async def metrics_summary():
                     "liveness": "/health/liveness", 
                     "readiness": "/health/readiness",
                 },
-                "prometheus_queries": summary
             }
         )
 
@@ -193,89 +146,3 @@ async def metrics_summary():
         raise HTTPException(
             status_code=500, detail="Failed to generate metrics summary"
         )
-
-
-@router.get("/metrics/http")
-async def http_metrics_details():
-    """Detailed information about HTTP metrics collection"""
-    try:
-        return ORJSONResponse(
-            {
-                "status": "active",
-                "middleware": "MetricsMiddleware enabled",
-                "collected_metrics": {
-                    "request_count": {
-                        "metric": "http_requests_total",
-                        "labels": ["method", "endpoint", "status_code", "handler"],
-                        "description": "Counter of total HTTP requests"
-                    },
-                    "request_duration": {
-                        "metric": "http_request_duration_seconds", 
-                        "labels": ["method", "endpoint", "status_code"],
-                        "buckets": [0.001, 0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0, 7.5, 10.0, "inf"],
-                        "description": "Histogram of HTTP request durations"
-                    },
-                    "requests_in_progress": {
-                        "metric": "http_requests_in_progress",
-                        "labels": ["method", "endpoint"],
-                        "description": "Gauge of requests currently being processed"
-                    },
-                    "request_size": {
-                        "metric": "http_request_size_bytes",
-                        "labels": ["method", "endpoint"],
-                        "buckets": [64, 256, 1024, 4096, 16384, 65536, 262144, 1048576, "inf"],
-                        "description": "Histogram of HTTP request sizes"
-                    },
-                    "response_size": {
-                        "metric": "http_response_size_bytes",
-                        "labels": ["method", "endpoint", "status_code"],
-                        "buckets": [64, 256, 1024, 4096, 16384, 65536, 262144, 1048576, "inf"],
-                        "description": "Histogram of HTTP response sizes"
-                    },
-                    "user_agent_tracking": {
-                        "metric": "http_requests_by_user_agent_total",
-                        "labels": ["user_agent_family", "user_agent_version"],
-                        "description": "Counter of requests grouped by user agent"
-                    },
-                    "ip_tracking": {
-                        "metric": "http_requests_by_ip_total", 
-                        "labels": ["client_ip"],
-                        "description": "Counter of requests grouped by client IP"
-                    },
-                    "slow_requests": {
-                        "metric": "http_slow_requests_total",
-                        "labels": ["method", "endpoint", "status_code"],
-                        "threshold": ">1 second",
-                        "description": "Counter of slow HTTP requests"
-                    },
-                    "error_tracking": {
-                        "metric": "http_errors_by_type_total",
-                        "labels": ["method", "endpoint", "error_type", "status_code"],
-                        "description": "Counter of HTTP errors grouped by type"
-                    }
-                },
-                "example_queries": {
-                    "request_rate": "rate(http_requests_total[5m])",
-                    "error_rate": "rate(http_errors_by_type_total[5m]) / rate(http_requests_total[5m])",
-                    "avg_response_time": "rate(http_request_duration_seconds_sum[5m]) / rate(http_request_duration_seconds_count[5m])",
-                    "95th_percentile": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
-                    "slow_requests_rate": "rate(http_slow_requests_total[5m])",
-                    "top_endpoints": "topk(10, sum by (endpoint) (rate(http_requests_total[5m])))",
-                    "requests_by_status": "sum by (status_code) (rate(http_requests_total[5m]))"
-                }
-            }
-        )
-        
-    except Exception as e:
-        logger.error(f"HTTP metrics details failed: {e}")
-        raise HTTPException(
-            status_code=500, detail="Failed to get HTTP metrics details"
-        )
-=======
-@router.get("/ready")
-async def readiness_probe():
-    """Kubernetes readiness probe"""
-    return ORJSONResponse(
-        content={"status": "ready", "message": "Service is ready"}
-    )
->>>>>>> performance-optimizations

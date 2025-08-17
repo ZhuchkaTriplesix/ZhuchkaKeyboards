@@ -450,7 +450,7 @@ async def move_stock(
     try:
         level = await crud.move_stock(session, movement_data)
         response_data = serialize_model(level, InventoryLevelResponse)
-    return ORJSONResponse(content=response_data)
+        return ORJSONResponse(content=response_data)
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

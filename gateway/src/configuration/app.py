@@ -74,7 +74,6 @@ class DBSessionMiddleware(BaseHTTPMiddleware):
                 await session.close()
 
 
-
 class App:
     def __init__(self):
         self._app: FastAPI = FastAPI(
@@ -93,13 +92,15 @@ class App:
             allow_methods=["GET", "POST", "DELETE", "PATCH"],
             allow_headers=["*"],
         )
-        # Rate limiter с очень высоким лимитом для performance тестов  
-        self._app.add_middleware(RateLimiterMiddleware, max_requests=999999, time_window=60)
+        # Rate limiter с очень высоким лимитом для performance тестов
+        self._app.add_middleware(
+            RateLimiterMiddleware, max_requests=999999, time_window=60
+        )
         self._app.add_middleware(DBSessionMiddleware)
-        
+
         # Initialize Prometheus metrics
         prometheus_metrics.init_app(self._app)
-        
+
         self._register_routers()
 
     def _register_routers(self) -> None:
@@ -109,5 +110,3 @@ class App:
     @property
     def app(self) -> FastAPI:
         return self._app
-
-
