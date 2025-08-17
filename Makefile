@@ -1,156 +1,161 @@
-# ZhuchkaKeyboards - Makefile for project management
+# ZhuchkaKeyboards Makefile
+# Commands for development, testing, and deployment
 
-.PHONY: help build start stop restart logs migrate clean monitoring dev prod
+.PHONY: help dev monitoring test test-unit test-integration test-performance clean build
 
 # Default target
 help:
-	@echo "ZhuchkaKeyboards Management Commands:"
-	@echo ""
-	@echo "🛠️  Development:"
-	@echo "  make dev          - Start development environment (gateway + db + redis)"
-	@echo "  make build        - Build Docker images"
-	@echo "  make migrate      - Run database migrations"
-	@echo ""
-	@echo "📊  Monitoring:"
-	@echo "  make monitoring   - Start monitoring stack (Prometheus + Grafana + Loki)"
-	@echo "  make monitoring-down - Stop monitoring stack"
-	@echo ""
-	@echo "🚀  Production:"
-	@echo "  make prod         - Start production environment"
-	@echo "  make start        - Start all services"
-	@echo "  make stop         - Stop all services"
-	@echo "  make restart      - Restart all services"
-	@echo ""
-	@echo "🔍  Debugging:"
-	@echo "  make logs         - Show logs for all services"
-	@echo "  make logs-gateway - Show gateway logs"
-	@echo "  make logs-db      - Show database logs"
-	@echo "  make logs-redis   - Show Redis logs"
-	@echo ""
-	@echo "🧹  Maintenance:"
-	@echo "  make clean        - Clean up containers and volumes"
-	@echo "  make reset        - Complete reset (stops everything, cleans volumes)"
-	@echo ""
-	@echo "🩺  Health checks:"
-	@echo "  make health       - Check service health"
-	@echo "  make metrics      - Show metrics endpoint"
+	@echo "Available commands:"
+	@echo "  dev              - Start development environment (postgres, redis, gateway)"
+	@echo "  monitoring       - Start monitoring stack (prometheus, grafana, loki)"
+	@echo "  test             - Run all tests"
+	@echo "  test-unit        - Run unit tests (no containers required)"
+	@echo "  test-integration - Run integration tests (requires containers)"
+	@echo "  test-performance - Run performance tests"
+	@echo "  build            - Build all containers"
+	@echo "  clean            - Stop and remove all containers"
+	@echo "  migrate          - Run database migrations"
+	@echo "  logs             - Show gateway logs"
+	@echo "  shell            - Open shell in gateway container"
 
 # Development environment
 dev:
 	@echo "🚀 Starting development environment..."
-	docker-compose up -d db redis
-	@echo "⏳ Waiting for database to be ready..."
-	docker-compose up migrations
-	docker-compose up -d gateway
-	@echo "✅ Development environment is ready!"
-	@echo "   🌐 API: http://localhost:8001"
-	@echo "   🗄️  DB:  localhost:5432"
-	@echo "   🔴 Redis: localhost:6379"
-
-# Build all images
-build:
-	@echo "🔨 Building Docker images..."
-	docker-compose build
-
-# Database migrations
-migrate:
-	@echo "🔄 Running database migrations..."
-	docker-compose run --rm migrations
-
-# Production environment
-prod:
-	@echo "🚀 Starting production environment..."
-	docker-compose --profile production up -d
+	docker-compose up -d db redis gateway
+	@echo "✅ Development environment is running!"
+	@echo "   - Gateway API: http://localhost:8001"
+	@echo "   - Health check: http://localhost:8001/api/health"
+	@echo "   - API docs: http://localhost:8001/docs"
 
 # Monitoring stack
 monitoring:
 	@echo "📊 Starting monitoring stack..."
 	docker-compose --profile monitoring up -d
-	@echo "✅ Monitoring stack is ready!"
-	@echo "   📊 Grafana: http://localhost:3000 (admin/admin123)"
-	@echo "   🔍 Prometheus: http://localhost:9090"
-	@echo "   📝 Loki: http://localhost:3100"
+	@echo "✅ Monitoring stack is running!"
+	@echo "   - Grafana: http://localhost:3000 (admin/admin123)"
+	@echo "   - Prometheus: http://localhost:9090"
+	@echo "   - Loki: http://localhost:3100"
 
-monitoring-down:
-	@echo "📊 Stopping monitoring stack..."
-	docker-compose --profile monitoring down
+# Database migrations
+migrate:
+	@echo "🗄️ Running database migrations..."
+	docker-compose --profile migrate up
 
-# Start all services
-start:
-	@echo "🚀 Starting all services..."
-	docker-compose up -d
+# Testing commands
+test: test-unit test-integration
+	@echo "✅ All tests completed!"
 
-# Stop all services
-stop:
-	@echo "🛑 Stopping all services..."
-	docker-compose down
+test-unit:
+	@echo "🧪 Running unit tests (no containers required)..."
+	pytest tests/unit/ -m unit -v --tb=short
+	@echo "✅ Unit tests completed!"
 
-# Restart services
-restart:
-	@echo "🔄 Restarting services..."
-	docker-compose restart
+test-integration:
+	@echo "🔗 Running integration tests (requires containers)..."
+	@echo "⚠️  Make sure containers are running: make dev"
+	pytest tests/integration/ -m integration -v --tb=short
+	@echo "✅ Integration tests completed!"
 
-# Show logs
+test-performance:
+	@echo "⚡ Running performance tests..."
+	@echo "⚠️  Make sure containers are running: make dev"
+	pytest tests/integration/test_performance.py -m integration -v --tb=short -s
+	@echo "✅ Performance tests completed!"
+
+# Quick test commands
+test-quick:
+	@echo "⚡ Running quick test suite..."
+	pytest tests/unit/ -m unit -x -q
+	@echo "✅ Quick tests completed!"
+
+test-inventory-unit:
+	@echo "🧪 Running inventory unit tests..."
+	pytest tests/unit/test_inventory_api.py -v
+
+test-inventory-integration:
+	@echo "🔗 Running inventory integration tests..."
+	pytest tests/integration/test_inventory_full.py -v
+
+# Container management
+build:
+	@echo "🏗️ Building all containers..."
+	docker-compose build
+
+clean:
+	@echo "🧹 Cleaning up containers..."
+	docker-compose down --volumes --remove-orphans
+	docker-compose --profile monitoring down --volumes --remove-orphans
+	@echo "✅ Cleanup completed!"
+
+# Utility commands
 logs:
-	docker-compose logs -f
-
-logs-gateway:
+	@echo "📋 Showing gateway logs..."
 	docker-compose logs -f gateway
 
-logs-db:
-	docker-compose logs -f db
+logs-all:
+	@echo "📋 Showing all logs..."
+	docker-compose logs -f
 
-logs-redis:
-	docker-compose logs -f redis
+shell:
+	@echo "🐚 Opening shell in gateway container..."
+	docker-compose exec gateway sh
 
-logs-prometheus:
-	docker-compose logs -f prometheus
-
-logs-grafana:
-	docker-compose logs -f grafana
+shell-db:
+	@echo "🗄️ Opening database shell..."
+	docker-compose exec db psql -U zhuchechka -d zhuchka
 
 # Health checks
 health:
-	@echo "🩺 Checking service health..."
-	@echo ""
-	@echo "Gateway Health:"
+	@echo "🏥 Checking service health..."
+	@echo "Gateway:"
 	@curl -s http://localhost:8001/api/health | jq . || echo "Gateway not responding"
-	@echo ""
-	@echo "Gateway Deep Health:"
-	@curl -s http://localhost:8001/api/health/deep | jq . || echo "Gateway deep health check failed"
+	@echo "\nPrometheus:"
+	@curl -s http://localhost:9090/-/ready || echo "Prometheus not responding"
+	@echo "\nGrafana:"
+	@curl -s http://localhost:3000/api/health | jq . || echo "Grafana not responding"
 
-metrics:
-	@echo "📊 Gateway Metrics:"
-	@curl -s http://localhost:8001/metrics || echo "Metrics not available"
+# Development helpers
+dev-setup: build dev migrate
+	@echo "🎉 Development environment is ready!"
+	@echo "   Run 'make health' to check all services"
+	@echo "   Run 'make test-unit' to run unit tests"
+	@echo "   Run 'make monitoring' to start monitoring"
 
-# Clean up
-clean:
-	@echo "🧹 Cleaning up..."
-	docker-compose down --volumes
-	docker system prune -f
+# Install development dependencies (for local testing)
+install-deps:
+	@echo "📦 Installing development dependencies..."
+	pip install -r requirements.txt
+	pip install pytest pytest-asyncio httpx
 
-# Complete reset
-reset:
-	@echo "⚠️  COMPLETE RESET - This will delete all data!"
-	@read -p "Are you sure? [y/N] " -n 1 -r; \
-	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
-		echo ""; \
-		echo "🗑️  Removing all containers and volumes..."; \
-		docker-compose down --volumes --remove-orphans; \
-		docker-compose --profile monitoring down --volumes --remove-orphans; \
-		docker system prune -f; \
-		docker volume prune -f; \
-		echo "✅ Reset complete!"; \
-	else \
-		echo ""; \
-		echo "❌ Reset cancelled."; \
-	fi
+# Code quality
+lint:
+	@echo "🔍 Running linters..."
+	flake8 gateway/src/ tests/ || echo "flake8 not installed"
+	black --check gateway/src/ tests/ || echo "black not installed"
 
-# Quick setup for new developers
-setup:
-	@echo "🛠️  Setting up ZhuchkaKeyboards development environment..."
-	@echo "1️⃣  Building images..."
-	@make build
-	@echo "2️⃣  Starting database..."
-	@make dev
-	@echo "3️⃣  Setup complete! Visit http://localhost:8001/api/health"
+format:
+	@echo "🎨 Formatting code..."
+	black gateway/src/ tests/ || echo "black not installed"
+	isort gateway/src/ tests/ || echo "isort not installed"
+
+# Database utilities
+db-reset:
+	@echo "🗄️ Resetting database..."
+	docker-compose down db
+	docker volume rm zhuchkakeyboards_postgres_data || true
+	docker-compose up -d db
+	sleep 5
+	make migrate
+	@echo "✅ Database reset completed!"
+
+# Backup and restore
+backup:
+	@echo "💾 Creating database backup..."
+	docker-compose exec -T db pg_dump -U zhuchechka zhuchka > backup_$(shell date +%Y%m%d_%H%M%S).sql
+	@echo "✅ Backup created!"
+
+# Example data
+load-example-data:
+	@echo "📊 Loading example data..."
+	pytest tests/integration/test_inventory_full.py::TestInventoryIntegration::test_complete_warehouse_lifecycle -v
+	@echo "✅ Example data loaded!"
