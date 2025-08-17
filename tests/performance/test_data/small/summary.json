@@ -1,0 +1,36 @@
+{
+  "generation_timestamp": "2025-08-17T20:26:01.014076",
+  "config": {
+    "warehouses_count": 5,
+    "items_count": 100,
+    "suppliers_count": 20,
+    "inventory_levels_count": 243,
+    "transactions_count": 500
+  },
+  "statistics": {
+    "categories": [
+      "cables",
+      "stabilizers",
+      "cases",
+      "switches",
+      "pcb",
+      "tools",
+      "keycaps"
+    ],
+    "active_warehouses": 4,
+    "countries": [
+      "Germany",
+      "Singapore",
+      "France",
+      "USA"
+    ],
+    "total_value_estimate": 1649.91,
+    "files": {
+      "warehouses": "tests/performance/test_data/small\\warehouses.json",
+      "items": "tests/performance/test_data/small\\items.json",
+      "suppliers": "tests/performance/test_data/small\\suppliers.json",
+      "inventory_levels": "tests/performance/test_data/small\\inventory_levels.json",
+      "transactions": "tests/performance/test_data/small\\transactions.json"
+    }
+  }
+}
