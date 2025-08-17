@@ -2,11 +2,10 @@
 REST API роутер для модуля inventory
 """
 
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import ORJSONResponse
-import json
 import uuid
 from datetime import datetime
 
@@ -19,7 +18,7 @@ from routers.inventory.schemas import (
     # Warehouse schemas
     WarehouseCreate, WarehouseUpdate, WarehouseResponse, WarehouseListResponse,
     # Inventory schemas
-    InventoryLevelCreate, InventoryLevelUpdate, InventoryLevelResponse, 
+    InventoryLevelCreate, InventoryLevelResponse, 
     InventoryLevelListResponse, InventorySearchFilter,
     # Movement schemas
     StockMovementRequest
@@ -32,7 +31,6 @@ router = APIRouter()
 async def debug_create_warehouse(session: DbSession):
     """Debug endpoint to test warehouse creation"""
     from routers.inventory.schemas import WarehouseCreate
-    import uuid
     
     warehouse_data = WarehouseCreate(
         name="Debug Test Warehouse",
