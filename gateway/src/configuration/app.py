@@ -8,6 +8,7 @@ from routers import Router
 from utils.logger import get_logger
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.core import engine
+from services.metrics import prometheus_metrics
 
 
 # Инициализируем логгер
@@ -73,6 +74,7 @@ class DBSessionMiddleware(BaseHTTPMiddleware):
                 await session.close()
 
 
+
 class App:
     def __init__(self):
         self._app: FastAPI = FastAPI(
@@ -93,6 +95,10 @@ class App:
         )
         self._app.add_middleware(RateLimiterMiddleware)
         self._app.add_middleware(DBSessionMiddleware)
+        
+        # Initialize Prometheus metrics
+        prometheus_metrics.init_app(self._app)
+        
         self._register_routers()
 
     def _register_routers(self) -> None:
@@ -102,3 +108,5 @@ class App:
     @property
     def app(self) -> FastAPI:
         return self._app
+
+
