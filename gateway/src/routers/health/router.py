@@ -131,18 +131,31 @@ async def readiness_probe():
 async def metrics_summary():
     """Summary of application metrics for dashboard"""
     try:
-        # This could be enhanced to provide custom metric summaries
-        # For now, it's a placeholder that could aggregate key metrics
+        # Enhanced metrics summary with HTTP metrics info
+        summary = prometheus_metrics.get_http_metrics_summary()
+        
         return ORJSONResponse(
             {
-                "message": "Metrics available at /metrics endpoint",
-                "prometheus_endpoint": "/metrics",
+                "message": "Enhanced HTTP metrics collection enabled",
+                "prometheus_endpoint": "/metrics", 
+                "metrics_info": {
+                    "http_requests_total": "Total HTTP requests by method, endpoint, status_code, handler",
+                    "http_request_duration_seconds": "HTTP request duration histograms with detailed buckets",
+                    "http_requests_in_progress": "Current number of requests being processed",
+                    "http_request_size_bytes": "HTTP request size histograms", 
+                    "http_response_size_bytes": "HTTP response size histograms",
+                    "http_requests_by_user_agent_total": "Requests grouped by user agent family and version",
+                    "http_requests_by_ip_total": "Requests grouped by client IP",
+                    "http_slow_requests_total": "Number of slow requests (>1s)",
+                    "http_errors_by_type_total": "HTTP errors grouped by error type"
+                },
                 "health_endpoints": {
                     "basic": "/health",
                     "deep": "/health/deep",
-                    "liveness": "/health/liveness",
+                    "liveness": "/health/liveness", 
                     "readiness": "/health/readiness",
                 },
+                "prometheus_queries": summary
             }
         )
 
@@ -150,4 +163,82 @@ async def metrics_summary():
         logger.error(f"Metrics summary failed: {e}")
         raise HTTPException(
             status_code=500, detail="Failed to generate metrics summary"
+        )
+
+
+@router.get("/metrics/http")
+async def http_metrics_details():
+    """Detailed information about HTTP metrics collection"""
+    try:
+        return ORJSONResponse(
+            {
+                "status": "active",
+                "middleware": "MetricsMiddleware enabled",
+                "collected_metrics": {
+                    "request_count": {
+                        "metric": "http_requests_total",
+                        "labels": ["method", "endpoint", "status_code", "handler"],
+                        "description": "Counter of total HTTP requests"
+                    },
+                    "request_duration": {
+                        "metric": "http_request_duration_seconds", 
+                        "labels": ["method", "endpoint", "status_code"],
+                        "buckets": [0.001, 0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0, 7.5, 10.0, "inf"],
+                        "description": "Histogram of HTTP request durations"
+                    },
+                    "requests_in_progress": {
+                        "metric": "http_requests_in_progress",
+                        "labels": ["method", "endpoint"],
+                        "description": "Gauge of requests currently being processed"
+                    },
+                    "request_size": {
+                        "metric": "http_request_size_bytes",
+                        "labels": ["method", "endpoint"],
+                        "buckets": [64, 256, 1024, 4096, 16384, 65536, 262144, 1048576, "inf"],
+                        "description": "Histogram of HTTP request sizes"
+                    },
+                    "response_size": {
+                        "metric": "http_response_size_bytes",
+                        "labels": ["method", "endpoint", "status_code"],
+                        "buckets": [64, 256, 1024, 4096, 16384, 65536, 262144, 1048576, "inf"],
+                        "description": "Histogram of HTTP response sizes"
+                    },
+                    "user_agent_tracking": {
+                        "metric": "http_requests_by_user_agent_total",
+                        "labels": ["user_agent_family", "user_agent_version"],
+                        "description": "Counter of requests grouped by user agent"
+                    },
+                    "ip_tracking": {
+                        "metric": "http_requests_by_ip_total", 
+                        "labels": ["client_ip"],
+                        "description": "Counter of requests grouped by client IP"
+                    },
+                    "slow_requests": {
+                        "metric": "http_slow_requests_total",
+                        "labels": ["method", "endpoint", "status_code"],
+                        "threshold": ">1 second",
+                        "description": "Counter of slow HTTP requests"
+                    },
+                    "error_tracking": {
+                        "metric": "http_errors_by_type_total",
+                        "labels": ["method", "endpoint", "error_type", "status_code"],
+                        "description": "Counter of HTTP errors grouped by type"
+                    }
+                },
+                "example_queries": {
+                    "request_rate": "rate(http_requests_total[5m])",
+                    "error_rate": "rate(http_errors_by_type_total[5m]) / rate(http_requests_total[5m])",
+                    "avg_response_time": "rate(http_request_duration_seconds_sum[5m]) / rate(http_request_duration_seconds_count[5m])",
+                    "95th_percentile": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
+                    "slow_requests_rate": "rate(http_slow_requests_total[5m])",
+                    "top_endpoints": "topk(10, sum by (endpoint) (rate(http_requests_total[5m])))",
+                    "requests_by_status": "sum by (status_code) (rate(http_requests_total[5m]))"
+                }
+            }
+        )
+        
+    except Exception as e:
+        logger.error(f"HTTP metrics details failed: {e}")
+        raise HTTPException(
+            status_code=500, detail="Failed to get HTTP metrics details"
         )
