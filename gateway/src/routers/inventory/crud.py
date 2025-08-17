@@ -200,7 +200,7 @@ async def get_all_warehouses(
     """Получить все склады"""
     query = select(Warehouse)
     if active_only:
-        query = query.where(Warehouse.is_active == True)
+        query = query.where(Warehouse.is_active)
 
     result = await session.execute(query)
     return result.scalars().all()
@@ -406,7 +406,7 @@ async def get_low_stock_items(
             func.sum(InventoryLevel.current_quantity).label("total_quantity"),
         )
         .join(InventoryLevel, Item.id == InventoryLevel.item_id)
-        .where(Item.is_active == True)
+        .where(Item.is_active)
     )
 
     if warehouse_id:
