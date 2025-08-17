@@ -457,11 +457,7 @@ class SupplierItem(Base):
     supplier: Mapped["Supplier"] = relationship(
         "Supplier", back_populates="supplier_items"
     )
-<<<<<<< HEAD
     # item: Mapped["Item"] = relationship("Item", back_populates="supplier_items")
-=======
-    item: Mapped["Item"] = relationship("Item", back_populates="supplier_items")
->>>>>>> performance-optimizations
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
@@ -478,11 +474,7 @@ class PurchaseOrder(Base):
         PostgresUUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     supplier_id: Mapped[UUID] = mapped_column(
-<<<<<<< HEAD
         PostgresUUID(as_uuid=True), ForeignKey("suppliers.id"), nullable=False
-=======
-        PostgresUUID(as_uuid=True), nullable=False
->>>>>>> performance-optimizations
     )
 
     # Основная информация
@@ -532,34 +524,18 @@ class PurchaseOrderItem(Base):
         PostgresUUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     purchase_order_id: Mapped[UUID] = mapped_column(
-<<<<<<< HEAD
         PostgresUUID(as_uuid=True), ForeignKey("purchase_orders.id"), nullable=False
     )
     item_id: Mapped[UUID] = mapped_column(
         PostgresUUID(as_uuid=True), ForeignKey("items.id"), nullable=False
     )
-=======
-        PostgresUUID(as_uuid=True), nullable=False
-    )
-    item_id: Mapped[UUID] = mapped_column(PostgresUUID(as_uuid=True), nullable=False)
->>>>>>> performance-optimizations
 
     # Количество и цена
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     unit_cost: Mapped[float] = mapped_column(Float, nullable=False)
-<<<<<<< HEAD
 
     # Статус получения
     received_quantity: Mapped[int] = mapped_column(Integer, default=0)
-=======
-    total_cost: Mapped[float] = mapped_column(Float, computed="quantity * unit_cost")
-
-    # Статус получения
-    received_quantity: Mapped[int] = mapped_column(Integer, default=0)
-    is_fully_received: Mapped[bool] = mapped_column(
-        Boolean, computed="received_quantity >= quantity"
-    )
->>>>>>> performance-optimizations
 
     # Связи
     purchase_order: Mapped["PurchaseOrder"] = relationship(
@@ -571,16 +547,13 @@ class PurchaseOrderItem(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
-<<<<<<< HEAD
-    
+
     @property
     def total_cost(self) -> float:
         """Calculate total cost"""
         return self.quantity * self.unit_cost
-    
+
     @property
     def is_fully_received(self) -> bool:
         """Check if item is fully received"""
         return self.received_quantity >= self.quantity
-=======
->>>>>>> performance-optimizations

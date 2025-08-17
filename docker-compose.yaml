@@ -3,11 +3,7 @@ version: '3.5'
 services:
   db:
     image: postgres:15-alpine
-<<<<<<< HEAD
-    container_name: postgres-keyboards
-=======
     container_name: postgres-db
->>>>>>> performance-optimizations
     ports:
       - '5432:5432'
     environment:
@@ -25,11 +21,7 @@ services:
 
   redis:
     image: redis:7-alpine
-<<<<<<< HEAD
-    container_name: redis-keyboards
-=======
     container_name: redis
->>>>>>> performance-optimizations
     ports:
       - '6379:6379'
     volumes:
@@ -43,16 +35,11 @@ services:
 
   migrations:
     build: ./gateway
-<<<<<<< HEAD
-    container_name: gateway-migrations-keyboards
-=======
     container_name: gateway-migrations
->>>>>>> performance-optimizations
     depends_on:
       db:
         condition: service_healthy
     environment:
-<<<<<<< HEAD
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
       - POSTGRES_USER=zhuchechka
@@ -60,20 +47,12 @@ services:
       - POSTGRES_DB=zhuchka
       - DATABASE_URL=postgresql+asyncpg://zhuchechka:root@db:5432/zhuchka
     command: ["sh", "-c", "cd /app/src/database && alembic -c alembic.ini upgrade head"]
-=======
-      - DATABASE_URL=postgresql+asyncpg://zhuchechka:root@db:5432/zhuchka
-    command: ["sh", "-c", "cd /app && alembic upgrade head"]
->>>>>>> performance-optimizations
     profiles:
       - migrate
 
   gateway:
     build: ./gateway
-<<<<<<< HEAD
-    container_name: gateway-keyboards
-=======
     container_name: gateway
->>>>>>> performance-optimizations
     ports:
       - '8001:8001'
     depends_on:

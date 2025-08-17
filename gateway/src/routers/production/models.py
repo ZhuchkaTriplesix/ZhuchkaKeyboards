@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime
 from typing import Optional, List
 from uuid import UUID
-from sqlalchemy import types, String, Boolean, Integer, Float, DateTime, Text, Enum
+from sqlalchemy import String, Boolean, Integer, Float, DateTime, Text, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID as PostgresUUID
 from database.core import Base

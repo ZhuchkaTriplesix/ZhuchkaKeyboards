@@ -3,10 +3,10 @@
 """
 
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List, Optional, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_, or_
+from sqlalchemy import select, func, and_
 from sqlalchemy.orm import selectinload
 
 from .models import (
@@ -17,18 +17,14 @@ from .models import (
     Resource,
     TaskResource,
     OrderStatus,
-    ProductionStage,
     QualityStatus,
 )
 from .schemas import (
     OrderCreate,
     OrderUpdate,
     ProductionTaskCreate,
-    ProductionTaskUpdate,
     QualityCheckCreate,
-    QualityCheckUpdate,
     ResourceCreate,
-    ResourceUpdate,
 )
 from utils.logger import get_logger
 
