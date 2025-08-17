@@ -7,7 +7,27 @@ from alembic import context
 
 from database.core import Base
 
+# Import all models for Alembic autogenerate to detect them
 from routers.user.models import User  # noqa: F401
+from routers.production.models import (  # noqa: F401
+    Order,
+    ProductionTask,
+    QualityCheck,
+    QualityChecklistItem,
+    Resource,
+    TaskResource,
+)
+from routers.inventory.models import (  # noqa: F401
+    Item,
+    Warehouse,
+    WarehouseZone,
+    InventoryLevel,
+    InventoryTransaction,
+    Supplier,
+    SupplierItem,
+    PurchaseOrder,
+    PurchaseOrderItem,
+)
 
 
 config = context.config

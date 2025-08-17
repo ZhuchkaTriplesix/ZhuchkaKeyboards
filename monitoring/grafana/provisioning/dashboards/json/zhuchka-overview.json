@@ -1,0 +1,360 @@
+{
+  "id": null,
+  "title": "ZhuchkaKeyboards - Application Overview",
+  "uid": "zhuchka-overview",
+    "tags": ["zhuchka", "application", "overview"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "HTTP Requests Rate",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total[5m]))",
+            "refId": "A"
+          }
+        ],
+        "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "reqps",
+            "color": { "mode": "value" },
+            "thresholds": {
+              "steps": [
+                { "color": "green", "value": null },
+                { "color": "yellow", "value": 10 },
+                { "color": "red", "value": 50 }
+              ]
+            }
+          }
+        },
+        "options": {
+          "reduceOptions": {
+            "calcs": ["lastNotNull"]
+          },
+          "colorMode": "background",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto"
+        }
+      },
+      {
+        "id": 2,
+        "title": "Average Response Time",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "avg(rate(http_request_duration_seconds_sum[5m]) / rate(http_request_duration_seconds_count[5m]))",
+            "refId": "A"
+          }
+        ],
+        "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "color": { "mode": "value" },
+            "thresholds": {
+              "steps": [
+                { "color": "green", "value": null },
+                { "color": "yellow", "value": 0.1 },
+                { "color": "red", "value": 1 }
+              ]
+            }
+          }
+        },
+        "options": {
+          "reduceOptions": {
+            "calcs": ["lastNotNull"]
+          },
+          "colorMode": "background",
+          "graphMode": "area"
+        }
+      },
+      {
+        "id": 3,
+        "title": "Error Rate",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(rate(http_errors_by_type_total[5m])) / sum(rate(http_requests_total[5m]))",
+            "refId": "A"
+          }
+        ],
+        "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "color": { "mode": "value" },
+            "thresholds": {
+              "steps": [
+                { "color": "green", "value": null },
+                { "color": "yellow", "value": 0.01 },
+                { "color": "red", "value": 0.05 }
+              ]
+            }
+          }
+        },
+        "options": {
+          "reduceOptions": {
+            "calcs": ["lastNotNull"]
+          },
+          "colorMode": "background",
+          "graphMode": "area"
+        }
+      },
+      {
+        "id": 4,
+        "title": "Active Requests",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(http_requests_in_progress)",
+            "refId": "A"
+          }
+        ],
+        "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "color": { "mode": "value" },
+            "thresholds": {
+              "steps": [
+                { "color": "green", "value": null },
+                { "color": "yellow", "value": 5 },
+                { "color": "red", "value": 20 }
+              ]
+            }
+          }
+        },
+        "options": {
+          "reduceOptions": {
+            "calcs": ["lastNotNull"]
+          },
+          "colorMode": "background",
+          "graphMode": "area"
+        }
+      },
+      {
+        "id": 5,
+        "title": "HTTP Request Rate by Endpoint",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "sum by (endpoint) (rate(http_requests_total[5m]))",
+            "refId": "A",
+            "legendFormat": "{{endpoint}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "reqps",
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "fillOpacity": 10,
+              "showPoints": "never"
+            }
+          }
+        },
+        "options": {
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom"
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Response Time Percentiles",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+            "refId": "A",
+            "legendFormat": "50th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+            "refId": "B", 
+            "legendFormat": "95th percentile"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+            "refId": "C",
+            "legendFormat": "99th percentile"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "linear",
+              "lineWidth": 2,
+              "fillOpacity": 10
+            }
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "Database Connections",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "db_connections_total",
+            "refId": "A",
+            "legendFormat": "Active Connections"
+          }
+        ],
+        "gridPos": { "h": 6, "w": 8, "x": 0, "y": 12 },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "custom": {
+              "drawStyle": "line",
+              "lineWidth": 2
+            }
+          }
+        }
+      },
+      {
+        "id": 8,
+        "title": "Redis Operations",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(redis_operations_total[5m])",
+            "refId": "A",
+            "legendFormat": "{{operation}} ({{status}})"
+          }
+        ],
+        "gridPos": { "h": 6, "w": 8, "x": 8, "y": 12 },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ops",
+            "custom": {
+              "drawStyle": "line",
+              "lineWidth": 1
+            }
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Application Errors",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(errors_total[5m])",
+            "refId": "A",
+            "legendFormat": "{{error_type}} in {{component}}"
+          }
+        ],
+        "gridPos": { "h": 6, "w": 8, "x": 16, "y": 12 },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "eps",
+            "custom": {
+              "drawStyle": "line",
+              "lineWidth": 2
+            }
+          }
+        }
+      },
+      {
+        "id": 10,
+        "title": "HTTP Status Codes",
+        "type": "piechart",
+        "targets": [
+          {
+            "expr": "sum by (status_code) (rate(http_requests_total[5m]))",
+            "refId": "A",
+            "legendFormat": "{{status_code}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 8, "x": 0, "y": 18 },
+        "options": {
+          "pieType": "pie",
+          "tooltip": { "mode": "single" },
+          "legend": {
+            "displayMode": "list",
+            "placement": "right"
+          }
+        }
+      },
+      {
+        "id": 11,
+        "title": "User Agents Distribution",
+        "type": "piechart", 
+        "targets": [
+          {
+            "expr": "sum by (user_agent_family) (rate(http_requests_by_user_agent_total[5m]))",
+            "refId": "A",
+            "legendFormat": "{{user_agent_family}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 8, "x": 8, "y": 18 },
+        "options": {
+          "pieType": "pie",
+          "tooltip": { "mode": "single" },
+          "legend": {
+            "displayMode": "list",
+            "placement": "right"
+          }
+        }
+      },
+      {
+        "id": 12,
+        "title": "System Resources",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "process_resident_memory_bytes",
+            "refId": "A",
+            "legendFormat": "Memory Usage"
+          },
+          {
+            "expr": "rate(process_cpu_seconds_total[5m])",
+            "refId": "B",
+            "legendFormat": "CPU Usage"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 8, "x": 16, "y": 18 },
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "line",
+              "lineWidth": 2
+            }
+          },
+          "overrides": [
+            {
+              "matcher": { "id": "byName", "options": "Memory Usage" },
+              "properties": [
+                { "id": "unit", "value": "bytes" }
+              ]
+            },
+            {
+              "matcher": { "id": "byName", "options": "CPU Usage" },
+              "properties": [
+                { "id": "unit", "value": "percent" }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "time": {
+      "from": "now-30m",
+      "to": "now"
+    },
+  "refresh": "5s",
+  "schemaVersion": 30,
+  "version": 1
+}

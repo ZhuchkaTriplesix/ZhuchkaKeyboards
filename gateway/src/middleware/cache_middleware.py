@@ -6,7 +6,6 @@ import time
 from typing import Callable
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import StreamingResponse
 
 from services.cache.api_cache import api_cache
 from services.session.session_manager import session_manager

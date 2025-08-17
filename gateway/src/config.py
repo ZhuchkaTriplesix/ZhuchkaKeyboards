@@ -17,18 +17,18 @@ class RedisCfg(CfgBase):
 
 @dataclass
 class JWTCfg(CfgBase):
-    jwt_secret: str = os.getenv("JWT_SECRET")
-    jwt_algorithm: str = os.getenv("JWT_ALGORITHM")
-    jwt_exp: int = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+    jwt_secret: str = os.getenv("JWT_SECRET", "your-secret-key-here")
+    jwt_algorithm: str = os.getenv("JWT_ALGORITHM", "HS256")
+    jwt_exp: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 
 
 @dataclass
 class PostgresCfg(CfgBase):
-    host: str = os.getenv("POSTGRES_HOST")
-    port: str = os.getenv("POSTGRES_PORT")
-    user: str = os.getenv("POSTGRES_USER")
-    password: str = os.getenv("POSTGRES_PASSWORD")
-    db: str = os.getenv("POSTGRES_DB")
+    host: str = os.getenv("POSTGRES_HOST", "localhost")
+    port: str = os.getenv("POSTGRES_PORT", "5432")
+    user: str = os.getenv("POSTGRES_USER", "postgres")
+    password: str = os.getenv("POSTGRES_PASSWORD", "password")
+    db: str = os.getenv("POSTGRES_DB", "postgres")
     database_engine_pool_timeout: int = int(os.getenv("POSTGRES_POOL_TIMEOUT", 30))
     database_engine_pool_recycle: int = int(os.getenv("POSTGRES_POOL_RECYCLE", 1800))
     database_engine_pool_size: int = int(os.getenv("POSTGRES_POOL_SIZE", 10))

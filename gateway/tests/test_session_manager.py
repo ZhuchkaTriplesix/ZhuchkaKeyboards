@@ -3,12 +3,10 @@
 """
 
 import pytest
-import asyncio
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 from datetime import datetime, timedelta
 
 from services.session.session_manager import SessionManager, session_manager
-from routers.user.models import User
 
 
 @pytest.fixture
