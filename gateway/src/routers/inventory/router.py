@@ -28,6 +28,38 @@ from routers.inventory.schemas import (
 router = APIRouter()
 
 
+@router.post("/debug/warehouse")
+async def debug_create_warehouse(session: DbSession):
+    """Debug endpoint to test warehouse creation"""
+    from routers.inventory.schemas import WarehouseCreate
+    import uuid
+    
+    warehouse_data = WarehouseCreate(
+        name="Debug Test Warehouse",
+        code=f"DEBUG-{uuid.uuid4().hex[:8].upper()}",
+        address="Debug St 1",
+        city="Debug City", 
+        country="Debug Country"
+    )
+    
+    try:
+        warehouse = await crud.create_warehouse(session, warehouse_data)
+        # Manual serialization to see what happens
+        manual_data = {
+            "id": str(warehouse.id),
+            "name": warehouse.name,
+            "code": warehouse.code,
+            "address": warehouse.address,
+            "city": warehouse.city,
+            "country": warehouse.country,
+            "created_at": warehouse.created_at.isoformat(),
+            "updated_at": warehouse.updated_at.isoformat()
+        }
+        return {"status": "success", "warehouse": manual_data}
+    except Exception as e:
+        return {"status": "error", "error": str(e), "type": str(type(e))}
+
+
 def serialize_model(model_instance, response_model):
     """Serialize model with custom UUID and datetime handling"""
     if hasattr(model_instance, '__dict__'):
@@ -221,10 +253,8 @@ async def create_warehouse(
     
     try:
         warehouse = await crud.create_warehouse(session, warehouse_data)
-        return ORJSONResponse(
-            content=WarehouseResponse.from_orm(warehouse).dict(),
-            status_code=status.HTTP_201_CREATED
-        )
+        response_data = serialize_model(warehouse, WarehouseResponse)
+        return response_data
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -324,7 +354,8 @@ async def get_inventory_level(
             detail="Уровень запасов не найден"
         )
     
-    return ORJSONResponse(content=InventoryLevelResponse.from_orm(level).dict())
+    response_data = serialize_model(level, InventoryLevelResponse)
+    return ORJSONResponse(content=response_data)
 
 
 @router.post(
@@ -418,7 +449,8 @@ async def move_stock(
     """Движение товара на складе"""
     try:
         level = await crud.move_stock(session, movement_data)
-        return ORJSONResponse(content=InventoryLevelResponse.from_orm(level).dict())
+        response_data = serialize_model(level, InventoryLevelResponse)
+    return ORJSONResponse(content=response_data)
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
