@@ -1,7 +1,7 @@
 # ZhuchkaKeyboards Makefile
 # Commands for development, testing, and deployment
 
-.PHONY: help dev monitoring test test-unit test-integration test-performance clean build
+.PHONY: help dev monitoring test test-unit test-integration test-performance test-rps test-metrics-performance clean build
 
 # Default target
 help:
@@ -11,7 +11,9 @@ help:
 	@echo "  test             - Run all tests"
 	@echo "  test-unit        - Run unit tests (no containers required)"
 	@echo "  test-integration - Run integration tests (requires containers)"
-	@echo "  test-performance - Run performance tests"
+	@echo "  test-performance - Run all performance tests"
+	@echo "  test-rps         - Run high RPS performance tests"
+	@echo "  test-metrics-performance - Run metrics performance tests"
 	@echo "  build            - Build all containers"
 	@echo "  clean            - Stop and remove all containers"
 	@echo "  migrate          - Run database migrations"
@@ -59,8 +61,20 @@ test-integration:
 test-performance:
 	@echo "⚡ Running performance tests..."
 	@echo "⚠️  Make sure containers are running: make dev"
-	pytest tests/integration/test_performance.py -m integration -v --tb=short -s
+	pytest tests/performance/ -m performance -v --tb=short -s
 	@echo "✅ Performance tests completed!"
+
+test-rps:
+	@echo "🚀 Running high RPS tests..."
+	@echo "⚠️  Make sure containers are running: make dev"
+	pytest tests/performance/test_high_rps.py -m performance -v --tb=short -s
+	@echo "✅ RPS tests completed!"
+
+test-metrics-performance:
+	@echo "📈 Running metrics performance tests..."
+	@echo "⚠️  Make sure containers are running: make dev"
+	pytest tests/performance/test_metrics_load.py -m performance -v --tb=short -s
+	@echo "✅ Metrics performance tests completed!"
 
 # Quick test commands
 test-quick:
