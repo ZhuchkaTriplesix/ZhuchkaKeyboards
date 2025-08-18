@@ -4,7 +4,14 @@ datasources:
   - name: Prometheus
     type: prometheus
     access: proxy
-    url: http://prometheus:9090
+    url: http://prometheus-keyboards:9090
     uid: prometheus
     isDefault: true
+    editable: true
+  
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki-keyboards:3100
+    uid: loki
     editable: true
