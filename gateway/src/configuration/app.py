@@ -1,79 +1,16 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
-from starlette.middleware.base import BaseHTTPMiddleware
-from datetime import datetime, timedelta
 from fastapi.responses import ORJSONResponse
-from typing import Dict, List
 from routers import Router
 from utils.logger import get_logger
-from sqlalchemy.ext.asyncio import AsyncSession
-from database.core import engine
+from middleware import apply_middleware_stack
+
 print("DEBUG: About to import prometheus_metrics...")
 from services.metrics import prometheus_metrics
 print("DEBUG: prometheus_metrics imported successfully")
 
-
 # Инициализируем логгер
 logger = get_logger(__name__)
-
-
-class RateLimiterMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app, max_requests: int = 999999, time_window: int = 60):
-        super().__init__(app)
-        self.max_requests = max_requests
-        self.time_window = time_window
-        self.request_logs: Dict[str, List[datetime]] = {}
-
-    async def dispatch(self, request: Request, call_next):
-        client_ip = request.client.host or "unknown"
-        current_time = datetime.now()
-        self._cleanup_old_entries(current_time)
-        if client_ip in self.request_logs:
-            if len(self.request_logs[client_ip]) >= self.max_requests:
-                retry_after = self._calculate_retry_after(client_ip, current_time)
-                logger.warning(f"Rate limit exceeded for IP: {client_ip}")
-                return ORJSONResponse(
-                    status_code=429,
-                    content={
-                        "detail": f"Too many requests. Limit is {self.max_requests} per minute.",
-                        "retry_after": retry_after,
-                    },
-                    headers={"Retry-After": str(retry_after)},
-                )
-            self.request_logs[client_ip].append(current_time)
-        else:
-            self.request_logs[client_ip] = [current_time]
-
-        return await call_next(request)
-
-    def _cleanup_old_entries(self, current_time: datetime):
-        cutoff_time = current_time - timedelta(seconds=self.time_window)
-        for ip in list(self.request_logs.keys()):
-            self.request_logs[ip] = [
-                t for t in self.request_logs[ip] if t > cutoff_time
-            ]
-            if not self.request_logs[ip]:
-                del self.request_logs[ip]
-
-    def _calculate_retry_after(self, ip: str, current_time: datetime) -> int:
-        oldest_request = min(self.request_logs[ip])
-        time_passed = (current_time - oldest_request).total_seconds()
-        return max(1, int(self.time_window - time_passed))
-
-
-class DBSessionMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        async with AsyncSession(engine) as session:
-            request.state.db = session
-            try:
-                response = await call_next(request)
-                await session.commit()
-                return response
-            except Exception:
-                await session.rollback()
-                raise
-            finally:
-                await session.close()
 
 
 class App:
@@ -87,6 +24,8 @@ class App:
             # Настройки для использования orjson
             default_response_class=ORJSONResponse,
         )
+        
+        # Настройка CORS middleware
         self._app.add_middleware(
             CORSMiddleware,
             allow_origins=["*"],
@@ -94,11 +33,11 @@ class App:
             allow_methods=["GET", "POST", "DELETE", "PATCH"],
             allow_headers=["*"],
         )
-        # Rate limiter с очень высоким лимитом для performance тестов
-        self._app.add_middleware(
-            RateLimiterMiddleware, max_requests=999999, time_window=60
-        )
-        self._app.add_middleware(DBSessionMiddleware)
+        
+        # Применяем централизованный стек middleware
+        logger.info("Applying middleware stack...")
+        apply_middleware_stack(self._app)
+        logger.info("Middleware stack applied successfully")
 
         # Initialize Prometheus metrics
         try:
