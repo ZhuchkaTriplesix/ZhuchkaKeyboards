@@ -726,6 +726,7 @@ docker-compose exec -T db psql -U zhuchechka zhuchka < backup.sql
 ### Документация и помощь
 
 - **API Documentation**: http://localhost:8001/api/docs
+- **Middleware Documentation**: [gateway/src/middleware/README.md](gateway/src/middleware/README.md)
 - **Monitoring Guides**: [monitoring/README.md](monitoring/README.md)
 - **Performance Testing**: [tests/performance/README.md](tests/performance/README.md)
 
