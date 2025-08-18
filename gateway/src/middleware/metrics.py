@@ -25,13 +25,13 @@ class HTTPMetricsMiddleware(BaseHTTPMiddleware):
         
         # Создаем базовые метрики
         self.http_requests_total = Counter(
-            'http_requests_total', 
+            'gateway_http_requests_total', 
             'Total HTTP requests', 
             ['method', 'endpoint', 'status_code']
         )
         
         self.http_request_duration_seconds = Histogram(
-            'http_request_duration_seconds',
+            'gateway_http_request_duration_seconds',
             'HTTP request duration in seconds',
             ['method', 'endpoint']
         )
