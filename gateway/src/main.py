@@ -27,6 +27,47 @@ def get_request_id() -> Optional[str]:
 # Создаем экземпляр приложения
 app = App().app
 
+# Простые HTTP метрики для Grafana
+from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+from fastapi import Response
+import time
+
+# Создаем базовые метрики
+http_requests_total = Counter(
+    'http_requests_total', 
+    'Total HTTP requests', 
+    ['method', 'endpoint', 'status_code']
+)
+
+http_request_duration_seconds = Histogram(
+    'http_request_duration_seconds',
+    'HTTP request duration in seconds',
+    ['method', 'endpoint']
+)
+
+@app.middleware("http")
+async def metrics_middleware(request, call_next):
+    """Middleware to collect HTTP metrics"""
+    start_time = time.time()
+    
+    response = await call_next(request)
+    
+    # Record metrics
+    duration = time.time() - start_time
+    method = request.method
+    endpoint = request.url.path
+    status_code = str(response.status_code)
+    
+    http_requests_total.labels(method=method, endpoint=endpoint, status_code=status_code).inc()
+    http_request_duration_seconds.labels(method=method, endpoint=endpoint).observe(duration)
+    
+    return response
+
+@app.get("/metrics")
+def get_metrics():
+    """Prometheus metrics endpoint"""
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
 
 def get_current_username(
     credentials: HTTPBasicCredentials = Depends(HTTPBasic()),
@@ -52,6 +93,7 @@ async def test_responses():
     return {"hello": "world"}
 
 
-@app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
-async def catch_all(path: str):
-    raise HTTPException(status_code=404, detail="Not Found")
+# Disabled catch-all for debugging
+# @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+# async def catch_all(path: str):
+#     raise HTTPException(status_code=404, detail="Not Found")
