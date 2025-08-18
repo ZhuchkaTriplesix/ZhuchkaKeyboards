@@ -12,6 +12,9 @@ from services.cache.api_cache import api_cache
 from services.session.session_manager import session_manager
 from utils.logger import get_logger
 
+# Отключаем создание метрик в CacheMiddleware - они создаются в HTTPMetricsMiddleware
+METRICS_AVAILABLE = False
+
 logger = get_logger(__name__)
 
 
@@ -21,6 +24,8 @@ class CacheMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, cache_ttl: int = 300):
         super().__init__(app)
         self.cache_ttl = cache_ttl
+        
+        logger.info(f"CacheMiddleware initialized with TTL: {cache_ttl}s")
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         # Пропускаем кэширование для не-GET запросов
@@ -39,12 +44,23 @@ class CacheMiddleware(BaseHTTPMiddleware):
         cache_key = api_cache.generate_cache_key(request, user_id)
 
         # Пытаемся получить кэшированный ответ
+        start_time = time.time()
         cached_response = await api_cache.get_cached_response(cache_key)
+        
         if cached_response:
+            # Для кэшированного ответа записываем метрики здесь
+            cache_time = time.time() - start_time
+            cached_response.headers["X-Response-Time"] = f"{cache_time:.3f}s"
+            
+            # Записываем только кэш-специфичные метрики
+            if METRICS_AVAILABLE and cache_requests_total is not None:
+                endpoint = request.url.path
+                cache_requests_total.labels(cache_status="HIT").inc()
+                cache_hit_ratio.labels(endpoint=endpoint).inc()
+            
             return cached_response
 
         # Если кэша нет, выполняем запрос
-        start_time = time.time()
         response = await call_next(request)
         response_time = time.time() - start_time
 
@@ -85,6 +101,10 @@ class CacheMiddleware(BaseHTTPMiddleware):
         
         # Добавляем X-Cache MISS только ПОСЛЕ кэширования
         response.headers["X-Cache"] = "MISS"
+        
+        # Записываем кэш-специфичные метрики для MISS случая
+        if METRICS_AVAILABLE and cache_requests_total is not None:
+            cache_requests_total.labels(cache_status="MISS").inc()
 
         return response
 

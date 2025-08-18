@@ -28,12 +28,12 @@ def get_request_id() -> Optional[str]:
 app = App().app
 
 # Импортируем функцию для metrics endpoint из централизованного middleware
-from middleware.metrics import get_metrics_response
+# from middleware.metrics import get_metrics_response
 
-@app.get("/metrics")
-def get_metrics():
-    """Prometheus metrics endpoint"""
-    return get_metrics_response()
+# @app.get("/metrics")
+# def get_metrics():
+#     """Prometheus metrics endpoint"""
+#     return get_metrics_response()
 
 
 def get_current_username(

@@ -5,9 +5,9 @@ from utils.logger import get_logger
 from utils.responses import ORJSONResponse
 from middleware import apply_middleware_stack
 
-print("DEBUG: About to import prometheus_metrics...")
-from services.metrics import prometheus_metrics
-print("DEBUG: prometheus_metrics imported successfully")
+# print("DEBUG: About to import prometheus_metrics...")
+# from services.metrics import prometheus_metrics
+# print("DEBUG: prometheus_metrics imported successfully")
 
 # Инициализируем логгер
 logger = get_logger(__name__)
@@ -39,15 +39,15 @@ class App:
         apply_middleware_stack(self._app)
         logger.info("Middleware stack applied successfully")
 
-        # Initialize Prometheus metrics
-        try:
-            print("DEBUG: Initializing Prometheus metrics...")
-            prometheus_metrics.init_app(self._app)
-            print("DEBUG: Prometheus metrics initialized successfully")
-        except Exception as e:
-            print(f"DEBUG: Error initializing Prometheus metrics: {e}")
-            import traceback
-            traceback.print_exc()
+        # Initialize Prometheus metrics - DISABLED для избежания дублирования
+        # try:
+        #     print("DEBUG: Initializing Prometheus metrics...")
+        #     prometheus_metrics.init_app(self._app)
+        #     print("DEBUG: Prometheus metrics initialized successfully")
+        # except Exception as e:
+        #     print(f"DEBUG: Error initializing Prometheus metrics: {e}")
+        #     import traceback
+        #     traceback.print_exc()
 
         self._register_routers()
 

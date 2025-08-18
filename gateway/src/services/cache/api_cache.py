@@ -67,6 +67,10 @@ class APICache:
         Returns:
             True если ответ можно кэшировать
         """
+        # Исключаем /metrics endpoint из кэширования
+        if request.url.path == "/metrics":
+            return False
+            
         # Проверяем метод запроса
         if request.method not in self.cacheable_methods:
             return False
