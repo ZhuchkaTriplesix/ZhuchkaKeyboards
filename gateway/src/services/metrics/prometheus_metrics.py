@@ -316,6 +316,9 @@ class MetricsMiddleware(BaseHTTPMiddleware):
 
 def init_app(app: FastAPI):
     """Initialize Prometheus metrics for FastAPI app"""
+    from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+    from fastapi import Response
+    
     instrumentator = Instrumentator(
         should_group_status_codes=False,
         should_ignore_untemplated=True,
@@ -325,7 +328,12 @@ def init_app(app: FastAPI):
     )
 
     instrumentator.instrument(app)
-    instrumentator.expose(app, endpoint="/metrics")
+    
+    # Manual metrics endpoint since expose() doesn't seem to work
+    @app.get("/metrics")
+    def get_metrics():
+        """Prometheus metrics endpoint"""
+        return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
 # Global metrics instance for backward compatibility

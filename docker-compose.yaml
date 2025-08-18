@@ -3,7 +3,7 @@ version: '3.5'
 services:
   db:
     image: postgres:15-alpine
-    container_name: postgres-db
+    container_name: postgres-keyboards
     ports:
       - '5432:5432'
     environment:
@@ -21,7 +21,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: redis
+    container_name: redis-keyboards
     ports:
       - '6379:6379'
     volumes:
@@ -35,7 +35,7 @@ services:
 
   migrations:
     build: ./gateway
-    container_name: gateway-migrations
+    container_name: gateway-migrations-keyboards
     depends_on:
       db:
         condition: service_healthy
@@ -52,7 +52,7 @@ services:
 
   gateway:
     build: ./gateway
-    container_name: gateway
+    container_name: gateway-keyboards
     ports:
       - '8001:8001'
     depends_on:
@@ -70,17 +70,12 @@ services:
       - REDIS_PORT=6379
       - DATABASE_URL=postgresql+asyncpg://zhuchechka:root@db:5432/zhuchka
     healthcheck:
-<<<<<<< HEAD
       test: ["CMD", "curl", "-f", "http://localhost:8001/api/health"]
-=======
-      test: ["CMD", "curl", "-f", "http://localhost:8001/api/test"]
->>>>>>> performance-optimizations
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
 
-<<<<<<< HEAD
   # Monitoring Stack
   prometheus:
     image: prom/prometheus:latest
@@ -109,7 +104,7 @@ services:
       - '3000:3000'
     volumes:
       - grafana_data:/var/lib/grafana
-      # - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin123
@@ -194,8 +189,3 @@ volumes:
   prometheus_data:
   grafana_data:
   loki_data: 
-=======
-volumes:
-  pgdata:
-  redisdata: 
->>>>>>> performance-optimizations
