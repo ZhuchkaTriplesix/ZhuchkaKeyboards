@@ -5,12 +5,12 @@ REST API роутер для модуля inventory
 from typing import Optional
 from uuid import UUID
 from fastapi import APIRouter, HTTPException, Query, status
-from fastapi.responses import ORJSONResponse
+# Удален импорт - используем кастомный ORJSONResponse из utils.responses
 import uuid
 from datetime import datetime
 
 from database.dependencies import DbSession
-from utils.responses import api_responses
+from utils.responses import api_responses, ORJSONResponse
 from routers.inventory import crud
 from routers.inventory.schemas import (
     # Item schemas
@@ -371,7 +371,7 @@ async def create_inventory_level(level_data: InventoryLevelCreate, session: DbSe
 
 
 @router.get(
-    "/inventory",
+    "/levels",
     response_model=InventoryLevelListResponse,
     responses=api_responses(InventoryLevelListResponse),
     summary="Поиск уровней запасов",

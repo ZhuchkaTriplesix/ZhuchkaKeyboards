@@ -13,11 +13,13 @@ logger = get_logger(__name__)
 
 class HTTPMetricsMiddleware(BaseHTTPMiddleware):
     """
-    Middleware для сбора базовых HTTP метрик
+    Middleware для сбора HTTP метрик и метрик кэширования
     
     Собирает метрики:
-    - Общее количество запросов по методам, эндпоинтам и статус кодам
-    - Время выполнения запросов
+    - gateway_http_requests_total: Общее количество запросов по методам, эндпоинтам, статус кодам и статусу кэша
+    - gateway_http_request_duration_seconds: Время выполнения запросов
+    - gateway_cache_requests_total: Общее количество запросов к кэшу (HIT/MISS)
+    - gateway_cache_hit_ratio_total: Счетчик попаданий в кэш по эндпоинтам
     """
     
     def __init__(self, app):
@@ -27,13 +29,26 @@ class HTTPMetricsMiddleware(BaseHTTPMiddleware):
         self.http_requests_total = Counter(
             'gateway_http_requests_total', 
             'Total HTTP requests', 
-            ['method', 'endpoint', 'status_code']
+            ['method', 'endpoint', 'status_code', 'cache_status']
         )
         
         self.http_request_duration_seconds = Histogram(
             'gateway_http_request_duration_seconds',
             'HTTP request duration in seconds',
-            ['method', 'endpoint']
+            ['method', 'endpoint', 'cache_status']
+        )
+        
+        # Метрики кэширования
+        self.cache_requests_total = Counter(
+            'gateway_cache_requests_total',
+            'Total cache requests by status',
+            ['cache_status']
+        )
+        
+        self.cache_hit_ratio = Counter(
+            'gateway_cache_hit_ratio_total',
+            'Cache hit ratio counter',
+            ['endpoint']
         )
 
     async def dispatch(self, request: Request, call_next):
@@ -49,17 +64,29 @@ class HTTPMetricsMiddleware(BaseHTTPMiddleware):
         endpoint = request.url.path
         status_code = str(response.status_code)
         
+        # Определяем статус кэша из заголовка X-Cache
+        cache_status = response.headers.get('X-Cache', 'NONE').upper()
+        
         # Обновляем счетчики
         self.http_requests_total.labels(
             method=method, 
             endpoint=endpoint, 
-            status_code=status_code
+            status_code=status_code,
+            cache_status=cache_status
         ).inc()
         
         self.http_request_duration_seconds.labels(
             method=method, 
-            endpoint=endpoint
+            endpoint=endpoint,
+            cache_status=cache_status
         ).observe(duration)
+        
+        # Записываем метрики кэширования
+        if cache_status in ['HIT', 'MISS']:
+            self.cache_requests_total.labels(cache_status=cache_status).inc()
+            
+            if cache_status == 'HIT':
+                self.cache_hit_ratio.labels(endpoint=endpoint).inc()
         
         return response
 

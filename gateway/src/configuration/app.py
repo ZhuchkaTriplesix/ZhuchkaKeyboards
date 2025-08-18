@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
-from fastapi.responses import ORJSONResponse
 from routers import Router
 from utils.logger import get_logger
+from utils.responses import ORJSONResponse
 from middleware import apply_middleware_stack
 
 print("DEBUG: About to import prometheus_metrics...")
