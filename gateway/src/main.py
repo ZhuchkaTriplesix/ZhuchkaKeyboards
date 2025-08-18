@@ -27,6 +27,14 @@ def get_request_id() -> Optional[str]:
 # Создаем экземпляр приложения
 app = App().app
 
+# Импортируем функцию для metrics endpoint из централизованного middleware
+# from middleware.metrics import get_metrics_response
+
+# @app.get("/metrics")
+# def get_metrics():
+#     """Prometheus metrics endpoint"""
+#     return get_metrics_response()
+
 
 def get_current_username(
     credentials: HTTPBasicCredentials = Depends(HTTPBasic()),
@@ -52,6 +60,7 @@ async def test_responses():
     return {"hello": "world"}
 
 
-@app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
-async def catch_all(path: str):
-    raise HTTPException(status_code=404, detail="Not Found")
+# Disabled catch-all for debugging
+# @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+# async def catch_all(path: str):
+#     raise HTTPException(status_code=404, detail="Not Found")

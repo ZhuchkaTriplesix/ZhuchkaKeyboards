@@ -1,6 +1,11 @@
 from typing import Dict, Any, Type, Union
+from uuid import UUID
+from decimal import Decimal
+from datetime import datetime, date
+import orjson
 from pydantic import BaseModel
 from fastapi import status
+from fastapi.responses import ORJSONResponse as FastAPIOJSONResponse
 from utils.responses_schemas import (
     BadRequestError,
     UnauthorizedError,
@@ -9,6 +14,24 @@ from utils.responses_schemas import (
     TooManyRequestsError,
     InternalError,
 )
+
+
+class ORJSONResponse(FastAPIOJSONResponse):
+    """
+    Кастомный ORJSONResponse с поддержкой UUID и других типов данных
+    """
+    
+    def render(self, content: Any) -> bytes:
+        def default(obj):
+            if isinstance(obj, UUID):
+                return str(obj)
+            elif isinstance(obj, Decimal):
+                return float(obj)
+            elif isinstance(obj, (datetime, date)):
+                return obj.isoformat()
+            raise TypeError(f"Type {type(obj)} not serializable")
+        
+        return orjson.dumps(content, default=default)
 
 
 def api_responses(

@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, EmailStr
 from pydantic_config import default_config
 
@@ -5,7 +6,8 @@ from pydantic_config import default_config
 class SignUp(BaseModel):
     email: EmailStr
     password: str
-    phone_number: str
+    full_name: Optional[str] = None
+    phone_number: Optional[str] = None
 
     model_config = default_config
 
