@@ -6,6 +6,7 @@ import time
 from typing import Callable
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import StreamingResponse
 
 from services.cache.api_cache import api_cache
 from services.session.session_manager import session_manager
@@ -47,9 +48,8 @@ class CacheMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
         response_time = time.time() - start_time
 
-        # Добавляем заголовок времени выполнения
+        # Добавляем заголовок времени выполнения  
         response.headers["X-Response-Time"] = f"{response_time:.3f}s"
-        response.headers["X-Cache"] = "MISS"
 
         # Кэшируем ответ если это возможно
         if api_cache.is_cacheable(request, response):
@@ -58,11 +58,33 @@ class CacheMiddleware(BaseHTTPMiddleware):
             for key, value in cache_headers.items():
                 response.headers[key] = value
 
-            # Кэшируем ответ асинхронно
+            # Читаем тело ответа для кэширования
             try:
-                await api_cache.cache_response(cache_key, response, self.cache_ttl)
+                if isinstance(response, StreamingResponse):
+                    # Для StreamingResponse собираем body из итератора
+                    response_body = b""
+                    async for chunk in response.body_iterator:
+                        response_body += chunk
+                    
+                    # Создаем новый ответ с собранным body
+                    response = Response(
+                        content=response_body,
+                        status_code=response.status_code,
+                        headers=dict(response.headers),
+                        media_type=response.media_type
+                    )
+                else:
+                    # Для обычного Response используем body
+                    response_body = getattr(response, 'body', b'')
+                
+                # Кэшируем ответ
+                await api_cache.cache_response(cache_key, response, response_body, self.cache_ttl)
+                
             except Exception as e:
                 logger.error(f"Error caching response: {e}")
+        
+        # Добавляем X-Cache MISS только ПОСЛЕ кэширования
+        response.headers["X-Cache"] = "MISS"
 
         return response
 

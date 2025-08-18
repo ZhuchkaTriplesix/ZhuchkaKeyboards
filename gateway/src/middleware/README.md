@@ -9,25 +9,30 @@ graph TD
     Request[📥 Incoming Request] --> CORS[🌍 CORS Middleware]
     CORS --> Security[🔒 Security Headers]
     Security --> Validation[✅ Request Validation]
-    Validation --> RateLimit[⚡ Rate Limiting]
-    RateLimit --> Metrics[📊 HTTP Metrics]
-    Metrics --> Cache[💾 Cache Control]
-    Cache --> Database[🗄️ Database Session]
+    Validation --> Metrics[📊 HTTP + Cache Metrics]
+    Metrics --> RateLimit[⚡ Rate Limiting]
+    RateLimit --> Cache[💾 Cache Middleware]
+    Cache --> CacheCheck{🔍 Cache Hit?}
+    CacheCheck -->|HIT| CacheResponse[💾 Return Cached]
+    CacheCheck -->|MISS| Database[🗄️ Database Session]
     Database --> Handler[🎯 Route Handler]
     
     Handler --> DBResponse[🗄️ DB Commit/Rollback]
-    DBResponse --> CacheResponse[💾 Cache Headers]
-    CacheResponse --> MetricsResponse[📊 Record Metrics]
-    MetricsResponse --> SecurityResponse[🔒 Security Headers]
+    DBResponse --> CacheStore[💾 Store in Cache]
+    CacheStore --> MetricsRecord[📊 Record Metrics]
+    MetricsRecord --> SecurityResponse[🔒 Security Headers]
+    CacheResponse --> SecurityResponse
     SecurityResponse --> Response[📤 Response]
     
     classDef middleware fill:#e1f5fe,stroke:#01579b
     classDef core fill:#f3e5f5,stroke:#4a148c
     classDef flow fill:#e8f5e8,stroke:#1b5e20
+    classDef cache fill:#fff3e0,stroke:#ef6c00
     
-    class CORS,Security,Validation,RateLimit,Metrics,Cache,Database middleware
+    class CORS,Security,Validation,RateLimit,Metrics,Database middleware
     class Handler core
-    class Request,Response,DBResponse,CacheResponse,MetricsResponse,SecurityResponse flow
+    class Cache,CacheCheck,CacheResponse,CacheStore cache
+    class Request,Response,DBResponse,MetricsRecord,SecurityResponse flow
 ```
 
 ## Структура файлов
@@ -47,12 +52,12 @@ middleware/
 
 Middleware применяются в определенном порядке, который важен для правильной работы:
 
-1. **SecurityHeadersMiddleware** - добавляет security headers
-2. **RequestValidationMiddleware** - валидирует размер запросов и User-Agent
-3. **RateLimiterMiddleware** - ограничивает частоту запросов по IP
-4. **HTTPMetricsMiddleware** - собирает метрики производительности
-5. **CacheControlMiddleware** - добавляет cache control headers
-6. **DBSessionMiddleware** - управляет сессиями БД (должен быть последним)
+1. **SecurityHeadersMiddleware** - добавляет security headers (XSS, CSRF protection)
+2. **RequestValidationMiddleware** - валидация входящих запросов (размер, User-Agent)
+3. **HTTPMetricsMiddleware** - сбор HTTP и cache метрик (самый внешний для полного покрытия!)
+4. **RateLimiterMiddleware** - ограничение частоты запросов по IP (DDoS protection)
+5. **CacheMiddleware** - кэширование GET-запросов в Redis (TTL: 300s)
+6. **DBSessionMiddleware** - управление транзакциями БД (должен быть последним)
 
 ## Компоненты middleware
 
@@ -522,4 +527,88 @@ app.add_middleware(
     RequestValidationMiddleware,
     max_request_size=5 * 1024 * 1024  # 5MB для production
 )
+
+# Production настройки для кэширования
+app.add_middleware(
+    CacheMiddleware,
+    cache_ttl=300  # 5 минут TTL для production
+)
 ```
+
+## 💾 Cache Middleware
+
+### Описание
+
+`CacheMiddleware` обеспечивает автоматическое кэширование GET-запросов в Redis для улучшения производительности API.
+
+### Функциональность
+
+- **Автоматическое кэширование** — все GET-запросы кэшируются автоматически
+- **Redis хранилище** — использует Redis для быстрого доступа к кэшу  
+- **TTL управление** — настраиваемое время жизни кэша (по умолчанию 300s)
+- **Персонализированный кэш** — учитывает user_id из сессий
+- **Умная генерация ключей** — MD5 хэш от URL + параметров + заголовков
+- **Content-Length исправления** — корректная обработка HTTP заголовков
+
+### Архитектура кэширования
+
+```mermaid
+graph TD
+    A[GET Request] --> B{Cache Key Generation}
+    B --> C[MD5 Hash from URL + Params + User ID]
+    C --> D{Check Redis Cache}
+    D -->|HIT| E[Return Cached Response]
+    D -->|MISS| F[Execute Request]
+    F --> G[Store Response in Cache]
+    G --> H[Return Response]
+    E --> I[Add X-Cache: HIT]
+    H --> J[Add X-Cache: MISS]
+    
+    classDef cache fill:#fff3e0,stroke:#ef6c00
+    classDef hit fill:#e8f5e8,stroke:#1b5e20
+    classDef miss fill:#ffebee,stroke:#c62828
+    
+    class D,G cache
+    class E,I hit
+    class F,H,J miss
+```
+
+### Метрики кэширования
+
+CacheMiddleware интегрирован с HTTPMetricsMiddleware и предоставляет метрики:
+
+- **`gateway_http_requests_total{cache_status="HIT|MISS"}`** — запросы по статусу кэша
+- **`gateway_http_request_duration_seconds{cache_status="HIT|MISS"}`** — время ответа 
+- **`gateway_cache_requests_total{cache_status="HIT|MISS"}`** — счетчик кэш запросов
+- **`gateway_cache_hit_ratio_total{endpoint="/api/path"}`** — коэффициент попаданий
+
+### Производительность
+
+| Тип запроса | Время ответа | Улучшение |
+|-------------|-------------|-----------|
+| Cache HIT   | ~0.005s     | **95%+ быстрее** |
+| Cache MISS  | ~0.100s     | Базовая скорость |
+
+### Конфигурация
+
+```python
+# Базовая конфигурация
+app.add_middleware(
+    CacheMiddleware,
+    cache_ttl=300  # TTL в секундах
+)
+
+# Кастомная конфигурация
+app.add_middleware(
+    CacheMiddleware,
+    cache_ttl=600  # 10 минут для долгого кэширования
+)
+```
+
+### Особенности
+
+1. **Только GET запросы** — POST/PUT/DELETE не кэшируются
+2. **Статус коды 200, 201, 304** — только успешные ответы кэшируются
+3. **No-cache заголовки** — если клиент передает `Cache-Control: no-cache`, кэширование пропускается
+4. **Персонализация** — разные пользователи получают разные кэш ключи
+5. **Graceful fallback** — при ошибках Redis работает без кэширования

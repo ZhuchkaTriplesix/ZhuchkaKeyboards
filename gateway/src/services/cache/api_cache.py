@@ -99,16 +99,19 @@ class APICache:
 
             cache_info = json.loads(cached_data)
 
+            # Готовим заголовки без Content-Length
+            headers = dict(cache_info["headers"])
+            headers.pop("content-length", None)  # Удаляем Content-Length
+            headers.pop("Content-Length", None)  # На всякий случай с большой буквы
+            headers["X-Cache"] = "HIT"  # Добавляем заголовок X-Cache
+
             # Создаем ответ из кэша
             response = Response(
                 content=cache_info["content"],
                 status_code=cache_info["status_code"],
-                headers=cache_info["headers"],
+                headers=headers,
                 media_type=cache_info["media_type"],
             )
-
-            # Добавляем заголовок X-Cache
-            response.headers["X-Cache"] = "HIT"
 
             logger.debug(f"Cache hit for key: {cache_key}")
             return response
@@ -119,7 +122,7 @@ class APICache:
             return None
 
     async def cache_response(
-        self, cache_key: str, response: Response, ttl: Optional[int] = None
+        self, cache_key: str, response: Response, response_body: bytes, ttl: Optional[int] = None
     ) -> bool:
         """
         Кэширует ответ API
@@ -127,6 +130,7 @@ class APICache:
         Args:
             cache_key: Ключ кэша
             response: FastAPI ответ
+            response_body: Тело ответа в виде bytes
             ttl: Время жизни кэша в секундах
 
         Returns:
@@ -135,19 +139,18 @@ class APICache:
         try:
             ttl = ttl or self.default_ttl
 
-            # Получаем содержимое ответа
-            if hasattr(response, "body"):
-                content = response.body
-            else:
-                content = b""
+            # Готовим заголовки без X-Cache и X-Response-Time
+            headers = dict(response.headers)
+            headers.pop("x-cache", None)
+            headers.pop("X-Cache", None)
+            headers.pop("x-response-time", None)
+            headers.pop("X-Response-Time", None)
 
             # Создаем данные для кэширования
             cache_data = {
-                "content": content.decode()
-                if isinstance(content, bytes)
-                else str(content),
+                "content": response_body.decode('utf-8') if response_body else "",
                 "status_code": response.status_code,
-                "headers": dict(response.headers),
+                "headers": headers,
                 "media_type": response.media_type,
                 "cached_at": str(response.headers.get("date", "")),
             }
