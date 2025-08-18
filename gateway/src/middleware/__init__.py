@@ -89,3 +89,8 @@ def apply_middleware_stack(app, middleware_stack=None):
         
         app.add_middleware(middleware_class, **kwargs)
         print(f"Applied middleware: {middleware_class.__name__} - {middleware_config['description']}")
+    
+    # Добавляем /metrics endpoint
+    from middleware.metrics import add_metrics_endpoint
+    add_metrics_endpoint(app)
+    print("Metrics endpoint added")

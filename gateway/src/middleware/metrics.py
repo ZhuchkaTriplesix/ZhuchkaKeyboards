@@ -5,10 +5,38 @@ Metrics middleware для сбора метрик HTTP запросов
 import time
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
-from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST, REGISTRY
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
+
+
+def get_or_create_counter(name, description, labels):
+    """Создает Counter или возвращает существующий"""
+    try:
+        return Counter(name, description, labels)
+    except ValueError:
+        # Метрика уже существует, получаем её из реестра
+        for collector in REGISTRY._collector_to_names:
+            if hasattr(collector, '_name') and collector._name == name:
+                return collector
+        # Если не нашли, возвращаем None - будет создано заново
+        logger.warning(f"Could not find existing counter {name}, will create new one")
+        return None
+
+
+def get_or_create_histogram(name, description, labels):
+    """Создает Histogram или возвращает существующий"""
+    try:
+        return Histogram(name, description, labels)
+    except ValueError:
+        # Метрика уже существует, получаем её из реестра
+        for collector in REGISTRY._collector_to_names:
+            if hasattr(collector, '_name') and collector._name == name:
+                return collector
+        # Если не нашли, возвращаем None - будет создано заново
+        logger.warning(f"Could not find existing histogram {name}, will create new one")
+        return None
 
 
 class HTTPMetricsMiddleware(BaseHTTPMiddleware):
@@ -25,31 +53,55 @@ class HTTPMetricsMiddleware(BaseHTTPMiddleware):
     def __init__(self, app):
         super().__init__(app)
         
-        # Создаем базовые метрики
-        self.http_requests_total = Counter(
+        # Создаем базовые метрики безопасно
+        self.http_requests_total = get_or_create_counter(
             'gateway_http_requests_total', 
             'Total HTTP requests', 
             ['method', 'endpoint', 'status_code', 'cache_status']
         )
+        if self.http_requests_total is None:
+            self.http_requests_total = Counter(
+                'gateway_http_requests_total', 
+                'Total HTTP requests', 
+                ['method', 'endpoint', 'status_code', 'cache_status']
+            )
         
-        self.http_request_duration_seconds = Histogram(
+        self.http_request_duration_seconds = get_or_create_histogram(
             'gateway_http_request_duration_seconds',
             'HTTP request duration in seconds',
             ['method', 'endpoint', 'cache_status']
         )
+        if self.http_request_duration_seconds is None:
+            self.http_request_duration_seconds = Histogram(
+                'gateway_http_request_duration_seconds',
+                'HTTP request duration in seconds',
+                ['method', 'endpoint', 'cache_status']
+            )
         
         # Метрики кэширования
-        self.cache_requests_total = Counter(
+        self.cache_requests_total = get_or_create_counter(
             'gateway_cache_requests_total',
             'Total cache requests by status',
             ['cache_status']
         )
+        if self.cache_requests_total is None:
+            self.cache_requests_total = Counter(
+                'gateway_cache_requests_total',
+                'Total cache requests by status',
+                ['cache_status']
+            )
         
-        self.cache_hit_ratio = Counter(
+        self.cache_hit_ratio = get_or_create_counter(
             'gateway_cache_hit_ratio_total',
             'Cache hit ratio counter',
             ['endpoint']
         )
+        if self.cache_hit_ratio is None:
+            self.cache_hit_ratio = Counter(
+                'gateway_cache_hit_ratio_total',
+                'Cache hit ratio counter',
+                ['endpoint']
+            )
 
     async def dispatch(self, request: Request, call_next):
         """Обработка запроса с записью метрик"""
@@ -93,4 +145,15 @@ class HTTPMetricsMiddleware(BaseHTTPMiddleware):
 
 def get_metrics_response() -> Response:
     """Возвращает все метрики Prometheus в текстовом формате"""
-    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+    metrics_data = generate_latest()
+    logger.info(f"Generated metrics data length: {len(metrics_data)}")
+    logger.debug(f"Metrics preview: {metrics_data[:200]}...")
+    return Response(metrics_data, media_type=CONTENT_TYPE_LATEST)
+
+
+def add_metrics_endpoint(app):
+    """Add /metrics endpoint to FastAPI app"""
+    @app.get("/metrics")
+    def metrics():
+        """Prometheus metrics endpoint"""
+        return get_metrics_response()
