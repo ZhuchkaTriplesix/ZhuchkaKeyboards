@@ -55,6 +55,76 @@ ZhuchkaKeyboards — это современная система управле
 - **Data Layer** — PostgreSQL для основных данных, Redis для кеша и сессий
 - **Monitoring Stack** — Prometheus, Grafana, Loki для наблюдения за системой
 
+### Архитектура middleware
+
+```mermaid
+graph TD
+    Request[📥 Incoming Request] --> CORS[🌍 CORS Middleware]
+    CORS --> Security[🔒 Security Headers]
+    Security --> Validation[✅ Request Validation]
+    Validation --> RateLimit[⚡ Rate Limiting]
+    RateLimit --> Metrics[📊 HTTP Metrics]
+    Metrics --> Cache[💾 Cache Control]
+    Cache --> Database[🗄️ Database Session]
+    Database --> Handler[🎯 Route Handler]
+    
+    Handler --> DBResponse[🗄️ DB Commit/Rollback]
+    DBResponse --> CacheResponse[💾 Cache Headers]
+    CacheResponse --> MetricsResponse[📊 Record Metrics]
+    MetricsResponse --> SecurityResponse[🔒 Security Headers]
+    SecurityResponse --> Response[📤 Response]
+    
+    classDef middleware fill:#e1f5fe,stroke:#01579b
+    classDef core fill:#f3e5f5,stroke:#4a148c
+    classDef flow fill:#e8f5e8,stroke:#1b5e20
+    
+    class CORS,Security,Validation,RateLimit,Metrics,Cache,Database middleware
+    class Handler core
+    class Request,Response,DBResponse,CacheResponse,MetricsResponse,SecurityResponse flow
+```
+
+### Компоненты middleware
+
+```mermaid
+graph LR
+    subgraph "Security Layer"
+        SH[🔒 Security Headers<br/>XSS, CSRF Protection]
+        RV[✅ Request Validation<br/>Size, User-Agent]
+        RL[⚡ Rate Limiter<br/>DDoS Protection]
+    end
+    
+    subgraph "Monitoring Layer"
+        HM[📊 HTTP Metrics<br/>Performance Tracking]
+        CC[💾 Cache Control<br/>Response Headers]
+    end
+    
+    subgraph "Data Layer"
+        DB[🗄️ Database Session<br/>Transaction Management]
+    end
+    
+    subgraph "Business Logic"
+        API[🎯 API Handlers<br/>Business Logic]
+    end
+    
+    Request --> SH
+    SH --> RV
+    RV --> RL
+    RL --> HM
+    HM --> CC
+    CC --> DB
+    DB --> API
+    
+    classDef security fill:#ffebee,stroke:#c62828
+    classDef monitoring fill:#e3f2fd,stroke:#1565c0
+    classDef data fill:#f3e5f5,stroke:#7b1fa2
+    classDef business fill:#e8f5e8,stroke:#2e7d32
+    
+    class SH,RV,RL security
+    class HM,CC monitoring
+    class DB data
+    class API business
+```
+
 ### Технологический стек
 
 | Компонент | Технология | Назначение |
@@ -68,6 +138,53 @@ ZhuchkaKeyboards — это современная система управле
 | **Monitoring** | Prometheus + Grafana | Метрики и дашборды |
 | **Logs** | Loki + Promtail | Агрегация и поиск логов |
 | **Container** | Docker + Compose | Контейнеризация и оркестрация |
+
+### Последовательность обработки запроса
+
+```mermaid
+sequenceDiagram
+    participant Client as 🌐 Client
+    participant CORS as 🌍 CORS
+    participant Security as 🔒 Security
+    participant RateLimit as ⚡ Rate Limit
+    participant Metrics as 📊 Metrics
+    participant Cache as 💾 Cache
+    participant DB as 🗄️ Database
+    participant Handler as 🎯 Handler
+    
+    Client->>CORS: HTTP Request
+    CORS->>Security: Forward Request
+    Security->>Security: Add Security Headers
+    Security->>RateLimit: Validate & Forward
+    
+    alt Rate Limit Exceeded
+        RateLimit->>Client: 429 Too Many Requests
+    else Rate Limit OK
+        RateLimit->>Metrics: Forward Request
+        Metrics->>Metrics: Start Timer
+        Metrics->>Cache: Forward Request
+        Cache->>Cache: Set Cache Headers
+        Cache->>DB: Forward Request
+        DB->>DB: Create Session
+        DB->>Handler: Execute with Session
+        
+        alt Success
+            Handler->>DB: Return Response
+            DB->>DB: Commit Transaction
+        else Error
+            Handler->>DB: Throw Exception
+            DB->>DB: Rollback Transaction
+        end
+        
+        DB->>Cache: Return Response
+        Cache->>Metrics: Add Cache Headers
+        Metrics->>Metrics: Record Duration
+        Metrics->>RateLimit: Forward Response
+        RateLimit->>Security: Forward Response
+        Security->>CORS: Add Security Headers
+        CORS->>Client: Final Response
+    end
+```
 
 ---
 
