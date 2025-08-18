@@ -8,7 +8,9 @@ from routers import Router
 from utils.logger import get_logger
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.core import engine
+print("DEBUG: About to import prometheus_metrics...")
 from services.metrics import prometheus_metrics
+print("DEBUG: prometheus_metrics imported successfully")
 
 
 # Инициализируем логгер
@@ -99,7 +101,14 @@ class App:
         self._app.add_middleware(DBSessionMiddleware)
 
         # Initialize Prometheus metrics
-        prometheus_metrics.init_app(self._app)
+        try:
+            print("DEBUG: Initializing Prometheus metrics...")
+            prometheus_metrics.init_app(self._app)
+            print("DEBUG: Prometheus metrics initialized successfully")
+        except Exception as e:
+            print(f"DEBUG: Error initializing Prometheus metrics: {e}")
+            import traceback
+            traceback.print_exc()
 
         self._register_routers()
 
