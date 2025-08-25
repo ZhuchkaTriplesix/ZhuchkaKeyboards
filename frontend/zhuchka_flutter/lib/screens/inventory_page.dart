@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:zhuchka_flutter/services/api_client.dart';
+import 'package:zhuchka_flutter/widgets/error_retry.dart';
 
 class InventoryPage extends StatefulWidget {
   const InventoryPage({super.key});
@@ -39,30 +40,31 @@ class _InventoryPageState extends State<InventoryPage> {
 
   @override
   Widget build(BuildContext context) {
+    final body = _error != null
+        ? Center(child: ErrorRetry(message: _error!, onRetry: _load))
+        : _items == null
+            ? const Center(child: CircularProgressIndicator())
+            : RefreshIndicator(
+                onRefresh: _load,
+                child: ListView.separated(
+                  itemCount: _items!.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (context, index) {
+                    final item = _items![index] as Map<String, dynamic>;
+                    final name = item['product_name'] ?? item['name'] ?? 'Unnamed';
+                    final qty = item['quantity'] ?? item['qty'] ?? 0;
+                    final updated = item['updated_at'] ?? item['date'] ?? '';
+                    return ListTile(
+                      title: Text(name.toString()),
+                      subtitle: Text('Updated: ${_formatDate(updated)}'),
+                      trailing: Text('$qty'),
+                    );
+                  },
+                ),
+              );
     return Scaffold(
       appBar: AppBar(title: const Text('Inventory Levels')),
-      body: _error != null
-          ? Center(child: Text(_error!))
-          : _items == null
-              ? const Center(child: CircularProgressIndicator())
-              : RefreshIndicator(
-                  onRefresh: _load,
-                  child: ListView.separated(
-                    itemCount: _items!.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
-                    itemBuilder: (context, index) {
-                      final item = _items![index] as Map<String, dynamic>;
-                      final name = item['product_name'] ?? item['name'] ?? 'Unnamed';
-                      final qty = item['quantity'] ?? item['qty'] ?? 0;
-                      final updated = item['updated_at'] ?? item['date'] ?? '';
-                      return ListTile(
-                        title: Text(name.toString()),
-                        subtitle: Text('Updated: ${_formatDate(updated)}'),
-                        trailing: Text('$qty'),
-                      );
-                    },
-                  ),
-                ),
+      body: body,
     );
   }
 
