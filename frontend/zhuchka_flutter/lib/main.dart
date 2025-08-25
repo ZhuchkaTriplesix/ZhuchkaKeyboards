@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:zhuchka_flutter/config/app_config.dart';
+import 'package:zhuchka_flutter/di/providers.dart';
 import 'package:zhuchka_flutter/screens/health_page.dart';
 import 'package:zhuchka_flutter/screens/inventory_page.dart';
 import 'package:zhuchka_flutter/screens/login_page.dart';
@@ -16,18 +18,21 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Zhuchka Keyboards',
-      theme: ThemeData(
-        primarySwatch: Colors.indigo,
-        useMaterial3: true,
+    return MultiProvider(
+      providers: buildAppProviders(),
+      child: MaterialApp(
+        title: 'Zhuchka Keyboards',
+        theme: ThemeData(
+          primarySwatch: Colors.indigo,
+          useMaterial3: true,
+        ),
+        routes: {
+          '/': (context) => const HomePage(),
+          '/health': (context) => const HealthPage(),
+          '/inventory': (context) => const InventoryPage(),
+          '/login': (context) => const LoginPage(),
+        },
       ),
-      routes: {
-        '/': (context) => const HomePage(),
-        '/health': (context) => const HealthPage(),
-        '/inventory': (context) => const InventoryPage(),
-        '/login': (context) => const LoginPage(),
-      },
     );
   }
 }
