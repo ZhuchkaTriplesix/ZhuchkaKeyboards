@@ -23,8 +23,18 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Zhuchka Keyboards',
         theme: ThemeData(
-          primarySwatch: Colors.indigo,
           useMaterial3: true,
+          colorSchemeSeed: Colors.indigo,
+          appBarTheme: const AppBarTheme(
+            centerTitle: true,
+          ),
+          pageTransitionsTheme: const PageTransitionsTheme(builders: {
+            TargetPlatform.android: ZoomPageTransitionsBuilder(),
+            TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+            TargetPlatform.windows: ZoomPageTransitionsBuilder(),
+            TargetPlatform.linux: ZoomPageTransitionsBuilder(),
+            TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+          }),
         ),
         routes: {
           '/': (context) => const HomePage(),
