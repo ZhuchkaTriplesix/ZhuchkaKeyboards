@@ -63,25 +63,25 @@ Middleware применяются в определенном порядке, к
 
 ```mermaid
 graph LR
-    subgraph "Security Layer"
-        SH[🔒 Security Headers<br/>XSS, CSRF Protection]
-        RV[✅ Request Validation<br/>Size, User-Agent]
-        RL[⚡ Rate Limiter<br/>DDoS Protection]
+    subgraph Security_Layer
+        SH["Security Headers - XSS, CSRF Protection"]
+        RV["Request Validation - Size, User-Agent"]
+        RL["Rate Limiter - DDoS Protection"]
     end
-    
-    subgraph "Monitoring Layer"
-        HM[📊 HTTP Metrics<br/>Performance Tracking]
-        CC[💾 Cache Control<br/>Response Headers]
+
+    subgraph Monitoring_Layer
+        HM["HTTP Metrics - Performance Tracking"]
+        CC["Cache Control - Response Headers"]
     end
-    
-    subgraph "Data Layer"
-        DB[🗄️ Database Session<br/>Transaction Management]
+
+    subgraph Data_Layer
+        DB["Database Session - Transaction Management"]
     end
-    
-    subgraph "Business Logic"
-        API[🎯 API Handlers<br/>Business Logic]
+
+    subgraph Business_Logic
+        API["API Handlers - Business Logic"]
     end
-    
+
     Request --> SH
     SH --> RV
     RV --> RL
@@ -89,12 +89,12 @@ graph LR
     HM --> CC
     CC --> DB
     DB --> API
-    
+
     classDef security fill:#ffebee,stroke:#c62828
     classDef monitoring fill:#e3f2fd,stroke:#1565c0
     classDef data fill:#f3e5f5,stroke:#7b1fa2
     classDef business fill:#e8f5e8,stroke:#2e7d32
-    
+
     class SH,RV,RL security
     class HM,CC monitoring
     class DB data

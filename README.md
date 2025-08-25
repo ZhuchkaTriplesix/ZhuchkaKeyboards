@@ -93,28 +93,28 @@ graph TD
 
 ```mermaid
 graph LR
-    subgraph "Security Layer"
-        SH[🔒 Security Headers<br/>XSS, CSRF Protection]
-        RV[✅ Request Validation<br/>Size, User-Agent]
-        RL[⚡ Rate Limiter<br/>DDoS Protection]
+    subgraph Security_Layer
+        SH["Security Headers - XSS, CSRF Protection"]
+        RV["Request Validation - Size, User-Agent"]
+        RL["Rate Limiter - DDoS Protection"]
     end
-    
-    subgraph "Monitoring Layer"
-        HM[📊 HTTP Metrics<br/>Cache Status Tracking]
+
+    subgraph Monitoring_Layer
+        HM["HTTP Metrics - Cache Status Tracking"]
     end
-    
-    subgraph "Performance Layer"
-        CM[💾 Cache Middleware<br/>Redis Cache (300s TTL)]
+
+    subgraph Performance_Layer
+        CM["Cache Middleware - Redis Cache (300s TTL)"]
     end
-    
-    subgraph "Data Layer"
-        DB[🗄️ Database Session<br/>Transaction Management]
+
+    subgraph Data_Layer
+        DB["Database Session - Transaction Management"]
     end
-    
-    subgraph "Business Logic"
-        API[🎯 API Handlers<br/>Business Logic]
+
+    subgraph Business_Logic
+        API["API Handlers - Business Logic"]
     end
-    
+
     Request --> SH
     SH --> RV
     RV --> HM
@@ -122,13 +122,13 @@ graph LR
     RL --> CM
     CM --> DB
     DB --> API
-    
+
     classDef security fill:#ffebee,stroke:#c62828
     classDef monitoring fill:#e3f2fd,stroke:#1565c0
     classDef performance fill:#fff3e0,stroke:#ef6c00
     classDef data fill:#f3e5f5,stroke:#7b1fa2
     classDef business fill:#e8f5e8,stroke:#2e7d32
-    
+
     class SH,RV,RL security
     class HM monitoring
     class CM performance
