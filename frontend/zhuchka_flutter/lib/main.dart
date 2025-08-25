@@ -21,6 +21,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: buildAppProviders(),
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'Zhuchka Keyboards',
         theme: ThemeData(
           useMaterial3: true,
