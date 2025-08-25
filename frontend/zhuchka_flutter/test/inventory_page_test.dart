@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 import 'package:zhuchka_flutter/screens/inventory_page.dart';
 import 'package:zhuchka_flutter/services/api_client.dart';
 
@@ -16,8 +17,11 @@ class _FakeApi extends ApiClient {
 void main() {
   testWidgets('InventoryPage renders list items from API', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(
-        home: InventoryPage(api: _FakeApi()),
+      MultiProvider(
+        providers: [Provider<ApiClient>.value(value: _FakeApi())],
+        child: const MaterialApp(
+          home: InventoryPage(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
