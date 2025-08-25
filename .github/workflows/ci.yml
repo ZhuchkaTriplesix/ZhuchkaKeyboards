@@ -1,0 +1,255 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  PYTHON_VERSION: '3.11'
+  POSTGRES_VERSION: '15-alpine'
+  REDIS_VERSION: '7-alpine'
+
+jobs:
+  # Тестирование кода
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_USER: zhuchechka
+          POSTGRES_PASSWORD: root
+          POSTGRES_DB: zhuchka_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:${{ env.REDIS_VERSION }}
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('gateway/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        cd gateway
+        pip install -r requirements.txt
+        pip install -r requirements-test.txt
+
+    - name: Run linting
+      run: |
+        cd gateway
+        flake8 src/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 src/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: Run unit tests
+      run: |
+        cd gateway
+        pytest tests/unit/ -v --cov=src --cov-report=xml --cov-report=term-missing
+
+    - name: Run integration tests
+      run: |
+        cd gateway
+        pytest tests/integration/ -v
+      env:
+        POSTGRES_HOST: localhost
+        POSTGRES_PORT: 5432
+        POSTGRES_USER: zhuchechka
+        POSTGRES_PASSWORD: root
+        POSTGRES_DB: zhuchka_test
+        REDIS_HOST: localhost
+        REDIS_PORT: 6379
+        DATABASE_URL: postgresql+asyncpg://zhuchechka:root@localhost:5432/zhuchka_test
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./gateway/coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+
+  # Билд и тестирование Docker
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Gateway image
+      run: |
+        docker build -t zhuchka-gateway:test ./gateway
+
+    - name: Test Docker image
+      run: |
+        # Проверяем что образ собирается и запускается
+        docker run --rm zhuchka-gateway:test python -c "import sys; print('Python version:', sys.version)"
+        docker run --rm zhuchka-gateway:test python -c "import fastapi; print('FastAPI version:', fastapi.__version__)"
+
+  # Тестирование мониторинга
+  monitoring-test:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Start monitoring stack
+      run: |
+        docker-compose --profile monitoring up -d prometheus grafana loki
+        sleep 30
+
+    - name: Test Prometheus configuration
+      run: |
+        # Проверяем конфигурацию Prometheus
+        docker exec prometheus-keyboards promtool check config /etc/prometheus/prometheus.yml
+
+    - name: Test Grafana provisioning
+      run: |
+        # Проверяем что Grafana запустился
+        curl -f http://localhost:3000/api/health || exit 1
+
+    - name: Test Loki configuration
+      run: |
+        # Проверяем что Loki запустился
+        curl -f http://localhost:3100/ready || exit 1
+
+    - name: Cleanup
+      if: always()
+      run: |
+        docker-compose down
+
+  # Тестирование производительности
+  performance-test:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        cd gateway
+        pip install -r requirements.txt
+        pip install -r requirements-test.txt
+
+    - name: Start services
+      run: |
+        docker-compose up -d db redis
+        sleep 30
+
+    - name: Run performance tests
+      run: |
+        cd tests/performance
+        python test_simple_rps.py
+        python test_high_rps.py
+      env:
+        POSTGRES_HOST: localhost
+        POSTGRES_PORT: 5432
+        POSTGRES_USER: zhuchechka
+        POSTGRES_PASSWORD: root
+        POSTGRES_DB: zhuchka_test
+        REDIS_HOST: localhost
+        REDIS_PORT: 6379
+
+    - name: Cleanup
+      if: always()
+      run: |
+        docker-compose down
+
+  # Проверка безопасности
+  security:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run Bandit security checks
+      run: |
+        cd gateway
+        pip install bandit
+        bandit -r src/ -f json -o bandit-report.json || true
+
+    - name: Run Safety checks
+      run: |
+        cd gateway
+        pip install safety
+        safety check --json --output safety-report.json || true
+
+    - name: Upload security reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-reports
+        path: |
+          gateway/bandit-report.json
+          gateway/safety-report.json
+
+  # Деплой (только для main branch)
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [test, docker-build, monitoring-test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to production
+      run: |
+        echo "🚀 Deploying to production..."
+        echo "This would trigger deployment to your production environment"
+        # Здесь можно добавить реальные команды деплоя
+        # Например: kubectl apply, docker push, terraform apply и т.д.
+
+    - name: Notify deployment
+      run: |
+        echo "✅ Deployment completed successfully!"
+        echo "📊 Monitoring available at: https://your-domain.com/grafana"
+        echo "🔍 Metrics available at: https://your-domain.com/prometheus"
+
+

@@ -23,8 +23,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+/lib/
+/lib64/
 parts/
 sdist/
 var/
@@ -129,7 +129,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
+
 .venv
 env/
 venv/
@@ -171,3 +171,11 @@ cython_debug/
 # Performance test data (can be very large files >100MB)
 tests/performance/test_data/
 tests/performance/test_data/**/*.json
+
+# Flutter app build artifacts
+/frontend/zhuchka_flutter/build/
+/frontend/zhuchka_flutter/.dart_tool/
+/frontend/zhuchka_flutter/.flutter-plugins
+/frontend/zhuchka_flutter/.flutter-plugins-dependencies
+/frontend/zhuchka_flutter/.packages
+/frontend/zhuchka_flutter/.metadata

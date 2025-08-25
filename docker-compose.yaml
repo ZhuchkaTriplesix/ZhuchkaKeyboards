@@ -76,6 +76,17 @@ services:
       retries: 3
       start_period: 40s
 
+  frontend:
+    build: ./frontend/zhuchka_flutter
+    container_name: frontend-keyboards
+    ports:
+      - '8080:80'
+    environment:
+      - API_BASE_URL=http://gateway:8001
+    depends_on:
+      gateway:
+        condition: service_healthy
+
   # Monitoring Stack
   prometheus:
     image: prom/prometheus:latest
