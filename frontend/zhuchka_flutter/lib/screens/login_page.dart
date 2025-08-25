@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:zhuchka_flutter/services/api_client.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key, this.api});
-
-  final ApiClient? api;
+  const LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -16,17 +15,15 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
   final _fullNameController = TextEditingController();
   final _phoneController = TextEditingController();
-  late final ApiClient _api;
-  late final bool _ownsClient;
+  ApiClient? _api;
 
   bool _loading = false;
   String? _result;
 
   @override
-  void initState() {
-    super.initState();
-    _api = widget.api ?? ApiClient();
-    _ownsClient = widget.api == null;
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _api ??= context.read<ApiClient>();
   }
 
   @override
@@ -35,9 +32,6 @@ class _LoginPageState extends State<LoginPage> {
     _passwordController.dispose();
     _fullNameController.dispose();
     _phoneController.dispose();
-    if (_ownsClient) {
-      _api.close();
-    }
     super.dispose();
   }
 
@@ -48,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
       _result = null;
     });
     try {
-      final res = await _api.signUp(
+      final res = await _api!.signUp(
         email: _emailController.text.trim(),
         password: _passwordController.text,
         fullName: _fullNameController.text.trim().isEmpty ? null : _fullNameController.text.trim(),
