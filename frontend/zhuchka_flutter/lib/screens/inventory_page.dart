@@ -1,27 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:zhuchka_flutter/services/api_client.dart';
 
 class InventoryPage extends StatefulWidget {
-  const InventoryPage({super.key, this.api});
-
-  final ApiClient? api;
+  const InventoryPage({super.key});
 
   @override
   State<InventoryPage> createState() => _InventoryPageState();
 }
 
 class _InventoryPageState extends State<InventoryPage> {
-  late final ApiClient _api;
-  late final bool _ownsClient;
+  ApiClient? _api;
   List<dynamic>? _items;
   String? _error;
 
   @override
-  void initState() {
-    super.initState();
-    _api = widget.api ?? ApiClient();
-    _ownsClient = widget.api == null;
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _api ??= context.read<ApiClient>();
     _load();
   }
 
@@ -31,21 +28,13 @@ class _InventoryPageState extends State<InventoryPage> {
       _items = null;
     });
     try {
-      final res = await _api.getInventoryLevels();
+      final res = await _api!.getInventoryLevels();
       if (!mounted) return;
       setState(() => _items = (res is Map && res['data'] != null) ? (res['data'] as List<dynamic>) : (res as List<dynamic>?));
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = e.toString());
     }
-  }
-
-  @override
-  void dispose() {
-    if (_ownsClient) {
-      _api.close();
-    }
-    super.dispose();
   }
 
   @override
