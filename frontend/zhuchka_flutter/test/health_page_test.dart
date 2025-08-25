@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 import 'package:zhuchka_flutter/screens/health_page.dart';
 import 'package:zhuchka_flutter/services/api_client.dart';
 
@@ -14,8 +15,11 @@ void main() {
   testWidgets('HealthPage displays health JSON', (tester) async {
     final api = _FakeApi({'status': 'ok'});
     await tester.pumpWidget(
-      MaterialApp(
-        home: HealthPage(api: api),
+      MultiProvider(
+        providers: [Provider<ApiClient>.value(value: api)],
+        child: const MaterialApp(
+          home: HealthPage(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
