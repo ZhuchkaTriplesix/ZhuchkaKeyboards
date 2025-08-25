@@ -5,27 +5,35 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final spacing = 16.0;
     return Scaffold(
       appBar: AppBar(title: const Text('Zhuchka Keyboards')),
       body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).pushNamed('/health'),
-              child: const Text('Health'),
-            ),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).pushNamed('/inventory'),
-              child: const Text('Inventory Levels'),
-            ),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).pushNamed('/login'),
-              child: const Text('Sign up'),
-            ),
-          ],
+        child: Padding(
+          padding: EdgeInsets.all(spacing),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              FilledButton(
+                onPressed: () => Navigator.of(context).pushNamed('/health'),
+                style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+                child: const Text('Health'),
+              ),
+              SizedBox(height: spacing),
+              FilledButton.tonal(
+                onPressed: () => Navigator.of(context).pushNamed('/inventory'),
+                style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+                child: const Text('Inventory Levels'),
+              ),
+              SizedBox(height: spacing),
+              OutlinedButton(
+                onPressed: () => Navigator.of(context).pushNamed('/login'),
+                style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+                child: const Text('Sign up'),
+              ),
+            ],
+          ),
         ),
       ),
     );
