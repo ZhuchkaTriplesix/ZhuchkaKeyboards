@@ -1,0 +1,38 @@
+# Telegram auth bot: deps + byte-compile (see issue #48)
+name: auth_bot (deps + compile check)
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use HTTPS for GitHub submodule URLs
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: bots/auth_bot/requirements.txt
+
+      - name: Install dependencies
+        working-directory: bots/auth_bot
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Byte-compile sources
+        run: python -m compileall -q bots/auth_bot/src
