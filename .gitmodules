@@ -1,0 +1,52 @@
+[submodule "services/counterparties"]
+	path = services/counterparties
+	url = git@github.com:ZhuchkaTriplesix/ZhuchkaKeyboards_counterparties.git
+[submodule "services/procurement"]
+	path = services/procurement
+	url = git@github.com:ZhuchkaTriplesix/ZhuchkaKeyboards_procurement.git
+[submodule "services/notification"]
+	path = services/notification
+	url = git@github.com:ZhuchkaTriplesix/ZhuchkaKeyboards_notification.git
+[submodule "services/custom"]
+	path = services/custom
+	url = git@github.com:ZhuchkaTriplesix/ZhuchkaKeyboards_custom.git
+[submodule "services/production"]
+	path = services/production
+	url = git@github.com:ZhuchkaTriplesix/ZhuchkaKeyboards_production.git
+[submodule "services/wms"]
+	path = services/wms
+	url = git@github.com:ZhuchkaTriplesix/ZhuchkaKeyboards_wms.git
+[submodule "services/inventory"]
+	path = services/inventory
+	url = git@github.com:ZhuchkaTriplesix/ZhuchkaKeyboards_inventory.git
+[submodule "services/fulfillment"]
+	path = services/fulfillment
+	url = git@github.com:ZhuchkaTriplesix/ZhuchkaKeyboards_fullfilment.git
+[submodule "services/oms"]
+	path = services/oms
+	url = git@github.com:ZhuchkaTriplesix/ZhuchkaKeyboards_oms.git
+[submodule "services/payments"]
+	path = services/payments
+	url = git@github.com:ZhuchkaTriplesix/ZhuchkaKeyboards_payments.git
+[submodule "services/commerce"]
+	path = services/commerce
+	url = git@github.com:ZhuchkaTriplesix/ZhuchkaKeyboards_commerce.git
+[submodule "services/catalog"]
+	path = services/catalog
+	url = git@github.com:ZhuchkaTriplesix/ZhuchkaKeyboards_catalog.git
+[submodule "frontend/market"]
+	path = frontend/market
+	url = git@github.com:ZhuchkaTriplesix/ZhuchkaKeyboards_frontend_market.git
+[submodule "frontend/system"]
+	path = frontend/system
+	url = git@github.com:ZhuchkaTriplesix/ZhuchkaKeyboards_frontend_system.git
+[submodule "services/auth"]
+	path = services/auth
+	url = git@github.com:ZhuchkaTriplesix/ZhuchkaKeyboards_auth.git
+[submodule "services/directory"]
+	path = services/directory
+	url = git@github.com:ZhuchkaTriplesix/ZhuchkaKeyboards_directory.git
+[submodule "bots/auth_bot"]
+	path = bots/auth_bot
+	url = git@github.com:ZhuchkaTriplesix/ZhuchkaKeyboards_auth_bot.git
+	branch = dev

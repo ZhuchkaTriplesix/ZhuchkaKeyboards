@@ -179,3 +179,6 @@ tests/performance/test_data/**/*.json
 /frontend/zhuchka_flutter/.flutter-plugins-dependencies
 /frontend/zhuchka_flutter/.packages
 /frontend/zhuchka_flutter/.metadata
+
+# Local clone of upstream FastAPI template (bootstrap only)
+_fastapi-template/

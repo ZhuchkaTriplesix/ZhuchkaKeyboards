@@ -1,0 +1,14 @@
+name: CI (dev)
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+    branches: [dev]
+
+permissions:
+  contents: read
+
+jobs:
+  python-services:
+    uses: ./.github/workflows/python-services-reusable.yml
