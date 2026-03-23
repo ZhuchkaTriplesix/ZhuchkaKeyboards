@@ -4,6 +4,8 @@
 
 **Сквозные правила** (HTTP, OAuth2, ошибки, пагинация, health, metrics) — в [`../microservices-api-requirements.md`](../microservices-api-requirements.md). Ниже — только дополнение к ним, не дублирование.
 
+**HTTP-сервер:** во всех сервисах используется **[Granian](https://github.com/emmett-framework/granian)** (ASGI). Параметры bind/workers/цикла/HTTP — в секции **`[UVICORN]`** в `config.ini` (имя секции историческое). В коде включён **access log** (`log_access=True`): строки запросов пишутся логгером `granian.access` (см. [Granian — Logging](https://github.com/emmett-framework/granian#logging)); по умолчанию у Granian access log выключён, у нас он явно включён.
+
 ## Оглавление
 
 | # | Сервис | Папка в репо | Документ |
