@@ -182,3 +182,6 @@ tests/performance/test_data/**/*.json
 
 # Local clone of upstream FastAPI template (bootstrap only)
 _fastapi-template/
+
+# Windows: stray file from mis-redirected shell output (reserved device name)
+nul
