@@ -28,6 +28,8 @@
 | `frontend/system` | [ZhuchkaKeyboards_frontend_system](https://github.com/ZhuchkaTriplesix/ZhuchkaKeyboards_frontend_system) |
 | `bots/auth_bot` | [ZhuchkaKeyboards_auth_bot](https://github.com/ZhuchkaTriplesix/ZhuchkaKeyboards_auth_bot) (ветка в `.gitmodules`: `dev`; каркас бота — [Reei-dp/aiogram-template](https://github.com/Reei-dp/aiogram-template)) |
 
+**Auth и auth_bot:** workflow issue → ветка → тесты → PR в `dev` субмодуля описан в [git-workflow.md](git-workflow.md) (раздел «`services/auth` и `bots/auth_bot`»).
+
 ## Клонирование
 
 ```bash
