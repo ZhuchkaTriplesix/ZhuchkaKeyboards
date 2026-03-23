@@ -60,3 +60,4 @@ git commit -m "chore(submodule): bump <name> after #12"
 
 - `scripts/bootstrap-dev-branches.ps1` — создаёт/обновляет ветку `dev` во всех субмодулях от `master`.
 - `scripts/gh-create-issues.ps1` — создаёт стартовый набор issues через GitHub CLI (`gh`), **идемпотентность не гарантируется** (повторный запуск создаст дубликаты). Запускать один раз после установки `gh auth login`.
+- `scripts/git-rewrite-history.sh` (Git Bash) — переписывает историю: убирает строку `Made-with: Cursor` из сообщений и приводит автора к `git config user.name` / `user.email` для совпадающих email (остальные авторы не трогает). После использования нужен **`git push --force-with-lease`** на затронутые ветки; делать только осознанно.
