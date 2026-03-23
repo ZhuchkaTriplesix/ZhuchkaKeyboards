@@ -46,3 +46,7 @@
 [submodule "services/directory"]
 	path = services/directory
 	url = git@github.com:ZhuchkaTriplesix/ZhuchkaKeyboards_directory.git
+[submodule "bots/auth_bot"]
+	path = bots/auth_bot
+	url = git@github.com:ZhuchkaTriplesix/ZhuchkaKeyboards_auth_bot.git
+	branch = dev
