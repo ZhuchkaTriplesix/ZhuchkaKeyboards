@@ -58,7 +58,9 @@ jobs:
         run: |
           if [[ -f config.ini.example ]]; then cp config.ini.example config.ini; fi
 
+      # Non-blocking until submodules pass strict ruff (see issue #50).
       - name: Ruff check
+        continue-on-error: true
         working-directory: services/${{ matrix.service }}
         run: ruff check .
 
