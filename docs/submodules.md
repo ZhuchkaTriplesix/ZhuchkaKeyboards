@@ -2,6 +2,10 @@
 
 Корень монорепозитория подключает сервисы и фронты как **submodules** (URL — SSH `git@github.com:ZhuchkaTriplesix/...`).
 
+## Python-микросервисы (`services/*`)
+
+Бэкенды в `services/` основаны на [Reei-dp/fastapi-template](https://github.com/Reei-dp/fastapi-template): структура `src/`, Docker, Makefile, Alembic, Redis, health. **Не копируются** каталог `daemon-service/` (systemd) и `.github/workflows/` (CI/CD); в README и `DEPLOYMENT.md` соответствующие разделы убраны или сокращены.
+
 ## Карта путей
 
 | Путь в репо | Удалённый репозиторий |
