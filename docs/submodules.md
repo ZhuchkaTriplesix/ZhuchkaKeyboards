@@ -1,6 +1,6 @@
 # Git submodules
 
-Корень монорепозитория подключает сервисы и фронты как **submodules** (URL — SSH `git@github.com:ZhuchkaTriplesix/...`).
+Корень монорепозитория подключает сервисы, фронты и вспомогательные репозитории (например Telegram-бот) как **submodules** (URL — SSH `git@github.com:ZhuchkaTriplesix/...`).
 
 ## Python-микросервисы (`services/*`)
 
@@ -26,6 +26,7 @@
 | `services/notification` | [ZhuchkaKeyboards_notification](https://github.com/ZhuchkaTriplesix/ZhuchkaKeyboards_notification) |
 | `frontend/market` | [ZhuchkaKeyboards_frontend_market](https://github.com/ZhuchkaTriplesix/ZhuchkaKeyboards_frontend_market) |
 | `frontend/system` | [ZhuchkaKeyboards_frontend_system](https://github.com/ZhuchkaTriplesix/ZhuchkaKeyboards_frontend_system) |
+| `bots/auth_bot` | [ZhuchkaKeyboards_auth_bot](https://github.com/ZhuchkaTriplesix/ZhuchkaKeyboards_auth_bot) (ветка в `.gitmodules`: `dev`) |
 
 ## Клонирование
 
