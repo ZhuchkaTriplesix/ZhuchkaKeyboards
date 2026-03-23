@@ -1,8 +1,19 @@
 #!/usr/bin/env bash
 # Rewrites all refs: normalize author/committer for matching emails, strip "Made-with: Cursor" from messages.
-# Run from repo root: bash scripts/git-rewrite-history.sh
+# Usage:
+#   bash scripts/git-rewrite-history.sh              # monorepo root (parent of scripts/)
+#   bash scripts/git-rewrite-history.sh /path/to/repo # any clone (e.g. submodule)
 set -euo pipefail
-cd "$(dirname "$0")/.."
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+if [ -n "${1:-}" ]; then
+  cd "$1"
+else
+  cd "$SCRIPT_DIR/.."
+fi
+if ! git rev-parse --verify HEAD >/dev/null 2>&1; then
+  echo "skip $(pwd): no commits"
+  exit 0
+fi
 
 export FILTER_BRANCH_SQUELCH_WARNING=1
 
