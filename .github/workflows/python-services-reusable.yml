@@ -45,24 +45,33 @@ jobs:
         with:
           python-version: "3.13"
           cache: pip
-          cache-dependency-path: services/${{ matrix.service }}/requirements.txt
+          cache-dependency-path: |
+            services/${{ matrix.service }}/requirements.txt
+            services/${{ matrix.service }}/requirements-dev.txt
 
       - name: Install dependencies and dev tools
         working-directory: services/${{ matrix.service }}
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt pytest ruff
+          pip install -r requirements.txt pytest
+          if [[ -f requirements-dev.txt ]]; then
+            pip install -r requirements-dev.txt
+          else
+            pip install ruff
+          fi
 
       - name: Local config from example
         working-directory: services/${{ matrix.service }}
         run: |
           if [[ -f config.ini.example ]]; then cp config.ini.example config.ini; fi
 
-      # Non-blocking until submodules pass strict ruff (see issue #50).
       - name: Ruff check
-        continue-on-error: true
         working-directory: services/${{ matrix.service }}
         run: ruff check .
+
+      - name: Ruff format
+        working-directory: services/${{ matrix.service }}
+        run: ruff format --check .
 
       - name: Pytest
         working-directory: services/${{ matrix.service }}
