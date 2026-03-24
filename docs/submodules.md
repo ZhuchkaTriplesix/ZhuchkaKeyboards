@@ -30,6 +30,10 @@
 
 **Auth и auth_bot:** workflow issue → ветка → тесты → PR в `dev` субмодуля описан в [git-workflow.md](git-workflow.md) (раздел «`services/auth` и `bots/auth_bot`»).
 
+## Локальная инфраструктура (Docker в корне)
+
+Корневой `docker-compose.yml` и оверлей для auth: таблица портов, маршруты Traefik к сервисам, пример переменных — в [docker-local.md](docker-local.md).
+
 ## Клонирование
 
 ```bash
