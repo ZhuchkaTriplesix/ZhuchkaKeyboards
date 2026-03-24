@@ -61,7 +61,7 @@
 ### 0.2 Входной трафик — Traefik
 
 - **Traefik** как **reverse proxy / ingress**: TLS (Let’s Encrypt), маршрутизация по хостам и путям, health checks, опционально rate limit на уровне маршрутов.
-- **Локальная разработка (монорепо):** в `docker-compose.yml` поднят Traefik; оверлей `docker-compose.local.yml` публикует за ним **Auth**, **Catalog**, **Commerce** и **Payments** по хостам `auth.localhost`, `catalog.localhost`, `commerce.localhost`, `payments.localhost` (вход HTTP на хосте `8080`). Таблица маршрутов, `hosts` и прямые порты — в [`docker-local.md`](docker-local.md).
+- **Локальная разработка (монорепо):** в `docker-compose.yml` поднят Traefik; оверлей `docker-compose.local.yml` публикует за ним основные Python API (`services/*`): **Auth**, **Catalog**, **Commerce**, **Payments**, **Directory**, **OMS**, **Fulfillment**, **Inventory**, **WMS**, **Production**, **Custom**, **Procurement**, **Counterparties**, **Notification** — по хостам `<имя>.localhost` (вход HTTP на хосте `8080`). Таблица маршрутов, `hosts` и прямые порты — в [`docker-local.md`](docker-local.md).
 - Типичная **продакшен-**раскладка (цель):
   - `www` / основной домен → **публичный фронт**;
   - `admin` / `app` или путь `/admin` → **операционный фронт** (защита сетью + авторизацией);

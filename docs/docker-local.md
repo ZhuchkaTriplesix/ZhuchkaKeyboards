@@ -1,6 +1,6 @@
 # Локальный Docker-стек (корень монорепозитория)
 
-Файлы в корне: **`docker-compose.yml`** (Postgres, Redis, MinIO, Traefik) и **`docker-compose.local.yml`** (оверлей: **auth**, **catalog**, **commerce**, **payments** за Traefik и прямые порты для отладки).
+Файлы в корне: **`docker-compose.yml`** (Postgres, Redis, MinIO, Traefik) и **`docker-compose.local.yml`** (оверлей: все основные Python API из `services/*` за Traefik и прямые порты для отладки).
 
 Запуск из корня:
 
@@ -10,13 +10,23 @@ docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
 
 ## Hosts
 
-Для маршрута Traefik к auth добавьте в `hosts` (Windows: `C:\Windows\System32\drivers\etc\hosts`):
+Для маршрута Traefik добавьте в `hosts` (Windows: `C:\Windows\System32\drivers\etc\hosts`):
 
 ```text
 127.0.0.1 auth.localhost
 127.0.0.1 catalog.localhost
 127.0.0.1 commerce.localhost
 127.0.0.1 payments.localhost
+127.0.0.1 directory.localhost
+127.0.0.1 oms.localhost
+127.0.0.1 fulfillment.localhost
+127.0.0.1 inventory.localhost
+127.0.0.1 wms.localhost
+127.0.0.1 production.localhost
+127.0.0.1 custom.localhost
+127.0.0.1 procurement.localhost
+127.0.0.1 counterparties.localhost
+127.0.0.1 notification.localhost
 ```
 
 ## Traefik
@@ -34,36 +44,36 @@ docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
 | `catalog.localhost` | `catalog` | `catalog` | `8000` |
 | `commerce.localhost` | `commerce` | `commerce` | `8000` |
 | `payments.localhost` | `payments` | `payments` | `8000` |
+| `directory.localhost` | `directory` | `directory` | `8000` |
+| `oms.localhost` | `oms` | `oms` | `8000` |
+| `fulfillment.localhost` | `fulfillment` | `fulfillment` | `8000` |
+| `inventory.localhost` | `inventory` | `inventory` | `8000` |
+| `wms.localhost` | `wms` | `wms` | `8000` |
+| `production.localhost` | `production` | `production` | `8000` |
+| `custom.localhost` | `custom` | `custom` | `8000` |
+| `procurement.localhost` | `procurement` | `procurement` | `8000` |
+| `counterparties.localhost` | `counterparties` | `counterparties` | `8000` |
+| `notification.localhost` | `notification` | `notification` | `8000` |
 
 Соответствующие labels в `docker-compose.local.yml` (сводка): для каждого сервиса — `traefik.enable=true`, `Host(\`<имя>.localhost\`)`, `entrypoints=web`, `loadbalancer.server.port=8000`.
 
 Проверка OIDC: `http://auth.localhost:8080/.well-known/openid-configuration`.
 
-OpenAPI (примеры): `http://catalog.localhost:8080/api/openapi.json`, `http://commerce.localhost:8080/api/openapi.json`, `http://payments.localhost:8080/api/openapi.json`.
+OpenAPI (пример): `http://catalog.localhost:8080/api/openapi.json` (аналогично для других сервисов по их хосту; у **directory** этот URL и Swagger защищены HTTP Basic — см. `services/directory/src/main.py`).
 
-### База `zhuchka_catalog`
+**Directory:** эндпоинты **`/api/v1/me`**, **`/api/v1/me/addresses`**, **`/api/v1/me/consents`**, **`/api/v1/me/b2b-links`** ожидают **Bearer** access token от Auth; операционные **`GET /api/v1/customers`** (в т.ч. фильтр **`counterparty_id`**), **`GET/PATCH /api/v1/customers/{id}`**, **`POST /api/v1/customers/{id}/merge`** — тот же Bearer, но в JWT в **`scope`** должен быть **`admin`**. В `docker/directory/config.dev.ini` секция **`[AUTH]`** (JWKS, `ISSUER`, `AUDIENCE`) согласована с **`docker/auth/config.dev.ini`**.
 
-При **первом** создании тома Postgres скрипт `docker/postgres/docker-entrypoint-initdb.d/02-zhuchka-catalog.sql` создаёт БД `zhuchka_catalog`. Если том **`zhuchka_pgdata` уже существовал** без этой базы, выполните один раз:
+### Базы данных PostgreSQL
+
+При **первом** создании тома Postgres скрипты в `docker/postgres/docker-entrypoint-initdb.d/` создают отдельные БД для сервисов (владелец `zhuchka`): `zhuchka_auth` (из образа/базового init), `zhuchka_catalog`, `zhuchka_commerce`, `zhuchka_payments`, `zhuchka_directory`, `zhuchka_oms`, `zhuchka_fulfillment`, `zhuchka_inventory`, `zhuchka_wms`, `zhuchka_production`, `zhuchka_custom`, `zhuchka_procurement`, `zhuchka_counterparties`, `zhuchka_notification`.
+
+Если том **`zhuchka_pgdata` уже существовал** без нужной базы, создайте её вручную (пример для одной БД):
 
 ```bash
 docker compose -f docker-compose.yml exec postgres psql -U zhuchka -d zhuchka_auth -c "CREATE DATABASE zhuchka_catalog OWNER zhuchka;"
 ```
 
-### База `zhuchka_commerce`
-
-Аналогично: при первом init тома выполняется `03-zhuchka-commerce.sql`. Если базы не было:
-
-```bash
-docker compose -f docker-compose.yml exec postgres psql -U zhuchka -d zhuchka_auth -c "CREATE DATABASE zhuchka_commerce OWNER zhuchka;"
-```
-
-### База `zhuchka_payments`
-
-При первом init тома выполняется `04-zhuchka-payments.sql`. Если базы не было:
-
-```bash
-docker compose -f docker-compose.yml exec postgres psql -U zhuchka -d zhuchka_auth -c "CREATE DATABASE zhuchka_payments OWNER zhuchka;"
-```
+Повторите `CREATE DATABASE …` для остальных имён при необходимости.
 
 ## Прямые порты (минуя Traefik)
 
@@ -75,12 +85,22 @@ docker compose -f docker-compose.yml exec postgres psql -U zhuchka -d zhuchka_au
 | `6379` | `redis` | Redis |
 | `9000` | `minio` | S3 API |
 | `9001` | `minio` | веб-консоль MinIO |
-| `8000` | `auth` | HTTP auth (оверлей; тот же сервис, что за Traefik) |
-| `8001` | `catalog` | HTTP catalog (оверлей) |
-| `8002` | `commerce` | HTTP commerce (оверлей) |
-| `8003` | `payments` | HTTP payments (оверлей) |
+| `8000` | `auth` | HTTP auth (оверлей) |
+| `8001` | `catalog` | HTTP catalog |
+| `8002` | `commerce` | HTTP commerce |
+| `8003` | `payments` | HTTP payments |
+| `8004` | `directory` | HTTP directory |
+| `8005` | `oms` | HTTP oms |
+| `8006` | `fulfillment` | HTTP fulfillment |
+| `8007` | `inventory` | HTTP inventory |
+| `8008` | `wms` | HTTP wms |
+| `8009` | `production` | HTTP production |
+| `8010` | `custom` | HTTP custom |
+| `8011` | `procurement` | HTTP procurement |
+| `8012` | `counterparties` | HTTP counterparties |
+| `8013` | `notification` | HTTP notification |
 
-Из других контейнеров в той же сети Compose имена хостов: `postgres`, `redis`, `minio`, `auth`, `catalog`, `commerce`, `payments` (см. `docker-compose.yml` / оверлей).
+Из других контейнеров в той же сети Compose имена хостов: `postgres`, `redis`, `minio`, и имена сервисов из оверлея (`auth`, `catalog`, …, `notification`).
 
 ## MinIO
 
