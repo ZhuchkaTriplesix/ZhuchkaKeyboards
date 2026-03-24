@@ -1,6 +1,6 @@
 # Локальный Docker-стек (корень монорепозитория)
 
-Файлы в корне: **`docker-compose.yml`** (Postgres, Redis, MinIO, Traefik) и **`docker-compose.local.yml`** (оверлей: сервисы **auth**, **catalog** и **commerce** за Traefik и прямые порты для отладки).
+Файлы в корне: **`docker-compose.yml`** (Postgres, Redis, MinIO, Traefik) и **`docker-compose.local.yml`** (оверлей: **auth**, **catalog**, **commerce**, **payments** за Traefik и прямые порты для отладки).
 
 Запуск из корня:
 
@@ -16,6 +16,7 @@ docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
 127.0.0.1 auth.localhost
 127.0.0.1 catalog.localhost
 127.0.0.1 commerce.localhost
+127.0.0.1 payments.localhost
 ```
 
 ## Traefik
@@ -32,12 +33,13 @@ docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
 | `auth.localhost` | `auth` | `auth` | `8000` |
 | `catalog.localhost` | `catalog` | `catalog` | `8000` |
 | `commerce.localhost` | `commerce` | `commerce` | `8000` |
+| `payments.localhost` | `payments` | `payments` | `8000` |
 
 Соответствующие labels в `docker-compose.local.yml` (сводка): для каждого сервиса — `traefik.enable=true`, `Host(\`<имя>.localhost\`)`, `entrypoints=web`, `loadbalancer.server.port=8000`.
 
 Проверка OIDC: `http://auth.localhost:8080/.well-known/openid-configuration`.
 
-OpenAPI: `http://catalog.localhost:8080/api/openapi.json`, `http://commerce.localhost:8080/api/openapi.json`.
+OpenAPI (примеры): `http://catalog.localhost:8080/api/openapi.json`, `http://commerce.localhost:8080/api/openapi.json`, `http://payments.localhost:8080/api/openapi.json`.
 
 ### База `zhuchka_catalog`
 
@@ -55,6 +57,14 @@ docker compose -f docker-compose.yml exec postgres psql -U zhuchka -d zhuchka_au
 docker compose -f docker-compose.yml exec postgres psql -U zhuchka -d zhuchka_auth -c "CREATE DATABASE zhuchka_commerce OWNER zhuchka;"
 ```
 
+### База `zhuchka_payments`
+
+При первом init тома выполняется `04-zhuchka-payments.sql`. Если базы не было:
+
+```bash
+docker compose -f docker-compose.yml exec postgres psql -U zhuchka -d zhuchka_auth -c "CREATE DATABASE zhuchka_payments OWNER zhuchka;"
+```
+
 ## Прямые порты (минуя Traefik)
 
 Удобно для клиентов на хосте (IDE, CLI) и для отладки без Host-заголовка.
@@ -68,8 +78,9 @@ docker compose -f docker-compose.yml exec postgres psql -U zhuchka -d zhuchka_au
 | `8000` | `auth` | HTTP auth (оверлей; тот же сервис, что за Traefik) |
 | `8001` | `catalog` | HTTP catalog (оверлей) |
 | `8002` | `commerce` | HTTP commerce (оверлей) |
+| `8003` | `payments` | HTTP payments (оверлей) |
 
-Из других контейнеров в той же сети Compose имена хостов: `postgres`, `redis`, `minio`, `auth`, `catalog`, `commerce` (см. `docker-compose.yml` / оверлей).
+Из других контейнеров в той же сети Compose имена хостов: `postgres`, `redis`, `minio`, `auth`, `catalog`, `commerce`, `payments` (см. `docker-compose.yml` / оверлей).
 
 ## MinIO
 
