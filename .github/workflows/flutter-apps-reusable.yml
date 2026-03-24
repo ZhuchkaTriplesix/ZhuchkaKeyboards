@@ -1,0 +1,47 @@
+# Flutter web apps: analyze + test (see issue #48)
+name: Flutter apps (analyze + test)
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  flutter:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app:
+          - market
+          - system
+
+    steps:
+      - name: Use HTTPS for GitHub submodule URLs
+        run: git config --global url."https://github.com/".insteadOf "git@github.com:"
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Pub get
+        working-directory: frontend/${{ matrix.app }}
+        run: flutter pub get
+
+      - name: Analyze
+        working-directory: frontend/${{ matrix.app }}
+        run: flutter analyze
+
+      - name: Test
+        working-directory: frontend/${{ matrix.app }}
+        run: flutter test

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Rewrites all refs: normalize author/committer for matching emails, strip "Made-with: Cursor" from messages.
+# Rewrites all refs: normalize author/committer for matching emails, strip Cursor footer lines from messages.
 # Usage:
 #   bash scripts/git-rewrite-history.sh              # monorepo root (parent of scripts/)
 #   bash scripts/git-rewrite-history.sh /path/to/repo # any clone (e.g. submodule)
@@ -31,5 +31,10 @@ if [ "$GIT_COMMITTER_EMAIL" = "mrlololoshka94@gmail.com" ] || [ "$GIT_COMMITTER_
   export GIT_COMMITTER_EMAIL="$CORRECT_EMAIL"
 fi
 ' \
-  --msg-filter "sed -e '/^Made-with: Cursor$/d'" \
+  --msg-filter 'sed -e '"'"'s/\r$//'"'"' -e '"'"'/^Made-with: Cursor[[:space:]]*$/d'"'"' -e '"'"'/^Made with Cursor[[:space:]]*$/d'"'"' -e '"'"'/^Made with \[Cursor/d'"'"'' \
   -- --all
+
+# filter-branch leaves refs/original/* pointing at pre-rewrite commits; they still show up in rev-list --all.
+if [ -d .git/refs/original ]; then
+  rm -rf .git/refs/original
+fi

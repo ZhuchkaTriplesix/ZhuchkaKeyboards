@@ -12,3 +12,9 @@ permissions:
 jobs:
   python-services:
     uses: ./.github/workflows/python-services-reusable.yml
+
+  flutter-apps:
+    uses: ./.github/workflows/flutter-apps-reusable.yml
+
+  auth-bot:
+    uses: ./.github/workflows/auth-bot-reusable.yml

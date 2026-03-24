@@ -1,0 +1,18 @@
+---
+description: Auth-service router layer — router/actions/dal/schemas, DTO-only responses, ApiErrorResponse
+globs: services/auth/src/routers/**/*.py
+alwaysApply: false
+---
+
+# Auth-service: слой роутеров
+
+При изменении `services/auth/src/routers/**` соблюдай канон из **`services/auth/docs/ROUTER_ARCHITECTURE.md`** (незыблемые правила и таблица файлов).
+
+Кратко:
+
+- **`router.py`** — только HTTP; без SQL и доменной логики.
+- **`actions.py`** + **`dal.py`** — логика и БД раздельно.
+- Наружу — **только Pydantic DTO**; ORM → DTO в `actions` или `mappers.py`.
+- Ошибки — **`ApiErrorResponse`** через глобальные обработчики (`src/api/error_handlers.py`), не изобретай свой формат без причины.
+
+Сквозные API-правила монорепо: `docs/microservices-api-requirements.md` (§1.4).
