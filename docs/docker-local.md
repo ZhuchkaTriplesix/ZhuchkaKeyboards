@@ -61,7 +61,7 @@ docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
 
 OpenAPI (пример): `http://catalog.localhost:8080/api/openapi.json` (аналогично для других сервисов по их хосту).
 
-**Directory:** эндпоинты **`/api/v1/me`**, **`/api/v1/me/addresses`**, **`/api/v1/me/consents`** ожидают **Bearer** access token от Auth; операционные **`GET /api/v1/customers`**, **`GET/PATCH /api/v1/customers/{id}`**, **`POST /api/v1/customers/{id}/merge`** — тот же Bearer, но в JWT в **`scope`** должен быть **`admin`**. В `docker/directory/config.dev.ini` секция **`[AUTH]`** (JWKS, `ISSUER`, `AUDIENCE`) согласована с **`docker/auth/config.dev.ini`**.
+**Directory:** эндпоинты **`/api/v1/me`**, **`/api/v1/me/addresses`**, **`/api/v1/me/consents`**, **`/api/v1/me/b2b-links`** ожидают **Bearer** access token от Auth; операционные **`GET /api/v1/customers`** (в т.ч. фильтр **`counterparty_id`**), **`GET/PATCH /api/v1/customers/{id}`**, **`POST /api/v1/customers/{id}/merge`** — тот же Bearer, но в JWT в **`scope`** должен быть **`admin`**. В `docker/directory/config.dev.ini` секция **`[AUTH]`** (JWKS, `ISSUER`, `AUDIENCE`) согласована с **`docker/auth/config.dev.ini`**.
 
 ### Базы данных PostgreSQL
 
