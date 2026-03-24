@@ -57,3 +57,7 @@ docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
 ## MinIO
 
 Бакеты для медиа по умолчанию: **`keyboards`**, **`parts`** (создаётся одноразовым контейнером `minio-init`). Учётные данные администратора задаются в `docker-compose.yml` (`MINIO_ROOT_*`).
+
+## Пример переменных окружения
+
+Файл с плейсхолдерами (без реальных ключей): **[`docker/local.example.env`](../docker/local.example.env)**. Имена переменных с префиксом `ZCH_LOCAL_*` не подхватываются Compose автоматически — это ориентир для приложений и скриптов на хосте.
