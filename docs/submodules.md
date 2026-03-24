@@ -57,3 +57,17 @@ git submodule update --remote --merge
 ```
 
 *(Осторожно: `--remote` тянет последний коммит из ветки, заданной в submodule; по умолчанию часто `master`.)*
+
+## Субмодуль в detached HEAD
+
+После `git submodule update` каталог субмодуля часто указывает на **конкретный коммит**; внутри субмодуля `git status` показывает **detached HEAD** — это ожидаемо. Чтобы вести разработку в ветке:
+
+```bash
+cd services/<name>   # или bots/auth_bot, frontend/market, …
+git checkout dev
+git pull origin dev
+```
+
+## CI в монорепозитории
+
+В корне действует workflow **CI (dev)** (`.github/workflows/ci-dev.yml`): матрица по Python-сервисам в `services/*`, отдельные задания для **Flutter** (`frontend/market`, `frontend/system`) и для **`bots/auth_bot`**. Подробности — в `.github/workflows/` (reusable-файлы рядом).
