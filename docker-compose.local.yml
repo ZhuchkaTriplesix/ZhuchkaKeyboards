@@ -1,0 +1,26 @@
+# Overlay: auth-service behind Traefik (Host auth.localhost) + direct port 8000 for debugging.
+# Prerequisite: add to hosts — 127.0.0.1 auth.localhost
+#
+# Usage (from monorepo root):
+#   docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
+#
+# Open: http://auth.localhost:8080/.well-known/openid-configuration
+# Direct (bypass Traefik): set ISSUER to http://localhost:8000 in a copied config if needed.
+
+services:
+  auth:
+    build:
+      context: ./services/auth
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./docker/auth/config.dev.ini:/app/config.ini:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth.rule=Host(`auth.localhost`)"
+      - "traefik.http.routers.auth.entrypoints=web"
+      - "traefik.http.services.auth.loadbalancer.server.port=8000"

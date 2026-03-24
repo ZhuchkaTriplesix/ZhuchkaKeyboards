@@ -1,0 +1,4 @@
+# MkDocs (monorepo root only). Install: pip install -r requirements-docs.txt
+# MkDocs 2.x пока не совместим с Material; держим линию 1.x
+mkdocs>=1.6.1,<2
+mkdocs-material>=9.5,<10
