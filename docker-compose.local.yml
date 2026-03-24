@@ -1,5 +1,5 @@
-# Overlay: auth + catalog + commerce behind Traefik + direct host ports for debugging.
-# Prerequisite: add to hosts — 127.0.0.1 auth.localhost catalog.localhost commerce.localhost
+# Overlay: auth + catalog + commerce + payments behind Traefik + direct host ports for debugging.
+# Prerequisite: add to hosts — 127.0.0.1 auth.localhost catalog.localhost commerce.localhost payments.localhost
 #
 # Usage (from monorepo root):
 #   docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
@@ -8,7 +8,8 @@
 #   http://auth.localhost:8080/.well-known/openid-configuration
 #   http://catalog.localhost:8080/api/openapi.json
 #   http://commerce.localhost:8080/api/openapi.json
-# Direct (bypass Traefik): auth :8000, catalog :8001, commerce :8002
+#   http://payments.localhost:8080/api/openapi.json
+# Direct (bypass Traefik): auth :8000, catalog :8001, commerce :8002, payments :8003
 
 services:
   auth:
@@ -69,3 +70,24 @@ services:
       - "traefik.http.routers.commerce.rule=Host(`commerce.localhost`)"
       - "traefik.http.routers.commerce.entrypoints=web"
       - "traefik.http.services.commerce.loadbalancer.server.port=8000"
+
+  payments:
+    build:
+      context: ./services/payments
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./docker/payments/config.dev.ini:/app/config.ini:ro
+      - ./docker/payments/alembic.ini:/app/alembic.ini:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: ["sh", "-c", "alembic upgrade head && exec python src/main.py"]
+    ports:
+      - "8003:8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.payments.rule=Host(`payments.localhost`)"
+      - "traefik.http.routers.payments.entrypoints=web"
+      - "traefik.http.services.payments.loadbalancer.server.port=8000"
