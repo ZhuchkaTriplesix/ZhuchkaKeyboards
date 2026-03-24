@@ -61,7 +61,7 @@ docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
 
 OpenAPI (пример): `http://catalog.localhost:8080/api/openapi.json` (аналогично для других сервисов по их хосту).
 
-**Directory:** эндпоинты **`/api/v1/me`** и **`/api/v1/me/addresses`** (список, создание, изменение, удаление адресов) ожидают **Bearer** access token от Auth. В `docker/directory/config.dev.ini` секция **`[AUTH]`** (JWKS, `ISSUER`, `AUDIENCE`) согласована с **`docker/auth/config.dev.ini`**.
+**Directory:** эндпоинты **`/api/v1/me`**, **`/api/v1/me/addresses`**, **`/api/v1/me/consents`** ожидают **Bearer** access token от Auth. В `docker/directory/config.dev.ini` секция **`[AUTH]`** (JWKS, `ISSUER`, `AUDIENCE`) согласована с **`docker/auth/config.dev.ini`**.
 
 ### Базы данных PostgreSQL
 
