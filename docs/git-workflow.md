@@ -69,8 +69,20 @@ git add services/<name>
 git commit -m "chore(submodule): bump <name> after #12"
 ```
 
+## Чеклист: bump субмодуля после релиза сервиса
+
+Используйте при обновлении указателя в корне после релиза или значимого merge в субмодуле.
+
+1. В репозитории сервиса: нужный коммит в **`master`** (или тег релиза), пайплайн на этой линии **зелёный**.
+2. В монорепозитории: обновить субмодуль до целевого SHA — `git submodule update --remote services/<name>` (осторожно с веткой по умолчанию) или `cd services/<name>`, `git fetch`, `git checkout <tag|SHA>`, затем в корне зафиксировать путь субмодуля.
+3. Проверить **`git diff services/<name>`** — только ожидаемые изменения.
+4. В корне монорепозитория — **отдельный коммит** только с указателем, например: `chore(submodule): bump <name> after release …` или `… after #N`.
+5. **Pull request в `dev`** с описанием и ссылкой на PR/релиз/тег в репозитории сервиса.
+6. При необходимости обновить **сопутствующую документацию** в монорепозитории и снимки OpenAPI (см. [openapi-sync.md](openapi-sync.md)).
+
 ## Скрипты в репозитории
 
+- `scripts/sync-openapi-snapshot.ps1` — сохраняет `GET /api/openapi.json` с запущенного сервиса в `docs/openapi/snapshots/` (см. [openapi-sync.md](openapi-sync.md)).
 - `scripts/bootstrap-dev-branches.ps1` — создаёт/обновляет ветку `dev` во всех субмодулях от `master`.
 - `scripts/gh-create-issues.ps1` — создаёт стартовый набор issues через GitHub CLI (`gh`), **идемпотентность не гарантируется** (повторный запуск создаст дубликаты). Запускать один раз после установки `gh auth login`.
 - `scripts/git-rewrite-history.sh` (Git Bash) — переписывает историю: убирает строку `Made-with: Cursor` из сообщений и приводит автора к `git config user.name` / `user.email` для совпадающих email (остальные авторы не трогает). Запуск из корня монорепо или с путём к клону: `bash scripts/git-rewrite-history.sh services/auth`. После использования нужен **`git push --force-with-lease`** на затронутые ветки; делать только осознанно.

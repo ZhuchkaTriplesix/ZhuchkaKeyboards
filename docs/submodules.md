@@ -34,6 +34,10 @@
 
 Корневой `docker-compose.yml` и оверлей для auth: таблица портов, маршруты Traefik к сервисам, пример переменных — в [docker-local.md](docker-local.md).
 
+## OpenAPI и снимки API
+
+Спецификации в субмодулях отдаются как `GET /api/openapi.json`. Периодическое обновление снимков в корне и порядок работы — в [openapi-sync.md](openapi-sync.md).
+
 ## Клонирование
 
 ```bash
