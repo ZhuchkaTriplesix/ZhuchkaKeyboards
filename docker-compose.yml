@@ -1,0 +1,47 @@
+# Local infrastructure: PostgreSQL, Redis, Traefik (dashboard + Docker provider).
+# Auth service: docker compose -f docker-compose.yml -f docker-compose.local.yml up -d
+#
+# Traefik: web entry on host port 8080, dashboard on 8081 (insecure API, dev only).
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: zhuchka
+      POSTGRES_PASSWORD: zhuchka
+      POSTGRES_DB: zhuchka_auth
+    ports:
+      - "5432:5432"
+    volumes:
+      - zhuchka_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zhuchka -d zhuchka_auth"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - zhuchka_redis:/data
+
+  traefik:
+    image: traefik:v3.0
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "8080:80"
+      - "8081:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+volumes:
+  zhuchka_pgdata:
+  zhuchka_redis:
