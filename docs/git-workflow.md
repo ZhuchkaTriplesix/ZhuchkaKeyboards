@@ -99,6 +99,7 @@ git commit -m "chore(submodule): bump <name> after #12"
 
 ## Скрипты в репозитории
 
+- `mkdocs.yml`, `requirements-docs.txt` — статический сайт из каталога `docs/` (Material for MkDocs): `pip install -r requirements-docs.txt`, затем `mkdocs serve` или `mkdocs build` (см. [index.md](index.md)).
 - `scripts/sync-openapi-snapshot.ps1` — сохраняет `GET /api/openapi.json` с запущенного сервиса в `docs/openapi/snapshots/` (см. [openapi-sync.md](openapi-sync.md)).
 - `scripts/bootstrap-dev-branches.ps1` — создаёт/обновляет ветку `dev` во всех субмодулях от `master`.
 - `scripts/gh-create-issues.ps1` — создаёт стартовый набор issues через GitHub CLI (`gh`), **идемпотентность не гарантируется** (повторный запуск создаст дубликаты). Запускать один раз после установки `gh auth login`.

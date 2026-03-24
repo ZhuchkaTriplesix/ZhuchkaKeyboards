@@ -35,7 +35,7 @@
 
 ## Где лежат снимки
 
-Каталог [`openapi/snapshots/`](openapi/snapshots/) — согласованное место для файлов `*.openapi.json`; см. [README](openapi/snapshots/README.md) внутри каталога.
+Каталог `docs/openapi/snapshots/` — согласованное место для файлов `*.openapi.json`; см. [README](openapi/snapshots/README.md).
 
 ## Автоматизация
 

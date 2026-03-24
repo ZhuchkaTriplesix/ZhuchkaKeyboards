@@ -1,0 +1,67 @@
+# MkDocs: статическая документация из каталога docs/
+# См. docs/index.md и requirements-docs.txt
+
+site_name: ZhuchkaKeyboards
+site_description: Монорепозиторий — документация
+repo_url: https://github.com/ZhuchkaTriplesix/ZhuchkaKeyboards
+edit_uri: edit/dev/docs/
+
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  language: ru
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+
+plugins:
+  - search:
+      lang:
+        - ru
+        - en
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Главная: index.md
+  - Git:
+      - git-workflow.md
+      - submodules.md
+  - Локальная разработка:
+      - docker-local.md
+      - openapi-sync.md
+      - "Снимки OpenAPI": openapi/snapshots/README.md
+  - Архитектура:
+      - architecture-and-domain-thoughts.md
+      - microservices-fine-split.md
+      - database-tables-plan.md
+  - Требования:
+      - microservices-api-requirements.md
+      - frontend-requirements.md
+  - Микросервисы:
+      - Обзор: microservices/README.md
+      - "01 Auth": microservices/01-auth.md
+      - "02 Directory": microservices/02-directory.md
+      - "03 Catalog": microservices/03-catalog.md
+      - "04 Commerce": microservices/04-commerce.md
+      - "05 Payments": microservices/05-payments.md
+      - "06 OMS": microservices/06-oms.md
+      - "07 Fulfillment": microservices/07-fulfillment.md
+      - "08 Inventory": microservices/08-inventory.md
+      - "09 WMS": microservices/09-wms.md
+      - "10 Production": microservices/10-production.md
+      - "11 Custom": microservices/11-custom.md
+      - "12 Procurement": microservices/12-procurement.md
+      - "13 Counterparties": microservices/13-counterparties.md
+      - "14 Notification": microservices/14-notification.md
