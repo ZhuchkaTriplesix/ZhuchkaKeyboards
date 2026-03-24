@@ -1,11 +1,13 @@
-# Overlay: auth-service behind Traefik (Host auth.localhost) + direct port 8000 for debugging.
-# Prerequisite: add to hosts — 127.0.0.1 auth.localhost
+# Overlay: auth + catalog behind Traefik + direct host ports for debugging.
+# Prerequisite: add to hosts — 127.0.0.1 auth.localhost catalog.localhost
 #
 # Usage (from monorepo root):
 #   docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
 #
-# Open: http://auth.localhost:8080/.well-known/openid-configuration
-# Direct (bypass Traefik): set ISSUER to http://localhost:8000 in a copied config if needed.
+# Open:
+#   http://auth.localhost:8080/.well-known/openid-configuration
+#   http://catalog.localhost:8080/api/openapi.json
+# Direct (bypass Traefik): auth :8000, catalog :8001
 
 services:
   auth:
@@ -24,3 +26,24 @@ services:
       - "traefik.http.routers.auth.rule=Host(`auth.localhost`)"
       - "traefik.http.routers.auth.entrypoints=web"
       - "traefik.http.services.auth.loadbalancer.server.port=8000"
+
+  catalog:
+    build:
+      context: ./services/catalog
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./docker/catalog/config.dev.ini:/app/config.ini:ro
+      - ./docker/catalog/alembic.ini:/app/alembic.ini:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: ["sh", "-c", "alembic upgrade head && exec python src/main.py"]
+    ports:
+      - "8001:8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.catalog.rule=Host(`catalog.localhost`)"
+      - "traefik.http.routers.catalog.entrypoints=web"
+      - "traefik.http.services.catalog.loadbalancer.server.port=8000"
