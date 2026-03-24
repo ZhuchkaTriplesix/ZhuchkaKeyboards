@@ -61,6 +61,8 @@ docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
 
 OpenAPI (пример): `http://catalog.localhost:8080/api/openapi.json` (аналогично для других сервисов по их хосту).
 
+**Directory:** эндпоинты `GET` / `PATCH` **`/api/v1/me`** ожидают **Bearer** access token от Auth. В `docker/directory/config.dev.ini` секция **`[AUTH]`** (JWKS, `ISSUER`, `AUDIENCE`) согласована с **`docker/auth/config.dev.ini`**.
+
 ### Базы данных PostgreSQL
 
 При **первом** создании тома Postgres скрипты в `docker/postgres/docker-entrypoint-initdb.d/` создают отдельные БД для сервисов (владелец `zhuchka`): `zhuchka_auth` (из образа/базового init), `zhuchka_catalog`, `zhuchka_commerce`, `zhuchka_payments`, `zhuchka_directory`, `zhuchka_oms`, `zhuchka_fulfillment`, `zhuchka_inventory`, `zhuchka_wms`, `zhuchka_production`, `zhuchka_custom`, `zhuchka_procurement`, `zhuchka_counterparties`, `zhuchka_notification`.
