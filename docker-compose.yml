@@ -2,10 +2,12 @@
 # Auth service: docker compose -f docker-compose.yml -f docker-compose.local.yml up -d
 #
 # Traefik: web entry on host port 8080, dashboard on 8081 (insecure API, dev only).
+# DB/cache images: Debian Trixie–based official builds (pinned versions).
+# If you upgrade from an older major Postgres image, remove volume zhuchka_pgdata or run pg_upgrade.
 
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:18.3-trixie
     environment:
       POSTGRES_USER: zhuchka
       POSTGRES_PASSWORD: zhuchka
@@ -21,7 +23,7 @@ services:
       retries: 10
 
   redis:
-    image: redis:7-alpine
+    image: redis:8.6.1-trixie
     ports:
       - "6379:6379"
     command: redis-server --appendonly yes
