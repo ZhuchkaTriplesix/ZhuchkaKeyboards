@@ -60,4 +60,4 @@ docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
 
 ## Пример переменных окружения
 
-Файл с плейсхолдерами (без реальных ключей): **[`docker/local.example.env`](../docker/local.example.env)**. Имена переменных с префиксом `ZCH_LOCAL_*` не подхватываются Compose автоматически — это ориентир для приложений и скриптов на хосте.
+Файл с плейсхолдерами (без реальных ключей): **[`docker/local.example.env`](https://github.com/ZhuchkaTriplesix/ZhuchkaKeyboards/blob/dev/docker/local.example.env)** (в репозитории, вне каталога `docs/`). Имена переменных с префиксом `ZCH_LOCAL_*` не подхватываются Compose автоматически — это ориентир для приложений и скриптов на хосте.
