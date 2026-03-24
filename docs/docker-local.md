@@ -1,6 +1,6 @@
 # Локальный Docker-стек (корень монорепозитория)
 
-Файлы в корне: **`docker-compose.yml`** (Postgres, Redis, MinIO, Traefik) и **`docker-compose.local.yml`** (оверлей: сервисы **auth** и **catalog** за Traefik и прямые порты для отладки).
+Файлы в корне: **`docker-compose.yml`** (Postgres, Redis, MinIO, Traefik) и **`docker-compose.local.yml`** (оверлей: сервисы **auth**, **catalog** и **commerce** за Traefik и прямые порты для отладки).
 
 Запуск из корня:
 
@@ -15,6 +15,7 @@ docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
 ```text
 127.0.0.1 auth.localhost
 127.0.0.1 catalog.localhost
+127.0.0.1 commerce.localhost
 ```
 
 ## Traefik
@@ -30,12 +31,13 @@ docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
 |------------------------------|------------------------|----------------|-------------------------|
 | `auth.localhost` | `auth` | `auth` | `8000` |
 | `catalog.localhost` | `catalog` | `catalog` | `8000` |
+| `commerce.localhost` | `commerce` | `commerce` | `8000` |
 
 Соответствующие labels в `docker-compose.local.yml` (сводка): для каждого сервиса — `traefik.enable=true`, `Host(\`<имя>.localhost\`)`, `entrypoints=web`, `loadbalancer.server.port=8000`.
 
 Проверка OIDC: `http://auth.localhost:8080/.well-known/openid-configuration`.
 
-OpenAPI каталога: `http://catalog.localhost:8080/api/openapi.json`.
+OpenAPI: `http://catalog.localhost:8080/api/openapi.json`, `http://commerce.localhost:8080/api/openapi.json`.
 
 ### База `zhuchka_catalog`
 
@@ -43,6 +45,14 @@ OpenAPI каталога: `http://catalog.localhost:8080/api/openapi.json`.
 
 ```bash
 docker compose -f docker-compose.yml exec postgres psql -U zhuchka -d zhuchka_auth -c "CREATE DATABASE zhuchka_catalog OWNER zhuchka;"
+```
+
+### База `zhuchka_commerce`
+
+Аналогично: при первом init тома выполняется `03-zhuchka-commerce.sql`. Если базы не было:
+
+```bash
+docker compose -f docker-compose.yml exec postgres psql -U zhuchka -d zhuchka_auth -c "CREATE DATABASE zhuchka_commerce OWNER zhuchka;"
 ```
 
 ## Прямые порты (минуя Traefik)
@@ -57,8 +67,9 @@ docker compose -f docker-compose.yml exec postgres psql -U zhuchka -d zhuchka_au
 | `9001` | `minio` | веб-консоль MinIO |
 | `8000` | `auth` | HTTP auth (оверлей; тот же сервис, что за Traefik) |
 | `8001` | `catalog` | HTTP catalog (оверлей) |
+| `8002` | `commerce` | HTTP commerce (оверлей) |
 
-Из других контейнеров в той же сети Compose имена хостов: `postgres`, `redis`, `minio`, `auth`, `catalog` (см. `docker-compose.yml` / оверлей).
+Из других контейнеров в той же сети Compose имена хостов: `postgres`, `redis`, `minio`, `auth`, `catalog`, `commerce` (см. `docker-compose.yml` / оверлей).
 
 ## MinIO
 
