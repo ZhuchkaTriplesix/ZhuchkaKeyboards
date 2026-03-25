@@ -1,15 +1,18 @@
-# Overlay: auth + catalog + commerce + payments behind Traefik + direct host ports for debugging.
-# Prerequisite: add to hosts — 127.0.0.1 auth.localhost catalog.localhost commerce.localhost payments.localhost
+# Overlay: all Python API services behind Traefik + direct host ports for debugging.
+# Prerequisite: add to hosts — 127.0.0.1 auth.localhost catalog.localhost commerce.localhost
+#   payments.localhost directory.localhost oms.localhost fulfillment.localhost inventory.localhost
+#   wms.localhost production.localhost custom.localhost procurement.localhost
+#   counterparties.localhost notification.localhost
 #
 # Usage (from monorepo root):
 #   docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
 #
-# Open:
+# Open (examples):
 #   http://auth.localhost:8080/.well-known/openid-configuration
 #   http://catalog.localhost:8080/api/openapi.json
-#   http://commerce.localhost:8080/api/openapi.json
-#   http://payments.localhost:8080/api/openapi.json
-# Direct (bypass Traefik): auth :8000, catalog :8001, commerce :8002, payments :8003
+# Direct ports: auth :8000, catalog :8001, commerce :8002, payments :8003, directory :8004,
+#   oms :8005, fulfillment :8006, inventory :8007, wms :8008, production :8009, custom :8010,
+#   procurement :8011, counterparties :8012, notification :8013
 
 services:
   auth:
@@ -91,3 +94,213 @@ services:
       - "traefik.http.routers.payments.rule=Host(`payments.localhost`)"
       - "traefik.http.routers.payments.entrypoints=web"
       - "traefik.http.services.payments.loadbalancer.server.port=8000"
+
+  directory:
+    build:
+      context: ./services/directory
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./docker/directory/config.dev.ini:/app/config.ini:ro
+      - ./docker/directory/alembic.ini:/app/alembic.ini:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: ["sh", "-c", "alembic upgrade head && exec python src/main.py"]
+    ports:
+      - "8004:8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.directory.rule=Host(`directory.localhost`)"
+      - "traefik.http.routers.directory.entrypoints=web"
+      - "traefik.http.services.directory.loadbalancer.server.port=8000"
+
+  oms:
+    build:
+      context: ./services/oms
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./docker/oms/config.dev.ini:/app/config.ini:ro
+      - ./docker/oms/alembic.ini:/app/alembic.ini:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: ["sh", "-c", "alembic upgrade head && exec python src/main.py"]
+    ports:
+      - "8005:8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.oms.rule=Host(`oms.localhost`)"
+      - "traefik.http.routers.oms.entrypoints=web"
+      - "traefik.http.services.oms.loadbalancer.server.port=8000"
+
+  fulfillment:
+    build:
+      context: ./services/fulfillment
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./docker/fulfillment/config.dev.ini:/app/config.ini:ro
+      - ./docker/fulfillment/alembic.ini:/app/alembic.ini:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: ["sh", "-c", "alembic upgrade head && exec python src/main.py"]
+    ports:
+      - "8006:8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.fulfillment.rule=Host(`fulfillment.localhost`)"
+      - "traefik.http.routers.fulfillment.entrypoints=web"
+      - "traefik.http.services.fulfillment.loadbalancer.server.port=8000"
+
+  inventory:
+    build:
+      context: ./services/inventory
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./docker/inventory/config.dev.ini:/app/config.ini:ro
+      - ./docker/inventory/alembic.ini:/app/alembic.ini:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: ["sh", "-c", "alembic upgrade head && exec python src/main.py"]
+    ports:
+      - "8007:8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.inventory.rule=Host(`inventory.localhost`)"
+      - "traefik.http.routers.inventory.entrypoints=web"
+      - "traefik.http.services.inventory.loadbalancer.server.port=8000"
+
+  wms:
+    build:
+      context: ./services/wms
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./docker/wms/config.dev.ini:/app/config.ini:ro
+      - ./docker/wms/alembic.ini:/app/alembic.ini:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: ["sh", "-c", "alembic upgrade head && exec python src/main.py"]
+    ports:
+      - "8008:8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wms.rule=Host(`wms.localhost`)"
+      - "traefik.http.routers.wms.entrypoints=web"
+      - "traefik.http.services.wms.loadbalancer.server.port=8000"
+
+  production:
+    build:
+      context: ./services/production
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./docker/production/config.dev.ini:/app/config.ini:ro
+      - ./docker/production/alembic.ini:/app/alembic.ini:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: ["sh", "-c", "alembic upgrade head && exec python src/main.py"]
+    ports:
+      - "8009:8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.production.rule=Host(`production.localhost`)"
+      - "traefik.http.routers.production.entrypoints=web"
+      - "traefik.http.services.production.loadbalancer.server.port=8000"
+
+  custom:
+    build:
+      context: ./services/custom
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./docker/custom/config.dev.ini:/app/config.ini:ro
+      - ./docker/custom/alembic.ini:/app/alembic.ini:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: ["sh", "-c", "alembic upgrade head && exec python src/main.py"]
+    ports:
+      - "8010:8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.custom.rule=Host(`custom.localhost`)"
+      - "traefik.http.routers.custom.entrypoints=web"
+      - "traefik.http.services.custom.loadbalancer.server.port=8000"
+
+  procurement:
+    build:
+      context: ./services/procurement
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./docker/procurement/config.dev.ini:/app/config.ini:ro
+      - ./docker/procurement/alembic.ini:/app/alembic.ini:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: ["sh", "-c", "alembic upgrade head && exec python src/main.py"]
+    ports:
+      - "8011:8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.procurement.rule=Host(`procurement.localhost`)"
+      - "traefik.http.routers.procurement.entrypoints=web"
+      - "traefik.http.services.procurement.loadbalancer.server.port=8000"
+
+  counterparties:
+    build:
+      context: ./services/counterparties
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./docker/counterparties/config.dev.ini:/app/config.ini:ro
+      - ./docker/counterparties/alembic.ini:/app/alembic.ini:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: ["sh", "-c", "alembic upgrade head && exec python src/main.py"]
+    ports:
+      - "8012:8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.counterparties.rule=Host(`counterparties.localhost`)"
+      - "traefik.http.routers.counterparties.entrypoints=web"
+      - "traefik.http.services.counterparties.loadbalancer.server.port=8000"
+
+  notification:
+    build:
+      context: ./services/notification
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./docker/notification/config.dev.ini:/app/config.ini:ro
+      - ./docker/notification/alembic.ini:/app/alembic.ini:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: ["sh", "-c", "alembic upgrade head && exec python src/main.py"]
+    ports:
+      - "8013:8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.notification.rule=Host(`notification.localhost`)"
+      - "traefik.http.routers.notification.entrypoints=web"
+      - "traefik.http.services.notification.loadbalancer.server.port=8000"
