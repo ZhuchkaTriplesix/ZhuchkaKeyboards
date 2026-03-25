@@ -2,10 +2,14 @@
 # Prerequisite: add to hosts — 127.0.0.1 auth.localhost catalog.localhost commerce.localhost
 #   payments.localhost directory.localhost oms.localhost fulfillment.localhost inventory.localhost
 #   wms.localhost production.localhost custom.localhost procurement.localhost
-#   counterparties.localhost notification.localhost
+#   counterparties.localhost notification.localhost market.localhost system.localhost
 #
 # Usage (from monorepo root):
 #   docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
+#
+# Traefik: ниже проброс 80:80 — удобно открывать сайты без :8080 в URL.
+#   Telegram /setdomain не принимает *.localhost — для Login Widget используйте market.localtest.me
+#   (маршрут market-web-localtest) и этот же хост в @BotFather. На Windows порт 80 может быть занят.
 #
 # Open (examples):
 #   http://auth.localhost:8080/.well-known/openid-configuration
@@ -13,12 +17,22 @@
 # Direct ports: auth :8000, catalog :8001, commerce :8002, payments :8003, directory :8004,
 #   oms :8005, fulfillment :8006, inventory :8007, wms :8008, production :8009, custom :8010,
 #   procurement :8011, counterparties :8012, notification :8013
+# Flutter web (nginx): только через Traefik — http://market.localhost:8080 и http://system.localhost:8080
+#   (build args указывают API на *.localhost:8080; нужен hosts как выше)
+# Telegram long-poll: auth_bot (bots/auth_bot) — TELEGRAM_BOT_TOKEN из корневого `.env` (как у auth)
 
 services:
+  traefik:
+    ports:
+      - "80:80"
+
   auth:
     build:
       context: ./services/auth
       dockerfile: docker/Dockerfile
+    environment:
+      # Set in repo-root `.env` (gitignored); do not commit tokens. Overrides [AUTH] TELEGRAM_BOT_TOKEN in config.ini.
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
     volumes:
       - ./docker/auth/config.dev.ini:/app/config.ini:ro
     depends_on:
@@ -31,6 +45,10 @@ services:
       - "traefik.http.routers.auth.rule=Host(`auth.localhost`)"
       - "traefik.http.routers.auth.entrypoints=web"
       - "traefik.http.services.auth.loadbalancer.server.port=8000"
+      # Тот же auth API без hosts: резолвится как 127.0.0.1 (как market.localtest.me) — для POST /oauth/federated/telegram из браузера.
+      - "traefik.http.routers.auth-localtest.rule=Host(`auth.localtest.me`)"
+      - "traefik.http.routers.auth-localtest.entrypoints=web"
+      - "traefik.http.routers.auth-localtest.service=auth"
 
   catalog:
     build:
@@ -304,3 +322,48 @@ services:
       - "traefik.http.routers.notification.rule=Host(`notification.localhost`)"
       - "traefik.http.routers.notification.entrypoints=web"
       - "traefik.http.services.notification.loadbalancer.server.port=8000"
+
+  market_web:
+    build:
+      context: ./frontend/market
+      dockerfile: docker/Dockerfile
+      args:
+        # По умолчанию auth.localtest.me (DNS → 127.0.0.1), чтобы витрина на market.localtest.me доходила до API без записи auth.localhost в hosts.
+        # Если ходите только через :8080, задайте MARKET_AUTH_BASE_URL=http://auth.localtest.me:8080 в .env и пересоберите market_web.
+        AUTH_BASE_URL: ${MARKET_AUTH_BASE_URL:-http://auth.localtest.me}
+        CATALOG_BASE_URL: http://catalog.localhost:8080
+        COMMERCE_BASE_URL: http://commerce.localhost:8080
+        OAUTH_CLIENT_ID: zhuchka-market-web
+        TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-ZhuchkaKeyboards_bot}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.market-web.rule=Host(`market.localhost`)"
+      - "traefik.http.routers.market-web.entrypoints=web"
+      - "traefik.http.services.market-web.loadbalancer.server.port=80"
+      # BotFather /setdomain не принимает *.localhost — для Telegram Login используйте домен ниже в BotFather и в браузере.
+      - "traefik.http.routers.market-web-localtest.rule=Host(`market.localtest.me`)"
+      - "traefik.http.routers.market-web-localtest.entrypoints=web"
+      - "traefik.http.routers.market-web-localtest.service=market-web"
+
+  system_web:
+    build:
+      context: ./frontend/system
+      dockerfile: docker/Dockerfile
+      args:
+        API_BASE_URL: ${SYSTEM_AUTH_BASE_URL:-http://auth.localtest.me}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.system-web.rule=Host(`system.localhost`)"
+      - "traefik.http.routers.system-web.entrypoints=web"
+      - "traefik.http.services.system-web.loadbalancer.server.port=80"
+
+  # @ZhuchkaKeyboards_bot — тот же токен, что для Login Widget и auth federated (long polling, не HTTP-маршрут).
+  auth_bot:
+    build:
+      context: ./bots/auth_bot
+      dockerfile: docker/Dockerfile
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+    volumes:
+      - ./docker/auth_bot/config.dev.ini:/app/config.ini:ro
+    restart: unless-stopped
