@@ -65,7 +65,8 @@ services:
     restart: "no"
 
   traefik:
-    image: traefik:v3.0
+    # v3.0 uses Docker API 1.24; Engine 29+ requires min API 1.44 — provider breaks with empty "Error response from daemon".
+    image: traefik:v3.6
     command:
       - "--api.dashboard=true"
       - "--api.insecure=true"
