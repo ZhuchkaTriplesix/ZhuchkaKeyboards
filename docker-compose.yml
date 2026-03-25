@@ -6,6 +6,7 @@
 # Buckets keyboards + parts are created by minio-init (ignore-existing on re-runs).
 # DB/cache images: Debian Trixie–based official builds (pinned versions).
 # If you upgrade from an older major Postgres image, remove volume zhuchka_pgdata or run pg_upgrade.
+# PG 18+ images expect a single mount at /var/lib/postgresql (not .../data); see docker-library/postgres#1259.
 # docker/postgres/docker-entrypoint-initdb.d/*.sql run only on first init (empty data dir).
 
 services:
@@ -18,7 +19,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - zhuchka_pgdata:/var/lib/postgresql/data
+      - zhuchka_pgdata:/var/lib/postgresql
       - ./docker/postgres/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U zhuchka -d zhuchka_auth"]
